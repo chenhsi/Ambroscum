@@ -11,7 +11,7 @@ public class AssignmentLine extends Line
 	private String[] assignIDs; // list of the ids being set to
 	private Expression[] expressions;
 	
-	public AssignmentLine(String left, String right)
+	protected AssignmentLine(String left, String right)
 	{
 		String[] ids = left.split(", ");
 		if (ids[0].contains(" "))

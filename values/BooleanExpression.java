@@ -1,17 +1,15 @@
-package ambroscum;
+package ambroscum.values;
 
-import ambroscum.values.*;
+import ambroscum.*;
 
-public class Expression
+public class BooleanExpression extends Expression
 {
-	private String rawcode;
-	
-	public Value evaluate(IdentifierMap values)
+	public BooleanValue evaluate(IdentifierMap values)
 	{
 		if (rawcode.equals("True"))
 			return new BooleanValue(true);
 		else (rawcode.equals("False"))
-			return new BooleanValue(false);
+			return new BooleanValue(False);
 		if (Character.isDigit(rawcode.charAt(0)))
 		throw new UnsupportedOperationException();
 	}
