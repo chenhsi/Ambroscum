@@ -1,6 +1,14 @@
 // map of variables to types and values
 // basically implemented as a Map<Identifier, Tuple<Type, Value>>
 
+/**
+ * Represents a mapping of variable names to (Type, Value) tuples.
+ * Can be contained within an outer scope.
+ * 
+ * @author Chenhsi Steven Bi, Jing-Lun Edward Gao
+ * @version 1.0
+ */
+
 package ambroscum;
 
 import java.util.*;
@@ -12,6 +20,6 @@ public class IdentifierMap
 	class TypeValue
 	{
 		Type t;
-		Value = v;
+		Value v;
 	}
 }
