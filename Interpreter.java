@@ -12,7 +12,34 @@ import java.util.*;
 
 public class Interpreter
 {
-	// field accessing the file
 	
+	private static IdentifierMap identifiers;
 	
+	static {
+		identifiers = new IdentifierMap(null);
+	}
+	
+	/**
+	 * Starts a command-line interactive Ambroscum session.
+	 */
+	public static void interpret() {
+		Scanner in = new Scanner(System.in);
+		String line;
+		while (true) {
+			System.out.print(">>> ");
+			line = in.nextLine();
+			Line lineLine = Line.evalAsLine(line, null);
+		}
+	}
+	public static void interpret(String filename) throws IOException {
+		interpret(new File(filename));
+	}
+	public static void interpret(File file) throws IOException {
+		BufferedReader reader = new BufferedReader(new FileReader(file));
+		String line;
+		do {
+			line = reader.readLine();
+			Line lineLine = Line.evalAsLine(line, null);
+		} while(line != null);
+	}
 }

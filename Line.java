@@ -10,13 +10,13 @@
 
 package ambroscum;
 
-import ambroscum.lines.*;
+//~ import ambroscum.lines.*;
 
 public abstract class Line
 {
 	public abstract void evaluate(IdentifierMap values);
 	
-	private static Line evalAsLine(String code, Scope followingblock)
+	public static Line evalAsLine(String code, Scope followingblock)
 	{
 		throw new UnsupportedOperationException();
 	}

@@ -23,7 +23,7 @@ public class AssignmentLine extends Line
 		
 		ids = right.split(", ");
 		if (ids.length != assignIDs.length)
-			throw new RuntimeException("need to find better exceptions") // comment to be easier to find
+			throw new RuntimeException("need to find better exceptions"); // comment to be easier to find
 		expressions = new Expression[ids.length];
 		for (int i = 0; i < ids.length; i++)
 			expressions[i] = (Expression) (Object) ids[i]; // again, will add this later

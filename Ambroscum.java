@@ -7,10 +7,18 @@
 
 package ambroscum;
 
+import java.io.*;
+
 public class Ambroscum
 {
 	public static void main(String[] args)
 	{
-		
+		try {
+			if (args.length == 1)
+				Interpreter.interpret(args[0]);
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+		Interpreter.interpret();
 	}
 }
