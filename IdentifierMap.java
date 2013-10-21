@@ -17,6 +17,21 @@ public class IdentifierMap
 {
 	private IdentifierMap previousblock; // represents link to previous block of code, might be null
 	
+	public void add(String name, Type type, Value value)
+	{
+		throw new UnsupportedOperationException();
+	}
+	
+	public void set(String name, Value value)
+	{
+		throw new UnsupportedOperationException();
+	}
+	
+	public void get(String name)
+	{
+		throw new UnsupportedOperationException();
+	}
+	
 	class TypeValue
 	{
 		Type t;
