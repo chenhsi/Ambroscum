@@ -16,9 +16,11 @@ import java.util.*;
 public class IdentifierMap
 {
 	private IdentifierMap previousblock; // represents link to previous block of code, might be null
+	private HashMap<String, Value> map;
 	
 	public IdentifierMap(IdentifierMap prev) {
 		previousblock = prev;
+		map = new HashMap<String, Value>();
 	}
 	
 	public void add(String name, Type type, Value value)
