@@ -1,0 +1,83 @@
+Program	: (Script_Line "\n")*
+        ;
+
+/*
+ *	Simple Statement Lines
+ */
+
+Script_Line : BlankLine
+            | Simple_ScriptStmt
+            | Compound_Stmt
+            ;
+
+Simple_Script_Stmt : Assignment_Stmt
+                   | Print_Stmt
+                   | Assert_Stmt
+                   | Expression
+                   ;
+
+Assignment_Stmt : Type? Identifier (", " Identifier)* " = " Expression (", " Expression)*
+
+Print_Stmt : "print " (Expression (", " Expression)*)?
+
+Assert_Stmt : "assert " Boolean_Expr (" : " Expression)?
+
+Break_Stmt : "break\n"
+
+Continue_Stmt : "continue\n"
+
+Return_Stmt : "return " (Expression)? "\n"
+
+BlankLine : "\n"
+
+/*
+ *	Compound Statement Lines
+ */
+
+Compound_Stmt : If_Expr
+              | For_Expr
+              | While_Expr
+              | Func_Expr
+              | Class_Expr
+              ;
+
+If_Expr : "If " Boolean_Expr ":\n" Block ("ElseIf " Boolean_Expr ":\n" Block)* ("Else:\n" Block)?
+        ;
+
+For_Expr : "For i in iterable
+         ;
+
+While_Expr : "While " Boolean_Expr ":\n" Loop_Block ("Else:\n" Loop_Block)?
+           ;
+
+Func_Expr : "def " (Func_Modifier " ")* Type " " Identifier "(" (Func_Parameter (", " Func_Parameter)*)? "):\n" Func_Internals
+          ;
+
+Class_Expr : "class " Identifier ":\n" Class_Internals
+           ;
+
+Func_Parameter : Type " " Identifier (" = " Expression)?
+          ;
+
+/*
+ *	Block Statements
+ */
+
+Loop_Block : Indent ((Script_Line | Break_Stmt | Continue_Stmt) "\n")* Dedent End
+
+Func_Internals : Indent (Script_Line | Return_Stmt)* Dedent End
+
+Class_Internals : 
+
+
+/*
+ *	Expressions
+ */
+
+Expression : 
+
+Boolean_Expr : 
+
+Identifier : 
+
+Type : 
