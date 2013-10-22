@@ -2,17 +2,15 @@ package ambroscum;
 
 import ambroscum.values.*;
 
-public class Expression
+public abstract class Expression
 {
-	private String rawcode;
-	
-	public Value evaluate(IdentifierMap values)
+	public Expression interpret(String rawcode)
 	{
 		if (rawcode.equals("True"))
-			return new BooleanValue(true);
-		else (rawcode.equals("False"))
-			return new BooleanValue(false);
-		if (Character.isDigit(rawcode.charAt(0)))
-		throw new UnsupportedOperationException();
+			return new ExpressionLiteral(new Value()); // should actually fill this out
+		if (rawcode.equals("False"))
+			return new ExpressionLiteral(new Value()); // should actually fill this out
 	}
+	
+	public abstract Value evaluate(IdentifierMap values);
 }

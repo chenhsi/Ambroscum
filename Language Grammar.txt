@@ -69,6 +69,16 @@ Func_Internals : Indent (Script_Line | Return_Stmt)* Dedent End
 
 Class_Internals : 
 
+/*
+ *	Function Calls
+ */
+
+Call : Identifier "(" (Expression (", " Expression)*)? ")"
+     | Expression Operator Expression
+     | Expression "[" Expression "]"
+     | Expression "(" Expression ")"
+     | Expression "{" Expression "}"
+     ;
 
 /*
  *	Expressions
@@ -76,7 +86,12 @@ Class_Internals :
 
 Expression : 
 
-Boolean_Expr : 
+Boolean_Expr : Identifier
+             | Call
+             | "True"
+             | "False"
+             | "not " Boolean_Expr
+             ;
 
 Identifier : 
 
