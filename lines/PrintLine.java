@@ -8,7 +8,7 @@ public class PrintLine extends Line
 	
 	protected PrintLine(String line)
 	{
-		assignIDs = (Expression[]) left.split(", ");
+		assignIDs = (Expression[]) line.split(", ");
 	}
 	
 	public void evaluate(IdentifierMap values)

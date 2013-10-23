@@ -23,24 +23,38 @@ public class IdentifierMap
 		map = new HashMap<String, Value>();
 	}
 	
-	public void add(String name, Type type, Value value)
+	public void add(String name, Value value)
 	{
-		throw new UnsupportedOperationException();
+		// Not sure how to deal with overriding variables
+		map.put(name, value);
 	}
 	
 	public void set(String name, Value value)
 	{
-		throw new UnsupportedOperationException();
+		IdentifierMap containingScope = getContainingScope(name, this);
+		if (containingScope == null || containingScope == this)
+			map.put(name, value);
+		else
+			containingScope.map.put(name, value);
 	}
 	
 	public Value get(String name)
 	{
-		throw new UnsupportedOperationException();
+		IdentifierMap containingScope = getContainingScope(name, this);
+		if (containingScope == null) {
+			throw new RuntimeException("Variable not found: " + name);
+		}
+		containingScope.map.get(name);
 	}
 	
-	class TypeValue
-	{
-		Type t;
-		Value v;
+	// Returns the smallest IdentifierMap that contains the identifier
+	// Returns null if no such Map exists
+	private static IdentifierMap getContainingScope(String identifier, IdentifierMap lowest) {
+		while (lowest != null) {
+			if (lowest.map.containsKey(identifier))
+				return lowest
+			lowest = lowest.previousblock;
+		}
+		return null;
 	}
 }

@@ -38,8 +38,8 @@ public class AssertLine extends Line {
 	public void evaluate(IdentifierMap values) {
 		Value testVal = test.evaluate(values);
 		Value errVal = error.evaluate(values);
-		if (!((boolean) testVal)) {
-			// Raise assertion error. Seriously, how does Value work?
+		if (!(testVal.equals(Value.TRUE))) {
+			// Raise assertion error.
 			// And how are we passing strings to the terminal?
 		}
 	}
