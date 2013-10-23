@@ -1,9 +1,3 @@
-// reprsents a value
-// not sure if we actually need this
-// not sure what this will contain
-// not sure if we need a reference to type
-// maybe we should just use the tuple class in IDmap in place of this
-
 /**
  * Represents a value. Can be stored in a variable, returned by an expression, etc.
  * 
@@ -13,7 +7,14 @@
 
 package ambroscum;
 
+import java.util.*;
+
 public class Value
 {
+	public static final Value TRUE = new Value();
 	
+	private Type type;
+	
+	private Map<String, Value> fields;
+	private Map<String, Function> functions;
 }
