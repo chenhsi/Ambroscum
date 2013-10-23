@@ -33,7 +33,7 @@ public class IdentifierMap
 		throw new UnsupportedOperationException();
 	}
 	
-	public void get(String name)
+	public Value get(String name)
 	{
 		throw new UnsupportedOperationException();
 	}

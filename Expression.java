@@ -4,7 +4,7 @@ import ambroscum.values.*;
 
 public abstract class Expression
 {
-	public Expression interpret(String rawcode)
+	public static Expression interpret(String rawcode)
 	{
 		if (rawcode.equals("True"))
 			return new ExpressionLiteral(new Value()); // should actually fill this out
