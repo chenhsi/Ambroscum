@@ -1,7 +1,7 @@
 /**
  * Represents a value. Can be stored in a variable, returned by an expression, etc.
  * 
- * @author Chenhsi Steven Bi, Jing-Lun Edward Gao
+ * @author Chen-Hsi Steven Bi, Jinglun Edward Gao
  * @version 1.0
  */
 
@@ -17,4 +17,9 @@ public class Value
 	
 	private Map<String, Value> fields;
 	private Map<String, Function> functions;
+	
+	public Value(Type type)
+	{
+		
+	}
 }

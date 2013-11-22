@@ -13,11 +13,8 @@ public class PrintLine extends Line
 	
 	public void evaluate(IdentifierMap values)
 	{
-		if (declareAs == null)
-			for (int i = 0; i < expressions.length; i++)
-				values.add(assignIDs[i], declareAs, expressions[i].evaluate(values));
-		else
-			for (int i = 0; i < expressions.length; i++)
-				values.set(assignIDs[i], expressions[i].evaluate(values));
+		for (Expression expr : expressions)
+			System.out.print(expr.evaluate())
+		System.out.println();
 	}
 }

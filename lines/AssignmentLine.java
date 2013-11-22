@@ -8,8 +8,8 @@ import ambroscum.*;
 public class AssignmentLine extends Line
 {
 	private Type declareAs; // null if no declaration in this line
-	private String[] assignIDs; // list of the ids being set to
-	private Expression[] expressions;
+	private String assignID; // list of the ids being set to
+	private Expression expressions;
 	
 	protected AssignmentLine(String left, String right)
 	{

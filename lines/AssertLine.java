@@ -11,7 +11,7 @@ public class AssertLine extends Line {
 		StringBuilder tBuild = new StringBuilder();
 		boolean isCode = true;
 		int i;
-		for (i = 7; i < line.length(); i++) {
+		for (i = 0; i < line.length(); i++) {
 			char ch = line.charAt(i);
 			if (ch == '\"')
 				isCode = !isCode;

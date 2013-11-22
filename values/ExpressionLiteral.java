@@ -7,13 +7,19 @@ public ExpressionLiteral extends Expression
 {
 	private Value fixed;
 	
-	public ExpressionLiteral(String value) // or maybe just pass it the value?
+	public ExpressionLiteral(Value value)
 	{
-		fixed = null; // figure it out
+		fixed = value;
 	}
 	
 	public Value evaluate(IdentifierMap values)
 	{
 		return fixed;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return fixed.toString();
 	}
 }
