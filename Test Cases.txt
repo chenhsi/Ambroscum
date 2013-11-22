@@ -1,0 +1,103 @@
+print "Hello world"
+; expect Hello world
+
+print 1 + 2
+; expect 3
+
+print 1, 2
+; expect 1 2
+
+print 1 + 2, 3 + 4
+; expect 3 7
+
+x = 4
+print x
+; expect 4
+
+x, y = 1, 2
+print x, y
+; expect 1 2
+
+assert 1 + 1 == 2
+; expect no output
+
+assert 1 == 2
+; expect crash of some sort
+
+assert 1 == 2 : "Math works"
+; expect crash of some sort (error message: Math works)
+
+if True:
+	print 1
+; expect 1
+
+x, y, z = 1, 2, 3
+if True:
+	z = 100
+else:
+	x, y = 3, 4
+print x, y, z
+; expect 1 2 100
+
+x, y, z = 1, 2, 3
+if False:
+	z = 100
+else:
+	x, y = 3, 4
+print x, y, z
+; expect 3 4 3
+
+x, y, z = 1, 2, 3
+if x + y > z:
+	z = 100
+Elif y + z > x:
+	x = 100
+Else:
+	x, y, z = -1, -2, -3
+print x, y, z
+; expect 100 2 3
+
+for i in range(1):
+	print i
+; expect 0
+
+for i in range(5):
+	break
+; expect no output
+
+x = 0
+for i in range(5):
+	x += 1
+	continue
+	print i
+; expect no output
+print x
+; expect 5
+
+x = 5
+while x > 0:
+	print x
+	x -= 1
+; expect 5\n4\n3\n2\n1
+print x
+; expect 0
+
+def testFunction():
+	print "Test successful"
+testFunction():
+; expect Test successful
+
+def testReturnFunction():
+	return 5
+x = testReturnFunction()
+print x
+; expect 5
+
+x = 3
+def testParamsFunction(x):
+	print x
+testParamsFunction(5)
+; expect 5
+print x
+; expect 3
+
