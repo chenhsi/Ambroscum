@@ -50,24 +50,33 @@ public class Tokenizer
 			while (i < str.length() && !isSeparator(str.charAt(i)) && !isWhitespace(str.charAt(i)))
 				i++;
 			stream.offer(new Token(str.substring(j, i)));
-			if (i == str.length())
-				break;
-			if (isSeparator(str.charAt(i)))
+			/*if (isSeparator(str.charAt(i)))
 				stream.offer(getToken(str.charAt(i)));
 			if (str.charAt(i) == '\t')
 				throw new SyntaxError("Unexpected tab");
-			if (str.charAt(i) == '\n')
-				stream.offer(Token.NEWLINE);
-			if (closeParen(str.charAt(i)) || str.charAt(i) == ',')
+			while (i < str.length() && closeParen(str.charAt(i)))
 			{
-				if (i + 1 == str.length())
-					break;
-				if (str.charAt(i + 1) == '\n' || isSeparator(str.charAt(i + 1)))
-					continue;
+ 				while (str.charAt(i + 1) == '\n')
+					st
 				i++;
 				if (str.charAt(i) != ' ')
 					throw new SyntaxError("Missing whitespace");
 			}
+			if (str.charAt(i) == ',')
+			{
+				i++;
+				stream.offer(Token.COMMA);
+			}*/
+			while (i < str.length() && isSeparator(str.charAt(i)))
+				stream.offer(getToken(str.charAt(i++)));
+			if (i == str.length())
+				break;
+			if (!isWhitespace(str.charAt(i)))
+				throw new SyntaxError("Whitespace expected");
+			if (str.charAt(i) == '\t')
+				throw new SyntaxError("Unexpected tab");
+			if (str.charAt(i) == '\n')
+				i--;
 		}
 		return stream;
 	}
@@ -76,6 +85,7 @@ public class Tokenizer
 	{
 		switch (c)
 		{
+			case '\n': return Token.NEWLINE;
 			case '.': return Token.DOT;
 			case ',': return Token.COMMA;
 		}
