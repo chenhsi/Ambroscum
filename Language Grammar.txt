@@ -31,7 +31,7 @@ Assignment_Stmt : Reference (", " Reference)* " = " Expression (", " Expression)
                 | Reference (" += " | " -= " | " *= " | " /= ") Expression
                 ;
 
-Print_Stmt : "print " (Expression (", " Expression)*)?
+Print_Stmt : ("println " | "print ") (Expression (", " Expression)*)?
            ;
 
 Assert_Stmt : "assert " Boolean_Expr (" : " Expression)?

@@ -10,7 +10,7 @@ public class AssignmentLine extends Line
 	private String[] assignIDs; // list of the ids being set to
 	private Expression[] expressions;
 
-	AssignmentLine(String left, String right)
+	AssignmentLine(TokenStream stream)
 	{
 		assignIDs = left.split(", ");
 		String[] exprs = right.split(", ");

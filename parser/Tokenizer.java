@@ -8,50 +8,79 @@ public class Tokenizer
 	{
 		TokenStream stream = new TokenStream();
 		
-		char[] array = str.toCharArray();
-		for (int i = 0; i < array.length; i++)
+		for (int i = 0; i < str.length(); i++)
 		{
-			if (array[i] == ' ')
+			if (str.charAt(i) == '\n')
+			{
+				stream.offer(Token.NEWLINE);
+				continue;
+			}
+			if (str.charAt(i) == ' ')
 				throw new SyntaxError("Unexpected whitespace");
-			if (array[i] == '"')
+			if (str.charAt(i) == '"')
 			{
 				int j = i++;
-				while (i < array.length && array[i] != '"')
+				while (i < str.length() && str.charAt(i) != '\n' && str.charAt(i) != '"')
 					i++;
-				if (i == array.length)
+				if (i == str.length() || str.charAt(i) == '\n')
 					throw new SyntaxError("Nonterminating string");
 				stream.offer(new Token(str.substring(j, i)));
+				if (i + 1 == str.length())
+					break;
+				if (str.charAt(i + 1) == '\n')
+					continue;
 				i++;
-				if (array[i] != ' ')
+				if (str.charAt(i) != ' ')
 					throw new SyntaxError("Missing whitespace");
 				continue;
 			}
-			if (isParen(array[i]))
+			if (openParen(str.charAt(i)))
 			{
-				stream.offer(new Token("" + array[i]));
+				stream.offer(new Token("" + str.charAt(i)));
 				continue;
 			}
+			if (closeParen(str.charAt(i)) || str.charAt(i) == ',' || str.charAt(i) == '.')
+				throw new SyntaxError("Unexpected token: " + str.charAt(i));
 			int j = i++;
-			while (i < array.length && !isParen(array[i]) && array[i] != ' ')
+			while (i < str.length() && !isSeparator(str.charAt(i)) && !isWhitespace(str.charAt(i)))
 				i++;
 			stream.offer(new Token(str.substring(j, i)));
-			if (i == array.length)
+			if (i == str.length())
 				break;
-			if (isParen(array[i]))
-				stream.offer(new Token("" + array[i]));
-			if (closeParen(array[i]))
+			if (isSeparator(str.charAt(i)))
+				stream.offer(getToken(str.charAt(i)));
+			if (closeParen(str.charAt(i)) || str.charAt(i) == ',')
 			{
+				if (i + 1 == str.length())
+					break;
+				if (str.charAt(i + 1) == '\n' || closeParen(str.charAt(i + 1)))
+					continue;
 				i++;
-				if (i < array.length && array[i] != ' ')
+				if (str.charAt(i) != ' ')
 					throw new SyntaxError("Missing whitespace");
 			}
 		}
 		return stream;
 	}
 	
-	private static boolean isParen(char c)
+	private static Token getToken(char c)
 	{
-		return openParen(c) || closeParen(c);
+		switch (c)
+		{
+			case '.': return Token.DOT;
+			case 'c': return Token.COMMA;
+		}
+		return new Token("" + c);
+	}
+	
+	private static boolean isSeparator(char c)
+	{
+		return openParen(c) || closeParen(c) || c == ',' || c == '.';
+	}
+	
+	private static boolean isWhitespace(char c)
+	{
+		return c == ' ' || c == '\n';
 	}
 	
 	private static boolean openParen(char c)

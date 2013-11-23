@@ -1,23 +1,52 @@
 package ambroscum.lines;
 
 import ambroscum.*;
+import ambroscum.parser.TokenStream;
+import ambroscum.parser.Token;
+import ambroscum.error.SyntaxError;
+import java.util.*;
 
 public class PrintLine extends Line
 {
-	private Expression[] toPrint;
+	private List<Expression> toPrint;
+	private boolean newline;
 	
-	PrintLine(String line)
+	PrintLine(TokenStream stream, boolean newline)
 	{
-		String[] strs = line.split(", ");
-		toPrint = new Expression[strs.length];
-		for (int i = 0; i < strs.length; i++)
-			toPrint[i] = Expression.interpret(strs[i]);
+		this.newline = newline;
+		boolean expectExpr = true;
+		toPrint = new LinkedList<Expression> ();
+		
+		while (!stream.isEmpty())
+		{
+			Token token = stream.removeFirst();
+			if (token == Token.NEWLINE)
+				break;
+			if (expectExpr)
+			{
+				if (token == Token.COMMA)
+					throw new SyntaxError("Unexpected delimited in a print statement");
+				toPrint.add(Expression.interpret(stream));
+				expectExpr = false;
+			}
+			else if (token != Token.COMMA)
+				throw new SyntaxError("Unexpected token: " + token);
+			else
+				expectExpr = true;
+		}
 	}
 	
 	public void evaluate(IdentifierMap values)
 	{
+		boolean first = true;
 		for (Expression expr : toPrint)
-			System.out.print(expr.evaluate(values).toString() + " ");
-		System.out.println();
+		{
+			System.out.print(expr.evaluate(values));
+			if (!first)
+				System.out.print(" ");
+			first = false;
+		}
+		if (newline)
+			System.out.println();
 	}
 }

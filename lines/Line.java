@@ -14,18 +14,24 @@ public abstract class Line
 {
 	public abstract void evaluate(IdentifierMap values);
 	
-	public static Line evalAsLine(TokenStream stream, Scope followingblock)
+	public static Line evalAsLine(TokenStream stream)
 	{
-		
-		if (code.startsWith("assert "))
-			return new AssertLine(code.substring(7));
-		if (code.startsWith("print "))
-			return new PrintLine(code.substring(6));
-		if (code.contains(" = "))
+		Token token = stream.getFirst();
+		if (token.toString().equals("assert"))
 		{
-			int index = code.indexOf(" = ");
-			return new AssignmentLine(code.substring(0, index), code.substring(index + 3));
+			stream.removeFirst();
+			return new AssertLine(stream);
 		}
+		if (token.toString().equals("print") || token.toString().equals("println"))
+		{
+			stream.removeFirst();
+			return new PrintLine(stream, token.length() == 7);
+		}
+//		if (code.contains(" = "))
+//		{
+//			int index = code.indexOf(" = ");
+//			return new AssignmentLine(code.substring(0, index), code.substring(index + 3));
+//		}
 		throw new UnsupportedOperationException();
 	}
 }

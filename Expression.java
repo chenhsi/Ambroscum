@@ -6,7 +6,7 @@ public abstract class Expression
 {
 	public abstract Value evaluate(IdentifierMap values);
 
-	public static Expression interpret(String rawcode)
+	public static Expression interpret(TokenStream stream)
 	{
 		if (rawcode.equals("True"))
 			return new ExpressionLiteral(Value.TRUE);
