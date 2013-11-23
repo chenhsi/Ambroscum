@@ -21,11 +21,8 @@ public abstract class Expression
 			return parseString(token.toString());
 		if (false) // is a reference
 			throw new UnsupportedOperationException();
-		if (false) // has operator/function
-		{
-		}
 		if (ExpressionReference.isValidReference(token.toString())) // is a reference
-			return new ExpressionReference(null); //token.toString())
+			return null; // new ExpressionReference(token.toString())
 		if (false) // has operator/function
 			throw new UnsupportedOperationException();
 		else // can't actually think of any other cases

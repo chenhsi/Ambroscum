@@ -38,7 +38,7 @@ public abstract class Line
 		}
 		if (token.toString().equals("return"))
 		{
-			return new ReturnLine();
+			return new ReturnLine(stream);
 		}
 		
 //		if (code.contains(" = "))
