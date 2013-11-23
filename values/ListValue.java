@@ -27,6 +27,23 @@ public class ListValue extends Value {
 			throw new SyntaxError("Expected int for list index");
 	}
 	
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof ListValue) {
+			Value[] oList = ((ListValue) o).list;
+			if (oList.length != list.length) {
+				return false;
+			}
+			for (int i = 0; i < list.length; i++) {
+				if (!list[i].equals(oList[i])) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
 	public String toString() 	{
 		return Arrays.toString(list);
 	}

@@ -30,6 +30,8 @@ public class FunctionOperator extends Function
 	private static final FunctionOperator MOD = new FunctionOperator("%");
 	private static final FunctionOperator AND = new FunctionOperator("and");
 	private static final FunctionOperator OR = new FunctionOperator("or");
+	private static final FunctionOperator IS_EQUAL = new FunctionOperator("=");
+	private static final FunctionOperator GREATER_THAN = new FunctionOperator(">");
 	
 	public static FunctionOperator get(String name)
 	{
@@ -42,6 +44,8 @@ public class FunctionOperator extends Function
 			case "_%": return MOD;
 			case "_and": return AND;
 			case "_or": return OR;
+			case "_=": return IS_EQUAL;
+			case "_>": return GREATER_THAN;
 		}
 		throw new UnsupportedOperationException();
 	}
@@ -98,6 +102,14 @@ public class FunctionOperator extends Function
 					return BooleanValue.TRUE;
 				else
 					return BooleanValue.FALSE;
+			case "=":
+				if (arguments.size() != 2)
+					throw new AssertionError("how did we even get to functionoperator without 2 arguments");
+				return BooleanValue.fromBoolean(arguments.get(0).equals(arguments.get(1)));
+			case ">":
+				if (arguments.size() != 2)
+					throw new AssertionError("how did we even get to functionoperator without 2 arguments");
+				return BooleanValue.fromBoolean(arguments.get(0).equals(arguments.get(1)));
 		}
 		throw new UnsupportedOperationException();
 	}

@@ -26,4 +26,19 @@ public class BooleanValue extends Value
 	{
 		return str;
 	}
+	
+	public static BooleanValue fromBoolean(boolean bool) {
+		if (bool)
+			return TRUE;
+		else
+			return FALSE;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof BooleanValue) {
+			return value == ((BooleanValue) o).value;
+		}
+		return false;
+	}
 }

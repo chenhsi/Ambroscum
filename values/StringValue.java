@@ -13,6 +13,14 @@ public class StringValue extends Value
 	}
 	
 	@Override
+	public boolean equals(Object o) {
+		if (o instanceof StringValue) {
+			return value.equals(((StringValue) o).value);
+		}
+		return false;
+	}
+	
+	@Override
 	public String toString()
 	{
 		return value;

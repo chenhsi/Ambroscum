@@ -17,6 +17,14 @@ public class IntValue extends Value
 	}
 	
 	@Override
+	public boolean equals(Object o) {
+		if (o instanceof IntValue) {
+			return value == ((IntValue) o).value;
+		}
+		return false;
+	}
+	
+	@Override
 	public String toString()
 	{
 		return value + "";
