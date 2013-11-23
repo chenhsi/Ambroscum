@@ -9,18 +9,18 @@ public class AssignmentLine extends Line
 {
 	private String[] assignIDs; // list of the ids being set to
 	private Expression[] expressions;
-	
+
 	AssignmentLine(String left, String right)
 	{
 		assignIDs = left.split(", ");
-		String[] ids = right.split(", ");
-		if (ids.length != assignIDs.length)
+		String[] exprs = right.split(", ");
+		if (exprs.length != assignIDs.length)
 			throw new RuntimeException("need to find better exceptions"); // comment to be easier to find
-		expressions = new Expression[ids.length];
-		for (int i = 0; i < ids.length; i++)
-			expressions[i] = (Expression) (Object) ids[i]; // again, will add this later
+		expressions = new Expression[exprs.length];
+		for (int i = 0; i < exprs.length; i++)
+			expressions[i] = Expression.interpret(exprs[i]); // again, will add this later
 	}
-	
+
 	public void evaluate(IdentifierMap values)
 	{
 		for (int i = 0; i < expressions.length; i++)

@@ -25,12 +25,16 @@ public class IdentifierMap
 
 	public void add(String name, Value value)
 	{
+		if (!isValidIdentifier(name))
+			throw new RuntimeException("You tried to name a variable \"" + name + "\". You should feel ashamed of yourself.");
 		// Not sure how to deal with overriding variables
 		map.put(name, value);
 	}
 
 	public void set(String name, Value value)
 	{
+		if (!isValidIdentifier(name))
+			throw new RuntimeException("You tried to name a variable \"" + name + "\". You should feel ashamed of yourself.");
 		IdentifierMap containingScope = getContainingScope(name, this);
 		if (containingScope == null || containingScope == this)
 			map.put(name, value);
@@ -45,6 +49,14 @@ public class IdentifierMap
 			throw new RuntimeException("Variable not found: " + name);
 		}
 		return containingScope.map.get(name);
+	}
+
+	public static boolean isValidIdentifier(String name) {
+		for (int i = 0; i < name.length(); i++) {
+			if (!Character.isLetterOrDigit(name.charAt(i)))
+				return false;
+		}
+		return true;
 	}
 
 	// Returns the smallest IdentifierMap that contains the identifier

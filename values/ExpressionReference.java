@@ -5,10 +5,43 @@ import java.util.*;
 
 public class ExpressionReference extends Expression
 {
+	private String name;
+	private Expression secondary;
+	private ReferenceType type;
+
+	public ExpressionReference(String text) {
+		for (int i = 0; i < REFERENCE_DELIMITERS.length; i++) {
+			char ch = REFERENCE_DELIMITERS[i];
+			int index = str.indexOf(ch);
+			if (index > -1) {
+				name = str.substring(0, index);
+				secondary = str.substring(index + 1, str.length() - 1);
+				return;
+			}
+		}
+		// It's just a plain old variable name, without any silly bracket nonsense on the end (or it's not a valid name)
+		return IdentifierMap.isValidIdentifier(str);
+	}
+
+	public static boolean isValidReference(String str) {
+		for (int i = 0; i < REFERENCE_DELIMITERS.length; i++) {
+			char ch = REFERENCE_DELIMITERS[i];
+			int index = str.indexOf(ch);
+			if (index > -1) {
+				// It's something like variableName[expression stuff that we won't check here]
+				if (IdentifierMap.isValidIdentifier(str.substring(0, index)) && str.charAt(str.length() - 1) == MATCHING_BRACKETS[i]) {
+					return true;
+				}
+			}
+		}
+		// It's just a plain old variable name, without any silly bracket nonsense on the end (or it's not a valid name)
+		return IdentifierMap.isValidIdentifier(str);
+	}
+
 /*	private Identifier primary;
 	private Value secondary;
 	private ReferenceType type;
-	
+
 	public ExpressionReference(String text)
 	{
 		String[] components = new String[2];
@@ -48,7 +81,7 @@ public class ExpressionReference extends Expression
 		primary = Expression.interpret(components[0]);
 		secondary = Expression.interpret(components[1]);
 	}
-*/	
+*/
 	public Value evaluate(IdentifierMap values)
 	{
 //		switch (type)
@@ -60,9 +93,11 @@ public class ExpressionReference extends Expression
 //		}
 		return null;
 	}
-	
-	private enum ReferenceType
+
+	private static enum ReferenceType
 	{
-		NONE, DOT, BRACKET, BRACE
+		NONE, PARENTHESES, BRACKET, BRACE
 	}
+	private static final char[] REFERENCE_DELIMITERS = new char[] {'(', '[', '{'};
+	private static final char[]    MATCHING_BRACKETS = new char[] {')', ']', '}'};
 }

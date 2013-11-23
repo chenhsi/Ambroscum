@@ -25,14 +25,21 @@ public abstract class Expression
 			{
 				if (array[i] == ' ')
 				{
-					
+
 				}
 			}
 		}
+		if (ExpressionReference.isValidReference(rawcode)) // is a reference
+			return new ExpressionReference(rawcode);
+		if (false) // has operator/function
+			throw new UnsupportedOperationException();
+		else // can't actually think of any other cases
+			throw new UnsupportedOperationException();
 		// can't actually think of any other cases
 		throw new UnsupportedOperationException();
+
 	}
-	
+
 	private static boolean isNumber(String text)
 	{
 		for (char c : text.toCharArray())
@@ -40,18 +47,18 @@ public abstract class Expression
 				return false;
 		return true;
 	}
-	
+
 	private static ExpressionLiteral parseNum(String text)
 	{
 		return new ExpressionLiteral(new IntLiteral(Integer.parseInt(text)));
 	}
-	
+
 	// needs to deal with escape characters + unicode characters
 	private static boolean isString(String text)
 	{
 		return text.charAt(0) == '"' && text.indexOf('"', 1) == text.length() - 1;
 	}
-	
+
 	private static ExpressionLiteral parseString(String text)
 	{
 		return new ExpressionLiteral(new StringLiteral(text));
