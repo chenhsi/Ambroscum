@@ -30,6 +30,7 @@ public class Interpreter
 			System.out.print(">>> ");
 			line = in.nextLine();
 			Line lineLine = Line.evalAsLine(line, null);
+			lineLine.evaluate(identifiers);
 		}
 	}
 	public static void interpret(String filename) throws IOException {
