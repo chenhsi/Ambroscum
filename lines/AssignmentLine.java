@@ -20,7 +20,10 @@ public class AssignmentLine extends Line
 		while (true) {
 			assignIDsList.add(new ExpressionReference(idStream.removeFirst(), idStream));
 			if (idStream.size() > 0) {
-				idStream.removeFirst(); // Remove the comma
+				Token comma = idStream.removeFirst(); // Remove the comma
+				if (comma != Token.COMMA) {
+					throw new SyntaxError("Expected a comma delimiter in assignment");
+				}
 			} else {
 				break;
 			}
@@ -36,6 +39,8 @@ public class AssignmentLine extends Line
 				} else if (Token.NEWLINE == first) {
 					valueStream.removeFirst();
 					break;
+				} else {
+					throw new SyntaxError("Expected a comma delimiter or newline in assignment");
 				}
 			} else {
 				throw new SyntaxError("Expected value to assign");

@@ -33,6 +33,8 @@ public abstract class Expression
 				stream.removeFirst();
 				result = new ExpressionCall(result, stream);
 			}
+		} else if (token.toString().equals("[")) {
+			result = new ExpressionList(token, stream);
 		}
 		Token next = stream.getFirst();
 		if (isOperator(next))

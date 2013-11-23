@@ -43,7 +43,11 @@ public class ExpressionReference extends Expression
 			case NONE:
 				return values.get(primary.toString());
 			case BRACKET:
-				return null;
+				Value outerList = values.get(name);
+				if (outerList instanceof ListValue) {
+					return ((ListValue) outerList).get(secondary.evaluate(values));
+				}
+				throw new SyntaxError("Cannot use brackets to index a non-list: " + outerList);
 			case BRACE:
 				return null;
 		}
@@ -57,6 +61,14 @@ public class ExpressionReference extends Expression
 			case NONE:
 				values.set(primary.toString(), value);
 				break;
+			case BRACKET:
+				Value outerList = values.get(name);
+				if (outerList instanceof ListValue) {
+					System.out.println(secondary.evaluate(values).getClass());
+					System.out.println(secondary + " --- " + value);
+					((ListValue) outerList).set(secondary.evaluate(values), value);
+				}
+				throw new SyntaxError("Cannot use brackets to index a non-list: " + outerList);
 			default:
 				throw new UnsupportedOperationException("Arrays and stuff don't work yet.");
 		}

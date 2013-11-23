@@ -13,6 +13,10 @@ public class IntLiteral extends Value
 	}
 	
 	@Override
+	public int getValue() {
+		return value;
+	}
+	
 	public String toString()
 	{
 		return value + "";
