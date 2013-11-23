@@ -13,8 +13,9 @@ public class ReturnLine extends Line
 	ReturnLine(TokenStream stream)
 	{
 		expr = Expression.interpret(stream);
-		if (stream.getFirst() != Token.NEWLINE)
-			throw new SyntaxError("Extra Expression");
+		Token temp = stream.removeFirst();
+		if (temp != Token.NEWLINE)
+			throw new SyntaxError("Unexpected token after return: " + temp);
 	}
 	
 	public void evaluate(IdentifierMap values)

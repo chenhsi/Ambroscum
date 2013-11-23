@@ -3,7 +3,8 @@ package ambroscum.lines;
 import ambroscum.*;
 import ambroscum.parser.TokenStream;
 
-public class AssertLine extends Line {
+public class AssertLine extends Line
+{
 	
 	private Expression test, error;
 	

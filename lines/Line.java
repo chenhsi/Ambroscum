@@ -1,7 +1,7 @@
 /**
  * Represents a single line of code.
  *
- * @author Chenhsi Steven Bi, Jing-Lun Edward Gao
+ * @author Chen-Hsi Steven Bi, Jing-Lun Edward Gao
  * @version 1.0
  */
 
@@ -11,6 +11,7 @@ import java.util.*;
 import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
+import java.util.Iterator;
 
 public abstract class Line
 {
@@ -18,29 +19,17 @@ public abstract class Line
 
 	public static Line evalAsLine(TokenStream stream)
 	{
-		Token token = stream.getFirst();
+		Token token = stream.removeFirst();
 		if (token.toString().equals("assert"))
-		{
-			stream.removeFirst();
 			return new AssertLine(stream);
-		}
 		if (token.toString().equals("print") || token.toString().equals("println"))
-		{
-			stream.removeFirst();
 			return new PrintLine(stream, token.toString().length() == 7);
-		} 
 		if (token.toString().equals("break"))
-		{
-			return new BreakLine();
-		}
+			return new BreakLine(stream);
 		if (token.toString().equals("continue"))
-		{
-			return new ContinueLine();
-		}
+			return new ContinueLine(stream);
 		if (token.toString().equals("return"))
-		{
 			return new ReturnLine(stream);
-		}
 		// Look-ahead to see if we hit '=' before the next line
 		Iterator<Token> streamIter = stream.iterator();
 		while (streamIter.hasNext()) {
@@ -55,12 +44,6 @@ public abstract class Line
 		//int index = first.indexOf(" = ");
 		//return new AssignmentLine(first.substring(0, index), first.substring(index + 3));
 		
-		
-//		if (code.contains(" = "))
-//		{
-//			int index = code.indexOf(" = ");
-//			return new AssignmentLine(code.substring(0, index), code.substring(index + 3));
-//		}
 		throw new UnsupportedOperationException();
 	}
 }
