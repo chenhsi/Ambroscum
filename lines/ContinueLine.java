@@ -14,5 +14,12 @@ public class ContinueLine extends Line
 			throw new SyntaxError("Unexpected token after continue: " + temp);
 	}
 	
+	@Override
 	public void evaluate(IdentifierMap values) {}
+	
+	@Override
+	public String toString()
+	{
+		return "(continue)";
+	}
 }

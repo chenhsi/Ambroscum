@@ -12,6 +12,7 @@ public class IntLiteral extends Value
 		value = num;
 	}
 	
+	@Override
 	public String toString()
 	{
 		return value + "";

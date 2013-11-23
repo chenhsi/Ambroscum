@@ -41,7 +41,8 @@ public class PrintLine extends Line
 			}
 		}
 	}
-
+	
+	@Override
 	public void evaluate(IdentifierMap values)
 	{
 		boolean first = true;
@@ -54,5 +55,12 @@ public class PrintLine extends Line
 		}
 		if (newline)
 			System.out.println();
+	}
+	
+	
+	@Override
+	public String toString()
+	{
+		return "(print " + toPrint + ")";
 	}
 }

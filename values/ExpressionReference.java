@@ -8,58 +8,40 @@ import java.util.*;
 
 public class ExpressionReference extends Expression
 {
-	private String name;
+	private Token primary;
 	private Expression secondary;
 	private ReferenceType type;
 
 	public ExpressionReference(Token token, TokenStream stream)
 	{
-		name = token.toString();
-		if (stream.size() > 0) {
-			Token peek = stream.getFirst();
-			if (peek.toString().equals("("))
-			{
-				stream.removeFirst();
-				type = ReferenceType.PARENTHESIS;
-				secondary = Expression.interpret(stream);
-				Token close = stream.removeFirst();
-				if (!close.toString().equals(")"))
-					throw new SyntaxError("Missing close parenthesis");
-			}
-			 else if (peek.toString().equals("["))
-			{
-				stream.removeFirst();
-				type = ReferenceType.BRACKET;
-				secondary = Expression.interpret(stream);
-				Token close = stream.removeFirst();
-				if (!close.toString().equals("]"))
-					throw new SyntaxError("Missing close bracket");
-			}
-			else if (peek.toString().equals("{"))
-			{
-				stream.removeFirst();
-				type = ReferenceType.BRACE;
-				secondary = Expression.interpret(stream);
-				Token close = stream.removeFirst();
-				if (!close.toString().equals("}"))
-					throw new SyntaxError("Missing close brace");
-			} else {
-				type = ReferenceType.NONE;
-				secondary = null; // For clarity
-			}
-		} else {
-			type = ReferenceType.NONE;
-			secondary = null; // For clarity
+		primary = token;
+		Token peek = stream.getFirst();
+		if (peek.toString().equals("["))
+		{
+			stream.removeFirst();
+			type = ReferenceType.BRACKET;
+			secondary = Expression.interpret(stream);
+			Token close = stream.removeFirst();
+			if (!close.toString().equals("]"))
+				throw new SyntaxError("Missing close bracket");
+		}
+		if (peek.toString().equals("{"))
+		{
+			stream.removeFirst();
+			type = ReferenceType.BRACE;
+			secondary = Expression.interpret(stream);
+			Token close = stream.removeFirst();
+			if (!close.toString().equals("}"))
+				throw new SyntaxError("Missing close brace");
 		}
 	}
 
+	@Override
 	public Value evaluate(IdentifierMap values)
 	{
 		switch (type) {
 			case NONE:
-				return values.get(name);
-			case PARENTHESIS:
-				return null;
+				return values.get(primary.toString());
 			case BRACKET:
 				return null;
 			case BRACE:
@@ -73,36 +55,33 @@ public class ExpressionReference extends Expression
 		switch (type)
 		{
 			case NONE:
-				values.set(name, value);
+				values.set(primary.toString(), value);
 				break;
 			default:
 				throw new UnsupportedOperationException("Arrays and stuff don't work yet.");
 		}
 	}
-
-	public String toString() {
-		char left = ' ', right = ' ';
-		switch (type) {
-			case NONE:
-				return name;
-			case PARENTHESIS:
-				left = '(';
-				right = ')';
-				break;
-			case BRACKET:
-				left = '[';
-				right = ']';
-				break;
-			case BRACE:
-				left = '{';
-				right = '}';
-				break;
-		}
-		return name + left + secondary + right;
+	
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder(primary.toString());
+		if (type != ReferenceType.NONE)
+			sb.append(type.open).append(secondary.toString()).append(type.close);
+		return sb.toString();
 	}
 
 	private static enum ReferenceType
 	{
-		NONE, PARENTHESIS, BRACKET, BRACE
+		NONE("", ""), BRACKET("[", "]"), BRACE("{", "}");
+		
+		String open;
+		String close;
+		
+		ReferenceType(String o, String c)
+		{
+			open = o;
+			close = c;
+		}
 	}
 }

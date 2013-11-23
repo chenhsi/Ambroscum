@@ -51,10 +51,17 @@ public class AssignmentLine extends Line
 			throw new RuntimeException("need to find better exceptions"); // comment to be easier to find
 	}
 
+	@Override
 	public void evaluate(IdentifierMap values)
 	{
 		for (int i = 0; i < expressions.length; i++) {
 			assignIDs[i].setValue(expressions[i].evaluate(values), values);
 		}
+	}
+	
+	@Override
+	public String toString()
+	{
+		throw new UnsupportedOperationException();
 	}
 }

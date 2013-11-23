@@ -26,15 +26,25 @@ public class AssertLine extends Line
 		}
 	}
 
+	@Override
 	public void evaluate(IdentifierMap values)
 	{
 		Value testVal = test.evaluate(values);
 		if (!(testVal.equals(BooleanLiteral.TRUE)))
 		{
 			if (errorMessage == null)
-				throw new AssertionError(errorMessage.evaluate(values).toString());
+				throw new AssertionError("Assertion failed" + ": " + errorMessage.evaluate(values).toString());
 			else
-				throw new AssertionError("");
+				throw new AssertionError("Assertion failed");
 		}
+	}
+	
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder("(assert ").append(test.toString());
+		if (errorMessage != null)
+			sb.append(errorMessage.toString());
+		return sb.toString();
 	}
 }

@@ -37,6 +37,7 @@ public class Interpreter
 			line = in.nextLine() + "\n";
 			TokenStream tokens = Tokenizer.tokenize(line);
 			Line lineLine = Line.evalAsLine(tokens);
+			System.out.println("Interpret as " + lineLine);
 			lineLine.evaluate(identifiers);
 		}
 	}

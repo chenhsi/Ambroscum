@@ -12,6 +12,7 @@ public class StringLiteral extends Value
 		value = val;
 	}
 	
+	@Override
 	public String toString()
 	{
 		return value;

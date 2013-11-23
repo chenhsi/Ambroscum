@@ -12,6 +12,7 @@ public class ExpressionLiteral extends Expression
 		fixed = value;
 	}
 	
+	@Override
 	public Value evaluate(IdentifierMap values)
 	{
 		return fixed;

@@ -14,6 +14,7 @@ public class BooleanLiteral extends Value
 		value = val;
 	}
 	
+	@Override
 	public String toString()
 	{
 		return value + "";
