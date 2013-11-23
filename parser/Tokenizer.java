@@ -24,7 +24,7 @@ public class Tokenizer
 					i++;
 				if (i == str.length() || str.charAt(i) == '\n')
 					throw new SyntaxError("Nonterminating string");
-				stream.offer(new Token(str.substring(j, i)));
+				stream.offer(new Token(str.substring(j, i + 1)));
 				if (i + 1 == str.length())
 					break;
 				if (str.charAt(i + 1) == '\n')

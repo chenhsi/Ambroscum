@@ -12,9 +12,9 @@ public abstract class Expression
 	{
 		Token token = stream.removeFirst();
 		if (token.toString().equals("True"))
-			return new ExpressionLiteral(Value.TRUE);
+			return new ExpressionLiteral(BooleanLiteral.TRUE);
 		if (token.toString().equals("False"))
-			throw new UnsupportedOperationException();
+			return new ExpressionLiteral(BooleanLiteral.FALSE);
 		if (isNumber(token.toString()))
 			return parseNum(token.toString());
 		if (isString(token.toString()))

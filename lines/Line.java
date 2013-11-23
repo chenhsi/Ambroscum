@@ -28,6 +28,19 @@ public abstract class Line
 			stream.removeFirst();
 			return new PrintLine(stream, token.toString().length() == 7);
 		}
+		if (token.toString().equals("break"))
+		{
+			return new BreakLine();
+		}
+		if (token.toString().equals("continue"))
+		{
+			return new ContinueLine();
+		}
+		if (token.toString().equals("return"))
+		{
+			return new ReturnLine();
+		}
+		
 //		if (code.contains(" = "))
 //		{
 //			int index = code.indexOf(" = ");
