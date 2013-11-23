@@ -4,7 +4,7 @@
 /**
  * Represents a mapping of variable names to (Type, Value) tuples.
  * Can be contained within an outer scope.
- * 
+ *
  * @author Chenhsi Steven Bi, Jing-Lun Edward Gao
  * @version 1.0
  */
@@ -17,18 +17,18 @@ public class IdentifierMap
 {
 	private IdentifierMap previousblock; // represents link to previous block of code, might be null
 	private HashMap<String, Value> map;
-	
+
 	public IdentifierMap(IdentifierMap prev) {
 		previousblock = prev;
 		map = new HashMap<String, Value>();
 	}
-	
+
 	public void add(String name, Value value)
 	{
 		// Not sure how to deal with overriding variables
 		map.put(name, value);
 	}
-	
+
 	public void set(String name, Value value)
 	{
 		IdentifierMap containingScope = getContainingScope(name, this);
@@ -37,7 +37,7 @@ public class IdentifierMap
 		else
 			containingScope.map.put(name, value);
 	}
-	
+
 	public Value get(String name)
 	{
 		IdentifierMap containingScope = getContainingScope(name, this);
@@ -46,7 +46,7 @@ public class IdentifierMap
 		}
 		return containingScope.map.get(name);
 	}
-	
+
 	// Returns the smallest IdentifierMap that contains the identifier
 	// Returns null if no such Map exists
 	private static IdentifierMap getContainingScope(String identifier, IdentifierMap lowest) {
