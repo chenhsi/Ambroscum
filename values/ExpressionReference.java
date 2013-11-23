@@ -12,54 +12,24 @@ public class ExpressionReference extends Expression
 
 	public ExpressionReference(TokenStream stream)
 	{
-		String text = "";
-		for (char ch : REFERENCE_DELIMITERS)
-		{
-			int index = text.indexOf(ch);
-			if (index > -1) {
-				name = text.substring(0, index);
-				secondary = null; //Expression.interpret(text.substring(index + 1, text.length() - 1));
-				switch (ch) {
-					case '(':
-						type = ReferenceType.PARENTHESIS;
-						break;
-					case '[':
-						type = ReferenceType.BRACKET;
-						break;
-					case '{':
-						type = ReferenceType.BRACE;
-						break;
-				}
-				return;
-			}
+		name = stream.removeFirst().toString();
+		String delimiter = (stream.size() > 0) ? stream.getFirst().toString() : null;
+		if ("(".equals(delimiter)) {
+			stream.removeFirst();
+			type = ReferenceType.PARENTHESIS;
+			secondary = Expression.interpret(stream);
+		} else if ("[".equals(delimiter)) {
+			stream.removeFirst();
+			type = ReferenceType.BRACKET;
+			secondary = Expression.interpret(stream);
+		} else if ("{".equals(delimiter)) {
+			stream.removeFirst();
+			type = ReferenceType.BRACE;
+			secondary = Expression.interpret(stream);
+		} else { // No special stuff afterward
+			type = ReferenceType.NONE;
 		}
-
-		name = text;
-		type = ReferenceType.NONE;
-	}
-	ExpressionReference(String text) {
-		for (char ch : REFERENCE_DELIMITERS) {
-			int index = text.indexOf(ch);
-			if (index > -1) {
-				name = text.substring(0, index);
-				secondary = null; //Expression.interpret(text.substring(index + 1, text.length() - 1));
-				switch (ch) {
-					case '(':
-						type = ReferenceType.PARENTHESIS;
-						break;
-					case '[':
-						type = ReferenceType.BRACKET;
-						break;
-					case '{':
-						type = ReferenceType.BRACE;
-						break;
-				}
-				return;
-			}
-		}
-
-		name = text;
-		type = ReferenceType.NONE;
+		
 	}
 
 	public Value evaluate(IdentifierMap values)
@@ -75,6 +45,15 @@ public class ExpressionReference extends Expression
 				return null;
 		}
 		return null;
+	}
+	public void setValue(Value value, IdentifierMap values) {
+		switch (type) {
+			case NONE:
+				values.set(name, value);
+				break;
+			default:
+				throw new UnsupportedOperationException("Arrays and stuff don't work yet.");
+		}
 	}
 
 	public static boolean isValidReference(String str) {
