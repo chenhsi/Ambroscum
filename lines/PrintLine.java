@@ -10,13 +10,13 @@ public class PrintLine extends Line
 {
 	private List<Expression> toPrint;
 	private boolean newline;
-	
+
 	PrintLine(TokenStream stream, boolean newline)
 	{
 		this.newline = newline;
 		boolean expectExpr = true;
 		toPrint = new LinkedList<Expression> ();
-		
+
 		while (!stream.isEmpty())
 		{
 			Token token = stream.getFirst();
@@ -41,7 +41,7 @@ public class PrintLine extends Line
 			}
 		}
 	}
-	
+
 	public void evaluate(IdentifierMap values)
 	{
 		boolean first = true;

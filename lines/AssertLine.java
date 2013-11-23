@@ -10,7 +10,7 @@ import ambroscum.values.BooleanLiteral;
 public class AssertLine extends Line
 {
 	private Expression test, errorMessage;
-	
+
 	AssertLine(TokenStream stream)
 	{
 		test = Expression.interpret(stream);
@@ -25,7 +25,7 @@ public class AssertLine extends Line
 				throw new SyntaxError("Unexpected token in assert line: " + temp);
 		}
 	}
-	
+
 	public void evaluate(IdentifierMap values)
 	{
 		Value testVal = test.evaluate(values);
@@ -34,7 +34,7 @@ public class AssertLine extends Line
 			if (errorMessage == null)
 				throw new AssertionError(errorMessage.evaluate(values).toString());
 			else
-				throw new AssertionError();
+				throw new AssertionError("");
 		}
 	}
 }

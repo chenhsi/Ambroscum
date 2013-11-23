@@ -15,33 +15,41 @@ public class ExpressionReference extends Expression
 	public ExpressionReference(Token token, TokenStream stream)
 	{
 		name = token.toString();
-		Token peek = stream.getFirst();
-		if (peek.toString().equals("("))
-		{
-			stream.removeFirst();
-			type = ReferenceType.PARENTHESIS;
-			secondary = Expression.interpret(stream);
-			Token close = stream.removeFirst();
-			if (!close.toString().equals(")"))
-				throw new SyntaxError("Missing close parenthesis");
-		}
-		if (peek.toString().equals("["))
-		{
-			stream.removeFirst();
-			type = ReferenceType.BRACKET;
-			secondary = Expression.interpret(stream);
-			Token close = stream.removeFirst();
-			if (!close.toString().equals("]"))
-				throw new SyntaxError("Missing close bracket");
-		}
-		if (peek.toString().equals("{"))
-		{
-			stream.removeFirst();
-			type = ReferenceType.BRACE;
-			secondary = Expression.interpret(stream);
-			Token close = stream.removeFirst();
-			if (!close.toString().equals("}"))
-				throw new SyntaxError("Missing close brace");
+		if (stream.size() > 0) {
+			Token peek = stream.getFirst();
+			if (peek.toString().equals("("))
+			{
+				stream.removeFirst();
+				type = ReferenceType.PARENTHESIS;
+				secondary = Expression.interpret(stream);
+				Token close = stream.removeFirst();
+				if (!close.toString().equals(")"))
+					throw new SyntaxError("Missing close parenthesis");
+			}
+			 else if (peek.toString().equals("["))
+			{
+				stream.removeFirst();
+				type = ReferenceType.BRACKET;
+				secondary = Expression.interpret(stream);
+				Token close = stream.removeFirst();
+				if (!close.toString().equals("]"))
+					throw new SyntaxError("Missing close bracket");
+			}
+			else if (peek.toString().equals("{"))
+			{
+				stream.removeFirst();
+				type = ReferenceType.BRACE;
+				secondary = Expression.interpret(stream);
+				Token close = stream.removeFirst();
+				if (!close.toString().equals("}"))
+					throw new SyntaxError("Missing close brace");
+			} else {
+				type = ReferenceType.NONE;
+				secondary = null; // For clarity
+			}
+		} else {
+			type = ReferenceType.NONE;
+			secondary = null; // For clarity
 		}
 	}
 
@@ -70,6 +78,27 @@ public class ExpressionReference extends Expression
 			default:
 				throw new UnsupportedOperationException("Arrays and stuff don't work yet.");
 		}
+	}
+
+	public String toString() {
+		char left = ' ', right = ' ';
+		switch (type) {
+			case NONE:
+				return name;
+			case PARENTHESIS:
+				left = '(';
+				right = ')';
+				break;
+			case BRACKET:
+				left = '[';
+				right = ']';
+				break;
+			case BRACE:
+				left = '{';
+				right = '}';
+				break;
+		}
+		return name + left + secondary + right;
 	}
 
 	private static enum ReferenceType

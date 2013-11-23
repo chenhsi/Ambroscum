@@ -33,19 +33,17 @@ public abstract class Line
 		// Look-ahead to see if we hit '=' before the next line
 		TokenStream newStream = new TokenStream();
 		newStream.add(token);
-		Iterator<Token> streamIter = stream.iterator();
-		while (streamIter.hasNext()) {
-			Token next = streamIter.next();
-			String str = next.toString();
-			if (str.equals("=")) {
-				return new AssignmentLine(stream);
-			} else if (str.equals("\n")) {
+		while (true) {
+			Token next = stream.removeFirst();
+			if (next.toString().equals("="))
+				return new AssignmentLine(newStream, stream);
+			else if (next == Token.NEWLINE) {
 				throw new UnsupportedOperationException("Call expressions not implemented!");
+			} else {
+				newStream.add(next);
 			}
 		}
-		//int index = first.indexOf(" = ");
-		//return new AssignmentLine(first.substring(0, index), first.substring(index + 3));
-		
-		throw new UnsupportedOperationException();
+
+		//throw new UnsupportedOperationException();
 	}
 }

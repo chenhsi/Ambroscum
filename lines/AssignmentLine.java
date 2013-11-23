@@ -14,45 +14,39 @@ public class AssignmentLine extends Line
 	private ExpressionReference[] assignIDs; // list of the ids being set to
 	private Expression[] expressions;
 
-	AssignmentLine(TokenStream stream)
+	AssignmentLine(TokenStream idStream, TokenStream valueStream)
 	{
 		ArrayList<ExpressionReference> assignIDsList = new ArrayList<ExpressionReference>();
 		while (true) {
-			assignIDsList.add(new ExpressionReference(null, stream)); // randomly added null to make stuff work
-			if (stream.size() > 0) {
-				Token first = stream.getFirst();
-				if (Token.COMMA == first) {
-					stream.removeFirst();
-				} else if ("=".equals(first.toString())) {
-					stream.removeFirst();
-					break;
-				}
+			assignIDsList.add(new ExpressionReference(idStream.removeFirst(), idStream));
+			if (idStream.size() > 0) {
+				idStream.removeFirst(); // Remove the comma
 			} else {
-				throw new SyntaxError("Expected assignment operation");
+				break;
 			}
 		}
-		
+
 		ArrayList<Expression> exprsList = new ArrayList<Expression>();
 		while (true) {
-			exprsList.add(Expression.interpret(stream));
-			if (stream.size() > 0) {
-				Token first = stream.getFirst();
+			exprsList.add(Expression.interpret(valueStream));
+			if (valueStream.size() > 0) {
+				Token first = valueStream.getFirst();
 				if (Token.COMMA == first) {
-					stream.removeFirst();
+					valueStream.removeFirst();
 				} else if (Token.NEWLINE == first) {
-					stream.removeFirst();
+					valueStream.removeFirst();
 					break;
 				}
 			} else {
 				throw new SyntaxError("Expected value to assign");
 			}
 		}
-		
+
 		assignIDs = new ExpressionReference[assignIDsList.size()];
 		assignIDsList.toArray(assignIDs);
 		expressions = new Expression[exprsList.size()];
 		exprsList.toArray(expressions);
-		
+
 		if (expressions.length != assignIDs.length)
 			throw new RuntimeException("need to find better exceptions"); // comment to be easier to find
 	}
