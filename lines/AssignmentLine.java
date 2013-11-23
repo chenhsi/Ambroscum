@@ -20,6 +20,16 @@ public class AssignmentLine extends Line
 		for (int i = 0; i < exprs.length; i++)
 			expressions[i] = Expression.interpret(exprs[i]); // again, will add this later
 	}
+	AssignmentLine(TokenStream stream)
+	{
+		assignIDs = left.split(", ");
+		String[] exprs = right.split(", ");
+		if (exprs.length != assignIDs.length)
+			throw new RuntimeException("need to find better exceptions"); // comment to be easier to find
+		expressions = new Expression[exprs.length];
+		for (int i = 0; i < exprs.length; i++)
+			expressions[i] = Expression.interpret(exprs[i]); // again, will add this later
+	}
 
 	public void evaluate(IdentifierMap values)
 	{

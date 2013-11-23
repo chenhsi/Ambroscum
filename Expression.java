@@ -35,8 +35,6 @@ public abstract class Expression
 			throw new UnsupportedOperationException();
 		else // can't actually think of any other cases
 			throw new UnsupportedOperationException();
-		// can't actually think of any other cases
-		throw new UnsupportedOperationException();
 
 	}
 

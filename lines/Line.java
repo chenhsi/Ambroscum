@@ -1,6 +1,6 @@
 /**
  * Represents a single line of code.
- * 
+ *
  * @author Chenhsi Steven Bi, Jing-Lun Edward Gao
  * @version 1.0
  */
@@ -13,7 +13,8 @@ import ambroscum.parser.TokenStream;
 public abstract class Line
 {
 	public abstract void evaluate(IdentifierMap values);
-	
+<<<<<<< HEAD
+
 	public static Line evalAsLine(TokenStream stream)
 	{
 		Token token = stream.getFirst();
