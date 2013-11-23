@@ -2,8 +2,8 @@
 
 package ambroscum;
 
-import ambroscum.lines.*;
-import java.util.*;
+import java.util.List;
+import ambroscum.lines.Block;
 
 public class Function extends Value
 {
@@ -16,7 +16,7 @@ public class Function extends Value
 		code = c;
 	}
 	
-	public Value evaluate(List<Expression> arguments)
+	public Value evaluate(List<Value> arguments, IdentifierMap values)
 	{
 		return null;
 	}

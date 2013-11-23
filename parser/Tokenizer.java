@@ -55,7 +55,7 @@ public class Tokenizer
 			{
 				if (i + 1 == str.length())
 					break;
-				if (str.charAt(i + 1) == '\n' || closeParen(str.charAt(i + 1)))
+				if (str.charAt(i + 1) == '\n' || closeParen(str.charAt(i + 1)) || str.charAt(i + 1) == ',')
 					continue;
 				i++;
 				if (str.charAt(i) != ' ')

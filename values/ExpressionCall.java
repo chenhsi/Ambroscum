@@ -4,24 +4,25 @@ import java.util.*;
 import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
+import ambroscum.errors.FunctionNotFoundException;
 
 public class ExpressionCall extends Expression
 {
-	private Expression func; // not sure how func is being implemented yet
-	private List<Expression> list;
+	private Expression func;
+	private List<Expression> operands;
 	
 	public ExpressionCall(Expression function, Expression firstOperand, TokenStream stream)
 	{
 		func = function;
-		list = new LinkedList<Expression> ();
-		list.add(firstOperand);
-		list.add(Expression.interpret(stream));
+		operands = new LinkedList<Expression> ();
+		operands.add(firstOperand);
+		operands.add(Expression.interpret(stream));
 	}
 	
 	public ExpressionCall(Expression function, TokenStream stream)
 	{
 		func = function;
-		list = new LinkedList<Expression> ();
+		operands = new LinkedList<Expression> ();
 		while (true)
 		{
 			Token next = stream.getFirst();
@@ -30,20 +31,25 @@ public class ExpressionCall extends Expression
 				stream.removeFirst();
 				break;
 			}
-			list.add(Expression.interpret(stream));
+			operands.add(Expression.interpret(stream));
 		}
 	}
 	
 	@Override
 	public Value evaluate(IdentifierMap values)
 	{
-		return null;
-//		return list.get(0).evaluate(values).call("_" + func, list.get(1).evaluate(values));
+		List<Value> eval = new LinkedList<Value> ();
+		for (Expression expr : operands)
+			eval.add(expr.evaluate(values));
+		Value f = func.evaluate(values);
+		if (!(f instanceof Function))
+			throw new FunctionNotFoundException(func + " does not evaluate to a function");
+		return ((Function) f).evaluate(eval, values);
 	}
 	
 	@Override
 	public String toString()
 	{
-		return "(" + func + " " + list.toString() + ")";
+		return "(" + func + " " + operands.toString() + ")";
 	}
 }

@@ -2,22 +2,25 @@
 
 package ambroscum.values;
 
-import ambroscum.Function;
-import ambroscum.Parameter;
+import java.util.List;
+import java.util.LinkedList;
 import ambroscum.Expression;
+import ambroscum.Function;
+import ambroscum.IdentifierMap;
+import ambroscum.Parameter;
 import ambroscum.Value;
 import ambroscum.lines.Block;
-import java.util.*;
+import ambroscum.values.IntValue;
+import ambroscum.errors.FunctionNotFoundException;
 
 public class FunctionOperator extends Function
 {
-	private final List<Parameter> params = new LinkedList<Parameter> ();
+	private String name;
 	
 	private FunctionOperator(String name)
 	{
 		super(null, null);
-		params.add(new Parameter("a"));
-		params.add(new Parameter("b"));
+		this.name = name;
 	}
 	
 	private static final FunctionOperator ADD = new FunctionOperator("+");
@@ -43,8 +46,17 @@ public class FunctionOperator extends Function
 		throw new UnsupportedOperationException();
 	}
 	
-	public Value evaluate(List<Expression> arguments)
+	public Value evaluate(List<Value> arguments, IdentifierMap values)
 	{
+		switch (name)
+		{
+			case "+":
+				if (arguments.size() != 2)
+					throw new AssertionError("how did we even get to functionoperator without 2 arguments");
+				if (!(arguments.get(0) instanceof IntValue) || !(arguments.get(1) instanceof IntValue))
+					throw new FunctionNotFoundException("+ not defined for non-integer inputs");
+				return new IntValue(((IntValue) arguments.get(0)).getValue() + ((IntValue) arguments.get(1)).getValue());
+		}
 		throw new UnsupportedOperationException();
 	}
 }
