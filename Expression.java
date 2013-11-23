@@ -12,14 +12,25 @@ public abstract class Expression
 			return new ExpressionLiteral(Value.TRUE);
 		if (rawcode.equals("False"))
 			throw new UnsupportedOperationException();
-		if (isNumber(rawcode)) // is digit
+		if (isNumber(rawcode))
 			return parseNum(rawcode);
+		if (isString(rawcode))
+			return parseString(rawcode);
 		if (false) // is a reference
 			throw new UnsupportedOperationException();
-		if (false) // has operator/function
-			throw new UnsupportedOperationException();
-		else // can't actually think of any other cases
-			throw new UnsupportedOperationException();
+		if (true) // has operator/function
+		{
+			char[] array = rawcode.toCharArray();
+			for (int i = array.length - 1; i >= 0; i--)
+			{
+				if (array[i] == ' ')
+				{
+					
+				}
+			}
+		}
+		// can't actually think of any other cases
+		throw new UnsupportedOperationException();
 	}
 	
 	private static boolean isNumber(String text)
@@ -33,5 +44,16 @@ public abstract class Expression
 	private static ExpressionLiteral parseNum(String text)
 	{
 		return new ExpressionLiteral(new IntLiteral(Integer.parseInt(text)));
+	}
+	
+	// needs to deal with escape characters + unicode characters
+	private static boolean isString(String text)
+	{
+		return text.charAt(0) == '"' && text.indexOf('"', 1) == text.length() - 1;
+	}
+	
+	private static ExpressionLiteral parseString(String text)
+	{
+		return new ExpressionLiteral(new StringLiteral(text));
 	}
 }
