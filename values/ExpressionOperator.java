@@ -16,6 +16,10 @@ public class ExpressionOperator extends Expression
 	@Override
 	public Value evaluate(IdentifierMap values)
 	{
+		switch (op)
+		{
+			case "+": 
+		}
 		throw new UnsupportedOperationException();
 	}
 	
