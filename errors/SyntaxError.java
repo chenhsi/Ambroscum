@@ -1,6 +1,6 @@
 package ambroscum.errors;
 
-public class SyntaxError extends RuntimeException
+public class SyntaxError extends AmbroscumError
 {
 	public SyntaxError(String message)
 	{

@@ -1,6 +1,6 @@
 package ambroscum.errors;
 
-public class AssertionError extends RuntimeException
+public class AssertionError extends AmbroscumError
 {
 	public AssertionError(String message)
 	{

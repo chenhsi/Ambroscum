@@ -9,6 +9,7 @@ package ambroscum;
 
 import java.io.*;
 import java.util.*;
+import ambroscum.errors.AmbroscumError;
 import ambroscum.lines.Line;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Tokenizer;
@@ -30,15 +31,19 @@ public class Interpreter
 		boolean firstLine = true;
 		String line;
 		while (true) {
-			if (!firstLine)
-				System.out.println();
-			firstLine = false;
-			System.out.print(">>> ");
-			line = in.nextLine() + "\n";
-			TokenStream tokens = Tokenizer.tokenize(line);
-			Line lineLine = Line.evalAsLine(tokens);
-			System.out.println("Interpret as " + lineLine);
-			lineLine.evaluate(identifiers);
+			try {
+				if (!firstLine)
+					System.out.println();
+				firstLine = false;
+				System.out.print(">>> ");
+				line = in.nextLine() + "\n";
+				TokenStream tokens = Tokenizer.tokenize(line);
+				Line lineLine = Line.evalAsLine(tokens);
+				System.out.println("Interpret as " + lineLine);
+				lineLine.evaluate(identifiers);
+			} catch (AmbroscumError ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 /*	public static void interpret(String filename) throws IOException {

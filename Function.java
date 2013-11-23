@@ -2,6 +2,9 @@
 
 package ambroscum;
 
+import ambroscum.lines.*;
+import java.util.*;
+
 public class Function extends Value
 {
 	private List<Parameter> params;

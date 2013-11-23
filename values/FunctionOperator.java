@@ -7,27 +7,26 @@ import ambroscum.Parameter;
 import ambroscum.Expression;
 import ambroscum.Value;
 import ambroscum.lines.Block;
+import java.util.*;
 
 public class FunctionOperator extends Function
 {
-	private enum 
-	
 	private final List<Parameter> params = new LinkedList<Parameter> ();
 	
 	private FunctionOperator(String name)
 	{
-		super(params, null);
+		super(null, null);
 		params.add(new Parameter("a"));
 		params.add(new Parameter("b"));
 	}
 	
-	private static final ADD = new FunctionOperator("+");
-	private static final SUB = new FunctionOperator("-");
-	private static final MUL = new FunctionOperator("*");
-	private static final DIV = new FunctionOperator("/");
-	private static final MOD = new FunctionOperator("%");
-	private static final AND = new FunctionOperator("and");
-	private static final OR = new FunctionOperator("or");
+	private static final FunctionOperator ADD = new FunctionOperator("+");
+	private static final FunctionOperator SUB = new FunctionOperator("-");
+	private static final FunctionOperator MUL = new FunctionOperator("*");
+	private static final FunctionOperator DIV = new FunctionOperator("/");
+	private static final FunctionOperator MOD = new FunctionOperator("%");
+	private static final FunctionOperator AND = new FunctionOperator("and");
+	private static final FunctionOperator OR = new FunctionOperator("or");
 	
 	public static FunctionOperator get(String name)
 	{
