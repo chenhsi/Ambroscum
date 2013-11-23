@@ -32,7 +32,7 @@ public class Tokenizer
 				continue;
 			}
 			int j = i++;
-			while (i < array.length && !isParen(array[i]) && i != ' ')
+			while (i < array.length && !isParen(array[i]) && array[i] != ' ')
 				i++;
 			stream.offer(new Token(str.substring(j, i)));
 			if (i == array.length)

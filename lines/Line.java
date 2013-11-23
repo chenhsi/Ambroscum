@@ -8,13 +8,15 @@
 package ambroscum.lines;
 
 import ambroscum.*;
+import ambroscum.parser.TokenStream;
 
 public abstract class Line
 {
 	public abstract void evaluate(IdentifierMap values);
 	
-	public static Line evalAsLine(String code, Scope followingblock)
+	public static Line evalAsLine(TokenStream stream, Scope followingblock)
 	{
+		
 		if (code.startsWith("assert "))
 			return new AssertLine(code.substring(7));
 		if (code.startsWith("print "))
