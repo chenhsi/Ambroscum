@@ -5,6 +5,7 @@ import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.FunctionNotFoundException;
+import ambroscum.errors.SyntaxError;
 
 public class ExpressionCall extends Expression
 {
@@ -23,6 +24,7 @@ public class ExpressionCall extends Expression
 	{
 		func = function;
 		operands = new LinkedList<Expression> ();
+		boolean first = true;
 		while (true)
 		{
 			Token next = stream.getFirst();
@@ -31,7 +33,24 @@ public class ExpressionCall extends Expression
 				stream.removeFirst();
 				break;
 			}
-			operands.add(Expression.interpret(stream));
+			if (next == Token.NEWLINE)
+				throw new SyntaxError("Unexpected end of line");
+			if (first)
+			{
+				if (next == Token.COMMA)
+					throw new SyntaxError("Unexpected delimiter in a print statement");
+				operands.add(Expression.interpret(stream));
+				first = false;
+			}
+			else
+			{
+				if (next != Token.COMMA)
+					throw new SyntaxError("Unexpected token: " + next);
+				stream.removeFirst();
+				if (stream.getFirst().toString().equals(")"))
+					throw new SyntaxError("Call ending with a comma");
+				operands.add(Expression.interpret(stream));
+			}
 		}
 	}
 	

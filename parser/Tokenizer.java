@@ -13,6 +13,11 @@ public class Tokenizer
 			if (str.charAt(i) == '\n')
 			{
 				stream.offer(Token.NEWLINE);
+				while (i + 1 < str.length() && str.charAt(i + 1) == '\t')
+				{
+					i++;
+					stream.offer(Token.TAB);
+				}
 				continue;
 			}
 			if (str.charAt(i) == ' ')
@@ -49,13 +54,15 @@ public class Tokenizer
 				break;
 			if (isSeparator(str.charAt(i)))
 				stream.offer(getToken(str.charAt(i)));
+			if (str.charAt(i) == '\t')
+				throw new SyntaxError("Unexpected tab");
 			if (str.charAt(i) == '\n')
 				stream.offer(Token.NEWLINE);
 			if (closeParen(str.charAt(i)) || str.charAt(i) == ',')
 			{
 				if (i + 1 == str.length())
 					break;
-				if (str.charAt(i + 1) == '\n' || closeParen(str.charAt(i + 1)) || str.charAt(i + 1) == ',')
+				if (str.charAt(i + 1) == '\n' || isSeparator(str.charAt(i + 1)))
 					continue;
 				i++;
 				if (str.charAt(i) != ' ')
@@ -82,7 +89,7 @@ public class Tokenizer
 	
 	private static boolean isWhitespace(char c)
 	{
-		return c == ' ' || c == '\n';
+		return c == ' ' || c == '\n' || c == '\t';
 	}
 	
 	private static boolean openParen(char c)

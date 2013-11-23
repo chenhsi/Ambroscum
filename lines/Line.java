@@ -11,15 +11,34 @@ import java.util.*;
 import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
+import ambroscum.errors.SyntaxError;
 import java.util.Iterator;
 
 public abstract class Line
 {
 	public abstract void evaluate(IdentifierMap values);
 
-	public static Line evalAsLine(TokenStream stream)
+	public static Line evalAsLine(TokenStream stream, int indentation)
 	{
+		for (int i = 0; i < indentation; i++)
+		{
+			Token tab = stream.removeFirst();
+			if (tab != Token.TAB)
+			{
+				if (i == indentation - 1)
+				{
+					Token temp = stream.removeFirst();
+					if (temp != Token.NEWLINE)
+						throw new SyntaxError("Unexpected token after end:" + temp);
+					return new EndLine();
+				}
+				else
+					throw new SyntaxError("Missing indentation");
+			}
+		}
 		Token token = stream.removeFirst();
+		if (token == Token.TAB)
+			throw new SyntaxError("Unexpected indentation");
 		if (token.toString().equals("assert"))
 			return new AssertLine(stream);
 		if (token.toString().equals("print") || token.toString().equals("println"))
@@ -28,6 +47,8 @@ public abstract class Line
 			return new BreakLine(stream);
 		if (token.toString().equals("continue"))
 			return new ContinueLine(stream);
+		if (token.toString().equals("return"))
+			return new ReturnLine(stream);
 		if (token.toString().equals("return"))
 			return new ReturnLine(stream);
 		// Look-ahead to see if we hit '=' before the next line

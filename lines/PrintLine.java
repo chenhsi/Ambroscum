@@ -17,7 +17,7 @@ public class PrintLine extends Line
 		boolean expectExpr = true;
 		toPrint = new LinkedList<Expression> ();
 
-		while (!stream.isEmpty())
+		while (true)
 		{
 			Token token = stream.getFirst();
 			if (token == Token.NEWLINE)

@@ -38,7 +38,7 @@ public class Interpreter
 				System.out.print(">>> ");
 				line = in.nextLine() + "\n";
 				TokenStream tokens = Tokenizer.tokenize(line);
-				Line lineLine = Line.evalAsLine(tokens);
+				Line lineLine = Line.evalAsLine(tokens, 0);
 				System.out.println("Interpret as " + lineLine);
 				lineLine.evaluate(identifiers);
 			} catch (AmbroscumError ex) {

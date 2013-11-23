@@ -7,16 +7,23 @@ public class BooleanValue extends Value
 {
 	public static final BooleanValue TRUE = new BooleanValue(true);
 	public static final BooleanValue FALSE = new BooleanValue(false);
-	private boolean value;
+	private final boolean value;
+	private final String str;
 	
 	private BooleanValue(boolean val)
 	{
 		value = val;
+		str = value ? "True" : "False";
+	}
+	
+	public boolean getValue()
+	{
+		return value;
 	}
 	
 	@Override
 	public String toString()
 	{
-		return value + "";
+		return str;
 	}
 }
