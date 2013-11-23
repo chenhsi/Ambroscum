@@ -59,8 +59,12 @@ public class AssignmentLine extends Line
 	@Override
 	public void evaluate(IdentifierMap values)
 	{
+		Value[] targetVals = new Value[assignIDs.length];
 		for (int i = 0; i < expressions.length; i++) {
-			assignIDs[i].setValue(expressions[i].evaluate(values), values);
+			targetVals[i] = expressions[i].evaluate(values);
+		}
+		for (int i = 0; i < expressions.length; i++) {
+			assignIDs[i].setValue(targetVals[i], values);
 		}
 	}
 	
