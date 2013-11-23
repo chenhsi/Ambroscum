@@ -1,6 +1,6 @@
 package ambroscum.parser;
 
-import ambroscum.error.SyntaxError;
+import ambroscum.errors.SyntaxError;
 
 public class Tokenizer
 {

@@ -1,4 +1,4 @@
-package ambroscum.error;
+package ambroscum.errors;
 
 public class AssertionError extends RuntimeException
 {

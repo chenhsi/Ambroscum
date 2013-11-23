@@ -5,7 +5,7 @@ package ambroscum.lines;
 
 import java.util.*;
 import ambroscum.*;
-import ambroscum.error.*;
+import ambroscum.errors.*;
 import ambroscum.values.*;
 import ambroscum.parser.*;
 

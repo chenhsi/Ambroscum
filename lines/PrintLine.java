@@ -3,7 +3,7 @@ package ambroscum.lines;
 import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
-import ambroscum.error.SyntaxError;
+import ambroscum.errors.SyntaxError;
 import java.util.*;
 
 public class PrintLine extends Line

@@ -4,7 +4,7 @@ import java.util.Arrays;
 import ambroscum.values.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
-import ambroscum.error.SyntaxError;
+import ambroscum.errors.SyntaxError;
 
 public abstract class Expression
 {
@@ -18,9 +18,9 @@ public abstract class Expression
 		if (token == Token.NEWLINE)
 			throw new SyntaxError("Expression expected");
 		if (token.toString().equals("True"))
-			result = new ExpressionLiteral(BooleanLiteral.TRUE);
+			result = new ExpressionLiteral(BooleanValue.TRUE);
 		else if (token.toString().equals("False"))
-			result = new ExpressionLiteral(BooleanLiteral.FALSE);
+			result = new ExpressionLiteral(BooleanValue.FALSE);
 		else if (isNumber(token.toString()))
 			result = parseNum(token.toString());
 		else if (isString(token.toString()))
@@ -61,7 +61,7 @@ public abstract class Expression
 
 	private static ExpressionLiteral parseNum(String text)
 	{
-		return new ExpressionLiteral(new IntLiteral(Integer.parseInt(text)));
+		return new ExpressionLiteral(new IntValue(Integer.parseInt(text)));
 	}
 
 	// needs to deal with escape characters + unicode characters
@@ -72,7 +72,7 @@ public abstract class Expression
 
 	private static ExpressionLiteral parseString(String text)
 	{
-		return new ExpressionLiteral(new StringLiteral(text));
+		return new ExpressionLiteral(new StringValue(text));
 	}
 	
 	private static final String[] OPERATOR_LIST = new String[] {"+", "-", "*", "/", "%", "and", "or"};

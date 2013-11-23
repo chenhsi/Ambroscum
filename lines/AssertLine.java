@@ -3,13 +3,13 @@ package ambroscum.lines;
 import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
-import ambroscum.error.AssertionError;
-import ambroscum.error.SyntaxError;
-import ambroscum.values.BooleanLiteral;
+import ambroscum.errors.AssertionError;
+import ambroscum.errors.SyntaxError;
+import ambroscum.values.BooleanValue;
 
 public class AssertLine extends Line
 {
-	private Expression test, errorMessage;
+	private Expression test, errorsMessage;
 
 	AssertLine(TokenStream stream)
 	{
@@ -19,7 +19,7 @@ public class AssertLine extends Line
 		{
 			if (!token.toString().equals(":"))
 				throw new SyntaxError("Expecting ':' token in assert line");
-			errorMessage = Expression.interpret(stream);
+			errorsMessage = Expression.interpret(stream);
 			Token temp = stream.removeFirst();
 			if (temp != Token.NEWLINE)
 				throw new SyntaxError("Unexpected token in assert line: " + temp);
@@ -30,10 +30,10 @@ public class AssertLine extends Line
 	public void evaluate(IdentifierMap values)
 	{
 		Value testVal = test.evaluate(values);
-		if (!(testVal.equals(BooleanLiteral.TRUE)))
+		if (!(testVal.equals(BooleanValue.TRUE)))
 		{
-			if (errorMessage == null)
-				throw new AssertionError("Assertion failed" + ": " + errorMessage.evaluate(values).toString());
+			if (errorsMessage == null)
+				throw new AssertionError("Assertion failed" + ": " + errorsMessage.evaluate(values).toString());
 			else
 				throw new AssertionError("Assertion failed");
 		}
@@ -43,8 +43,8 @@ public class AssertLine extends Line
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder("(assert ").append(test.toString());
-		if (errorMessage != null)
-			sb.append(errorMessage.toString());
+		if (errorsMessage != null)
+			sb.append(errorsMessage.toString());
 		return sb.toString();
 	}
 }

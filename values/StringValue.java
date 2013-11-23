@@ -3,11 +3,11 @@ package ambroscum.values;
 import ambroscum.*;
 import java.util.*;
 
-public class StringLiteral extends Value
+public class StringValue extends Value
 {
 	private String value;
 	
-	public StringLiteral(String val)
+	public StringValue(String val)
 	{
 		value = val;
 	}
