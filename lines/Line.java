@@ -7,6 +7,7 @@
 
 package ambroscum.lines;
 
+import java.util.*;
 import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
@@ -26,7 +27,7 @@ public abstract class Line
 		if (token.toString().equals("print") || token.toString().equals("println"))
 		{
 			stream.removeFirst();
-			return new PrintLine(stream, token.length() == 7);
+			return new PrintLine(stream, token.toString().length() == 7);
 		} 
 		if (token.toString().equals("break"))
 		{
@@ -41,7 +42,7 @@ public abstract class Line
 			return new ReturnLine(stream);
 		}
 		// Look-ahead to see if we hit '=' before the next line
-		Iterator<Token> streamIter;
+		Iterator<Token> streamIter = stream.iterator();
 		while (streamIter.hasNext()) {
 			Token next = streamIter.next();
 			String str = next.getString();
