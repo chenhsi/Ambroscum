@@ -12,12 +12,12 @@ public class ExpressionCall extends Expression
 	private Expression func;
 	private List<Expression> operands;
 	
-	public ExpressionCall(Expression function, Expression firstOperand, TokenStream stream)
+	public ExpressionCall(Expression function, Expression firstOperand, Expression secondOperand)
 	{
 		func = function;
 		operands = new LinkedList<Expression> ();
 		operands.add(firstOperand);
-		operands.add(Expression.interpret(stream));
+		operands.add(secondOperand);
 	}
 	
 	public ExpressionCall(Expression function, TokenStream stream)

@@ -1,10 +1,12 @@
 package ambroscum;
 
 import java.util.Arrays;
+import java.util.Stack;
 import ambroscum.values.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
+import ambroscum.values.ExpressionOperator;
 
 public abstract class Expression
 {
@@ -12,6 +14,26 @@ public abstract class Expression
 
 	// need to implement unary operators and priority (* over +)
 	public static Expression interpret(TokenStream stream)
+	{
+		Expression result = greedy(stream);
+		Stack<Expression> expressions = new Stack<Expression> ();
+		Stack<ExpressionOperator> operators = new Stack<ExpressionOperator> ();
+		expressions.push(result);
+		
+		while (isOperator(stream.getFirst()))
+		{
+			operators.push(new ExpressionOperator(stream.removeFirst()));
+			expressions.push(greedy(stream));
+		}
+		if (expressions.size() == 1)
+			return result;
+		result = expressions.pop();
+		while (expressions.size() > 0)
+			result = new ExpressionCall(operators.pop(), expressions.pop(), result);
+		return result;
+	}
+	
+	private static Expression greedy(TokenStream stream)
 	{
 		Token token = stream.removeFirst();
 		Expression result = null;
@@ -33,20 +55,9 @@ public abstract class Expression
 				stream.removeFirst();
 				result = new ExpressionCall(result, stream);
 			}
-		} else if (token.toString().equals("[")) {
+		}
+		else if (token.toString().equals("["))
 			result = new ExpressionList(token, stream);
-			result = ExpressionReference.createExpressionReference(result, stream);
-		}
-		Token next = stream.getFirst();
-		if (isOperator(next))
-		{
-			stream.removeFirst();
-			result = new ExpressionCall(new ExpressionOperator(next), result, stream);
-		}
-
-		if (false) // has operator/function
-			throw new UnsupportedOperationException();
-		
 		return result;
 	}
 

@@ -44,7 +44,7 @@ public class AssertLine extends Line
 	{
 		StringBuilder sb = new StringBuilder("(assert ").append(test.toString());
 		if (errorsMessage != null)
-			sb.append(errorsMessage.toString());
-		return sb.toString();
+			sb.append(" : ").append(errorsMessage.toString());
+		return sb.append(")").toString();
 	}
 }

@@ -49,8 +49,6 @@ public abstract class Line
 			return new ContinueLine(stream);
 		if (token.toString().equals("return"))
 			return new ReturnLine(stream);
-		if (token.toString().equals("return"))
-			return new ReturnLine(stream);
 		// Look-ahead to see if we hit '=' before the next line
 		TokenStream newStream = new TokenStream();
 		newStream.add(token);
