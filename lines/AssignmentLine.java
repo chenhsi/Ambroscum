@@ -67,6 +67,6 @@ public class AssignmentLine extends Line
 	@Override
 	public String toString()
 	{
-		throw new UnsupportedOperationException();
+		return Arrays.toString(assignIDs) + " = " + Arrays.toString(expressions);
 	}
 }

@@ -15,8 +15,9 @@ public class ExpressionReference extends Expression
 	public ExpressionReference(Token token, TokenStream stream)
 	{
 		primary = token;
-		Token peek = stream.getFirst();
-		if (peek.toString().equals("["))
+		Token peek = stream.size() > 0 ? stream.getFirst() : null;
+		String peekStr = peek != null ? peek.toString() : null;
+		if ("[".equals(peekStr))
 		{
 			stream.removeFirst();
 			type = ReferenceType.BRACKET;
@@ -25,7 +26,7 @@ public class ExpressionReference extends Expression
 			if (!close.toString().equals("]"))
 				throw new SyntaxError("Missing close bracket");
 		}
-		if (peek.toString().equals("{"))
+		else if ("{".equals(peekStr))
 		{
 			stream.removeFirst();
 			type = ReferenceType.BRACE;
@@ -33,6 +34,8 @@ public class ExpressionReference extends Expression
 			Token close = stream.removeFirst();
 			if (!close.toString().equals("}"))
 				throw new SyntaxError("Missing close brace");
+		} else {
+			type = ReferenceType.NONE;
 		}
 	}
 
@@ -43,7 +46,7 @@ public class ExpressionReference extends Expression
 			case NONE:
 				return values.get(primary.toString());
 			case BRACKET:
-				Value outerList = values.get(name);
+				Value outerList = values.get(primary.toString());
 				if (outerList instanceof ListValue) {
 					return ((ListValue) outerList).get(secondary.evaluate(values));
 				}
@@ -62,13 +65,12 @@ public class ExpressionReference extends Expression
 				values.set(primary.toString(), value);
 				break;
 			case BRACKET:
-				Value outerList = values.get(name);
+				Value outerList = values.get(primary.toString());
 				if (outerList instanceof ListValue) {
-					System.out.println(secondary.evaluate(values).getClass());
-					System.out.println(secondary + " --- " + value);
 					((ListValue) outerList).set(secondary.evaluate(values), value);
-				}
-				throw new SyntaxError("Cannot use brackets to index a non-list: " + outerList);
+				} else
+					throw new SyntaxError("Cannot use brackets to index a non-list: " + outerList);
+				break;
 			default:
 				throw new UnsupportedOperationException("Arrays and stuff don't work yet.");
 		}
