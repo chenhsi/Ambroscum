@@ -8,7 +8,7 @@ import java.util.*;
 
 public class ExpressionReference extends Expression
 {
-	private ExpressionReference primary;
+	private Expression primary;
 	private Expression secondary;
 	private ReferenceType type;
 	private String baseReference;
@@ -46,7 +46,10 @@ public class ExpressionReference extends Expression
 	{
 		switch (type) {
 			case NONE:
-				return values.get(baseReference);
+				if (baseReference != null)
+					return values.get(baseReference);
+				else
+					return primary.evaluate(values);
 			case BRACKET:
 				Value outerList = primary.evaluate(values);
 				if (outerList instanceof ListValue) {
@@ -64,7 +67,10 @@ public class ExpressionReference extends Expression
 		switch (type)
 		{
 			case NONE:
-				values.set(baseReference, value);
+				if (baseReference != null)
+					values.set(baseReference, value);
+				else
+					throw new SyntaxError("Cannot set the value of " + primary);
 				break;
 			case BRACKET:
 				Value outerList = values.get(primary.toString());
@@ -91,10 +97,30 @@ public class ExpressionReference extends Expression
 	}
 	
 	public static ExpressionReference createExpressionReference(Token start, TokenStream stream) {
-		// I will admit that this works mostly because of magic. And demi-recursion, which is effectively the same thing.
 		ExpressionReference outerRef = new ExpressionReference();
 		String baseReference = start.toString();
 		outerRef.baseReference = baseReference;
+		outerRef.type = ReferenceType.NONE;
+		
+		while (true) {
+			if (stream.size() > 0) {
+				String first = stream.getFirst().toString();
+				// If the references continue
+				if ("[".equals(first) || "{".equals(first)) {
+					// This reads in the next thing (e.g. "[fancy expression stuff]")
+					// and creates a new ExpressionReference
+					outerRef = new ExpressionReference(outerRef, stream);
+					continue;
+				}
+			}
+			// Essentially, if we don't read in another [0] thing, we're done here.
+			break;
+		}
+		return outerRef;
+	}
+	public static ExpressionReference createExpressionReference(Expression base, TokenStream stream) {
+		ExpressionReference outerRef = new ExpressionReference();
+		outerRef.primary = base;
 		outerRef.type = ReferenceType.NONE;
 		
 		while (true) {

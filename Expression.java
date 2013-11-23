@@ -35,6 +35,7 @@ public abstract class Expression
 			}
 		} else if (token.toString().equals("[")) {
 			result = new ExpressionList(token, stream);
+			result = ExpressionReference.createExpressionReference(result, stream);
 		}
 		Token next = stream.getFirst();
 		if (isOperator(next))

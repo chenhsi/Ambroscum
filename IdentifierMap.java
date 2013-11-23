@@ -12,6 +12,7 @@
 package ambroscum;
 
 import java.util.*;
+import ambroscum.errors.*;
 
 public class IdentifierMap
 {
@@ -26,7 +27,7 @@ public class IdentifierMap
 	public void add(String name, Value value)
 	{
 		if (!isValidIdentifier(name))
-			throw new RuntimeException("You tried to name a variable \"" + name + "\". You should feel ashamed of yourself.");
+			throw new SyntaxError("\"" + name + "\" is not a valid identifier.");
 		// Not sure how to deal with overriding variables
 		map.put(name, value);
 	}
@@ -34,7 +35,7 @@ public class IdentifierMap
 	public void set(String name, Value value)
 	{
 		if (!isValidIdentifier(name))
-			throw new RuntimeException("You tried to name a variable \"" + name + "\". You should feel ashamed of yourself.");
+			throw new SyntaxError("\"" + name + "\" is not a valid identifier.");
 		IdentifierMap containingScope = getContainingScope(name, this);
 		if (containingScope == null || containingScope == this)
 			map.put(name, value);
@@ -46,13 +47,16 @@ public class IdentifierMap
 	{
 		IdentifierMap containingScope = getContainingScope(name, this);
 		if (containingScope == null) {
-			throw new RuntimeException("Variable not found: " + name);
+			throw new VariableNotFoundError("Variable not found: " + name);
 		}
 		return containingScope.map.get(name);
 	}
 
 	public static boolean isValidIdentifier(String name) {
-		for (int i = 0; i < name.length(); i++) {
+		if (!Character.isLetter(name.charAt(0))) {
+			return false;
+		}
+		for (int i = 1; i < name.length(); i++) {
 			if (!Character.isLetterOrDigit(name.charAt(i)))
 				return false;
 		}

@@ -53,7 +53,7 @@ public class AssignmentLine extends Line
 		exprsList.toArray(expressions);
 
 		if (expressions.length != assignIDs.length)
-			throw new RuntimeException("need to find better exceptions"); // comment to be easier to find
+			throw new SyntaxError("Invalid assignment line: " + Arrays.toString(assignIDs) + " = " + Arrays.toString(expressions));
 	}
 
 	@Override

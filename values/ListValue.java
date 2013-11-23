@@ -20,7 +20,6 @@ public class ListValue extends Value {
 		throw new SyntaxError("Expected int for list index");
 	}
 	public void set(Value index, Value value) {
-		System.out.println(index.getClass() + " " + (index instanceof IntValue));
 		if (index instanceof IntValue) {
 			int ind = ((IntValue) index).getValue();
 			list[ind] = value;
