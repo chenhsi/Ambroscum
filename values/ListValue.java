@@ -15,9 +15,6 @@ public class ListValue extends Value {
 	public Value get(Value index) {
 		if (index instanceof IntValue) {
 			int ind = ((IntValue) index).getValue();
-			if (ind < 0 || ind >= list.length)
-				// Or do we just want to use java.lang.ArrayIndexOutOfBoundsExecption
-				throw new RuntimeException("List index out of bounds: " + ind);
 			return list[ind];
 		}
 		throw new SyntaxError("Expected int for list index");
@@ -26,9 +23,6 @@ public class ListValue extends Value {
 		System.out.println(index.getClass() + " " + (index instanceof IntValue));
 		if (index instanceof IntValue) {
 			int ind = ((IntValue) index).getValue();
-			if (ind < 0 || ind >= list.length)
-				// Or do we just want to use java.lang.ArrayIndexOutOfBoundsExecption
-				throw new RuntimeException("List index out of bounds: " + ind);
 			list[ind] = value;
 		} else
 			throw new SyntaxError("Expected int for list index");

@@ -27,7 +27,7 @@ public abstract class Expression
 			result = parseString(token.toString());
 		else if (IdentifierMap.isValidIdentifier(token.toString())) // is a reference
 		{
-			result = new ExpressionReference(token, stream);
+			result = ExpressionReference.createExpressionReference(token, stream);
 			if (stream.getFirst().toString().equals("("))
 			{
 				stream.removeFirst();

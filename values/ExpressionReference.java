@@ -8,13 +8,15 @@ import java.util.*;
 
 public class ExpressionReference extends Expression
 {
-	private Token primary;
+	private ExpressionReference primary;
 	private Expression secondary;
 	private ReferenceType type;
+	private String baseReference;
 
-	public ExpressionReference(Token token, TokenStream stream)
+	private ExpressionReference() {}
+	private ExpressionReference(ExpressionReference p, TokenStream stream)
 	{
-		primary = token;
+		primary = p;
 		Token peek = stream.size() > 0 ? stream.getFirst() : null;
 		String peekStr = peek != null ? peek.toString() : null;
 		if ("[".equals(peekStr))
@@ -44,9 +46,9 @@ public class ExpressionReference extends Expression
 	{
 		switch (type) {
 			case NONE:
-				return values.get(primary.toString());
+				return values.get(baseReference);
 			case BRACKET:
-				Value outerList = values.get(primary.toString());
+				Value outerList = primary.evaluate(values);
 				if (outerList instanceof ListValue) {
 					return ((ListValue) outerList).get(secondary.evaluate(values));
 				}
@@ -62,7 +64,7 @@ public class ExpressionReference extends Expression
 		switch (type)
 		{
 			case NONE:
-				values.set(primary.toString(), value);
+				values.set(baseReference, value);
 				break;
 			case BRACKET:
 				Value outerList = values.get(primary.toString());
@@ -72,17 +74,41 @@ public class ExpressionReference extends Expression
 					throw new SyntaxError("Cannot use brackets to index a non-list: " + outerList);
 				break;
 			default:
-				throw new UnsupportedOperationException("Arrays and stuff don't work yet.");
+				throw new UnsupportedOperationException("Fancy stuff doesn't work yet.");
 		}
 	}
 	
 	@Override
 	public String toString()
 	{
+		if (primary == null) {
+			return baseReference;
+		}
 		StringBuilder sb = new StringBuilder(primary.toString());
 		if (type != ReferenceType.NONE)
 			sb.append(type.open).append(secondary.toString()).append(type.close);
 		return sb.toString();
+	}
+	
+	public static ExpressionReference createExpressionReference(Token start, TokenStream stream) {
+		ExpressionReference outerRef = new ExpressionReference();
+		String baseReference = start.toString();
+		outerRef.baseReference = baseReference;
+		outerRef.type = ReferenceType.NONE;
+		
+			System.out.println(outerRef);
+		while (true) {
+			if (stream.size() > 0) {
+				String first = stream.getFirst().toString();
+				// If the references continue
+				if ("[".equals(first) || "{".equals(first)) {
+					outerRef = new ExpressionReference(outerRef, stream);
+					continue;
+				}
+			}
+			break;
+		}
+		return outerRef;
 	}
 
 	private static enum ReferenceType
