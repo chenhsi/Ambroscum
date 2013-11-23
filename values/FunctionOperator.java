@@ -32,6 +32,9 @@ public class FunctionOperator extends Function
 	private static final FunctionOperator OR = new FunctionOperator("or");
 	private static final FunctionOperator IS_EQUAL = new FunctionOperator("=");
 	private static final FunctionOperator GREATER_THAN = new FunctionOperator(">");
+	private static final FunctionOperator LESS_THAN = new FunctionOperator("<");
+	private static final FunctionOperator GREATER_THAN_EQUAL = new FunctionOperator(">=");
+	private static final FunctionOperator LESS_THAN_EQUAL = new FunctionOperator("<=");
 	
 	public static FunctionOperator get(String name)
 	{
@@ -46,6 +49,9 @@ public class FunctionOperator extends Function
 			case "_or": return OR;
 			case "_=": return IS_EQUAL;
 			case "_>": return GREATER_THAN;
+			case "_<": return LESS_THAN;
+			case "_>=": return GREATER_THAN_EQUAL;
+			case "_<=": return LESS_THAN_EQUAL;
 		}
 		throw new UnsupportedOperationException();
 	}
@@ -109,7 +115,27 @@ public class FunctionOperator extends Function
 			case ">":
 				if (arguments.size() != 2)
 					throw new AssertionError("how did we even get to functionoperator without 2 arguments");
-				return BooleanValue.fromBoolean(arguments.get(0).equals(arguments.get(1)));
+				if (!(arguments.get(0) instanceof Comparable) || !(arguments.get(1) instanceof Comparable))
+					throw new FunctionNotFoundException("> not defined for non-comparable arguments");
+				return BooleanValue.fromBoolean(((Comparable) arguments.get(0)).compareTo(arguments.get(1)) > 0);
+			case "<":
+				if (arguments.size() != 2)
+					throw new AssertionError("how did we even get to functionoperator without 2 arguments");
+				if (!(arguments.get(0) instanceof Comparable) || !(arguments.get(1) instanceof Comparable))
+					throw new FunctionNotFoundException("> not defined for non-comparable arguments");
+				return BooleanValue.fromBoolean(((Comparable) arguments.get(0)).compareTo(arguments.get(1)) < 0);
+			case ">=":
+				if (arguments.size() != 2)
+					throw new AssertionError("how did we even get to functionoperator without 2 arguments");
+				if (!(arguments.get(0) instanceof Comparable) || !(arguments.get(1) instanceof Comparable))
+					throw new FunctionNotFoundException("> not defined for non-comparable arguments");
+				return BooleanValue.fromBoolean(((Comparable) arguments.get(0)).compareTo(arguments.get(1)) >= 0);
+			case "<=":
+				if (arguments.size() != 2)
+					throw new AssertionError("how did we even get to functionoperator without 2 arguments");
+				if (!(arguments.get(0) instanceof Comparable) || !(arguments.get(1) instanceof Comparable))
+					throw new FunctionNotFoundException("> not defined for non-comparable arguments");
+				return BooleanValue.fromBoolean(((Comparable) arguments.get(0)).compareTo(arguments.get(1)) <= 0);
 		}
 		throw new UnsupportedOperationException();
 	}

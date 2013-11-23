@@ -76,7 +76,7 @@ public abstract class Expression
 		return new ExpressionLiteral(new StringValue(text));
 	}
 	
-	private static final String[] OPERATOR_LIST = new String[] {"+", "-", "*", "/", "%", "and", "or", "="};
+	private static final String[] OPERATOR_LIST = new String[] {"+", "-", "*", "/", "%", "and", "or", "=", ">", "<", ">=", "<="};
 	static
 	{
 		Arrays.sort(OPERATOR_LIST);
