@@ -15,6 +15,7 @@ public class ExpressionCall extends Expression
 	
 	public Value evaluate(IdentifierMap values)
 	{
-		return list.get(0).evaluate().call("_" + operator, list.get(1).evaluate());
+		return null;
+//		return list.get(0).evaluate(values).call("_" + func, list.get(1).evaluate(values));
 	}
 }

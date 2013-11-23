@@ -4,17 +4,20 @@ import ambroscum.*;
 
 public class PrintLine extends Line
 {
-	private Expression[] expressions;
+	private Expression[] toPrint;
 	
-	protected PrintLine(String line)
+	PrintLine(String line)
 	{
-		assignIDs = (Expression[]) line.split(", ");
+		String[] strs = line.split(", ");
+		toPrint = new Expression[strs.length];
+		for (int i = 0; i < strs.length; i++)
+			toPrint[i] = Expression.interpret(strs[i]);
 	}
 	
 	public void evaluate(IdentifierMap values)
 	{
-		for (Expression expr : expressions)
-			System.out.print(expr.evaluate())
+		for (Expression expr : toPrint)
+			System.out.print(expr.evaluate(values).toString() + " ");
 		System.out.println();
 	}
 }

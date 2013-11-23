@@ -44,7 +44,7 @@ public class IdentifierMap
 		if (containingScope == null) {
 			throw new RuntimeException("Variable not found: " + name);
 		}
-		containingScope.map.get(name);
+		return containingScope.map.get(name);
 	}
 	
 	// Returns the smallest IdentifierMap that contains the identifier
@@ -52,7 +52,7 @@ public class IdentifierMap
 	private static IdentifierMap getContainingScope(String identifier, IdentifierMap lowest) {
 		while (lowest != null) {
 			if (lowest.map.containsKey(identifier))
-				return lowest
+				return lowest;
 			lowest = lowest.previousblock;
 		}
 		return null;

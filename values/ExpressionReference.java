@@ -5,7 +5,7 @@ import java.util.*;
 
 public class ExpressionReference extends Expression
 {
-	private Identifier primary;
+/*	private Identifier primary;
 	private Value secondary;
 	private ReferenceType type;
 	
@@ -48,17 +48,17 @@ public class ExpressionReference extends Expression
 		primary = Expression.interpret(components[0]);
 		secondary = Expression.interpret(components[1]);
 	}
-	
+*/	
 	public Value evaluate(IdentifierMap values)
 	{
-		switch (type)
-		{
-			case ReferenceType.NONE: return primary.evaluate(values);
-			case ReferenceType.DOT: return primary.evaluate(values).getField(secondary.evaluate(values));
-			case ReferenceType.BRACKET: return primary.evaluate(values).call("[]", secondary.evaluate(values));
-			case ReferenceType.BRACE: return primary.evaluate(values).call("{}", secondary.evaluate(values));
-		}
-		assert false;
+//		switch (type)
+//		{
+//			case NONE: return primary.evaluate(values);
+//			case DOT: return primary.evaluate(values).getField(secondary.evaluate(values));
+//			case BRACKET: return primary.evaluate(values).call("[]", secondary.evaluate(values));
+//			case BRACE: return primary.evaluate(values).call("{}", secondary.evaluate(values));
+//		}
+		return null;
 	}
 	
 	private enum ReferenceType

@@ -10,6 +10,8 @@
 
 package ambroscum;
 
+import ambroscum.lines.Line;
+
 public class Scope
 {
 	private IdentifierMap idmap;

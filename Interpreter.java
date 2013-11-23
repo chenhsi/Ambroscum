@@ -9,6 +9,7 @@ package ambroscum;
 
 import java.io.*;
 import java.util.*;
+import ambroscum.lines.Line;
 
 public class Interpreter
 {

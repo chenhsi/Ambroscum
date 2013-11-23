@@ -6,7 +6,7 @@ public class AssertLine extends Line {
 	
 	private Expression test, error;
 	
-	protected AssertLine(String line) {
+	AssertLine(String line) {
 		// Get the test string (7 = index of first char of test, i.e. after "assert ")
 		StringBuilder tBuild = new StringBuilder();
 		boolean isCode = true;
@@ -21,7 +21,7 @@ public class AssertLine extends Line {
 				// AKA " : ", which delimits the test expression and the error expression
 				if (isCode && ch == ' ' && line.charAt(i - 1) == ':' && line.charAt(i - 2) == ' ') {
 					// Remove the " :" from the error expression
-					tBuild.remove(tBuild.length() - 2, tBuild.length(), "");
+					tBuild.delete(i - 2, i);
 					break;
 				}
 			}

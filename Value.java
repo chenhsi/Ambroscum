@@ -13,12 +13,10 @@ public class Value
 {
 	public static final Value TRUE = new Value();
 	
-	private Type type;
-	
 	private Map<String, Value> fields;
 	private Map<String, Function> functions;
 	
-	public Value(Type type)
+	public Value()
 	{
 		
 	}

@@ -3,7 +3,7 @@ package ambroscum.values;
 import ambroscum.*;
 import java.util.*;
 
-public ExpressionLiteral extends Expression
+public class ExpressionLiteral extends Expression
 {
 	private Value fixed;
 	
