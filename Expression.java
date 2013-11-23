@@ -1,6 +1,8 @@
 package ambroscum;
 
 import ambroscum.values.*;
+import ambroscum.parser.TokenStream;
+import ambroscum.parser.Token;
 
 public abstract class Expression
 {
@@ -8,29 +10,22 @@ public abstract class Expression
 
 	public static Expression interpret(TokenStream stream)
 	{
-		if (rawcode.equals("True"))
+		Token token = stream.removeFirst();
+		if (token.toString().equals("True"))
 			return new ExpressionLiteral(Value.TRUE);
-		if (rawcode.equals("False"))
+		if (token.toString().equals("False"))
 			throw new UnsupportedOperationException();
-		if (isNumber(rawcode))
-			return parseNum(rawcode);
-		if (isString(rawcode))
-			return parseString(rawcode);
+		if (isNumber(token.toString()))
+			return parseNum(token.toString());
+		if (isString(token.toString()))
+			return parseString(token.toString());
 		if (false) // is a reference
 			throw new UnsupportedOperationException();
-		if (true) // has operator/function
+		if (false) // has operator/function
 		{
-			char[] array = rawcode.toCharArray();
-			for (int i = array.length - 1; i >= 0; i--)
-			{
-				if (array[i] == ' ')
-				{
-
-				}
-			}
 		}
-		if (ExpressionReference.isValidReference(rawcode)) // is a reference
-			return new ExpressionReference(rawcode);
+		if (ExpressionReference.isValidReference(token.toString())) // is a reference
+			return new ExpressionReference(null); //token.toString())
 		if (false) // has operator/function
 			throw new UnsupportedOperationException();
 		else // can't actually think of any other cases

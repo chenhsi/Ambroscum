@@ -49,6 +49,8 @@ public class Tokenizer
 				break;
 			if (isSeparator(str.charAt(i)))
 				stream.offer(getToken(str.charAt(i)));
+			if (str.charAt(i) == '\n')
+				stream.offer(Token.NEWLINE);
 			if (closeParen(str.charAt(i)) || str.charAt(i) == ',')
 			{
 				if (i + 1 == str.length())

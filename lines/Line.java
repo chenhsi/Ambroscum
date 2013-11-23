@@ -9,11 +9,11 @@ package ambroscum.lines;
 
 import ambroscum.*;
 import ambroscum.parser.TokenStream;
+import ambroscum.parser.Token;
 
 public abstract class Line
 {
 	public abstract void evaluate(IdentifierMap values);
-<<<<<<< HEAD
 
 	public static Line evalAsLine(TokenStream stream)
 	{
@@ -26,7 +26,7 @@ public abstract class Line
 		if (token.toString().equals("print") || token.toString().equals("println"))
 		{
 			stream.removeFirst();
-			return new PrintLine(stream, token.length() == 7);
+			return new PrintLine(stream, token.toString().length() == 7);
 		}
 //		if (code.contains(" = "))
 //		{

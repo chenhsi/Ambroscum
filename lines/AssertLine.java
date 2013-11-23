@@ -1,12 +1,14 @@
 package ambroscum.lines;
 
 import ambroscum.*;
+import ambroscum.parser.TokenStream;
 
 public class AssertLine extends Line {
 	
 	private Expression test, error;
 	
-	AssertLine(String line) {
+	AssertLine(TokenStream stream) {
+		String line = "";
 		// Get the test string (7 = index of first char of test, i.e. after "assert ")
 		StringBuilder tBuild = new StringBuilder();
 		boolean isCode = true;
@@ -31,8 +33,8 @@ public class AssertLine extends Line {
 		String t = tBuild.toString();
 		String e = line.substring(i + 1);
 		
-		test = Expression.interpret(t);
-		error = Expression.interpret(e);
+		test = Expression.interpret(null); // used to be t
+		error = Expression.interpret(null); // used to be e
 	}
 	
 	public void evaluate(IdentifierMap values) {
