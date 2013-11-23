@@ -2,48 +2,39 @@ package ambroscum.lines;
 
 import ambroscum.*;
 import ambroscum.parser.TokenStream;
+import ambroscum.parser.Token;
+import ambroscum.error.AssertionError;
+import ambroscum.error.SyntaxError;
+import ambroscum.values.BooleanLiteral;
 
 public class AssertLine extends Line
 {
+	private Expression test, errorMessage;
 	
-	private Expression test, error;
-	
-	AssertLine(TokenStream stream) {
-		String line = "";
-		// Get the test string (7 = index of first char of test, i.e. after "assert ")
-		StringBuilder tBuild = new StringBuilder();
-		boolean isCode = true;
-		int i;
-		for (i = 0; i < line.length(); i++) {
-			char ch = line.charAt(i);
-			if (ch == '\"')
-				isCode = !isCode;
-			else {
-				// If we are reading actual code (i.e. not a string literal)
-				// and we hit the border of life and death
-				// AKA " : ", which delimits the test expression and the error expression
-				if (isCode && ch == ' ' && line.charAt(i - 1) == ':' && line.charAt(i - 2) == ' ') {
-					// Remove the " :" from the error expression
-					tBuild.delete(i - 2, i);
-					break;
-				}
-			}
-			tBuild.append(ch);
-			
+	AssertLine(TokenStream stream)
+	{
+		test = Expression.interpret(stream);
+		Token token = stream.removeFirst();
+		if (token != Token.NEWLINE)
+		{
+			if (!token.toString().equals(":"))
+				throw new SyntaxError("Expecting ':' token in assert line");
+			errorMessage = Expression.interpret(stream);
+			Token temp = stream.removeFirst();
+			if (temp != Token.NEWLINE)
+				throw new SyntaxError("Unexpected token in assert line: " + temp);
 		}
-		String t = tBuild.toString();
-		String e = line.substring(i + 1);
-		
-		test = Expression.interpret(null); // used to be t
-		error = Expression.interpret(null); // used to be e
 	}
 	
-	public void evaluate(IdentifierMap values) {
+	public void evaluate(IdentifierMap values)
+	{
 		Value testVal = test.evaluate(values);
-		Value errVal = error.evaluate(values);
-		if (!(testVal.equals(Value.TRUE))) {
-			// Raise assertion error.
-			// And how are we passing strings to the terminal?
+		if (!(testVal.equals(BooleanLiteral.TRUE)))
+		{
+			if (errorMessage == null)
+				throw new AssertionError(errorMessage.evaluate(values).toString());
+			else
+				throw new AssertionError();
 		}
 	}
 }

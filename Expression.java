@@ -19,10 +19,8 @@ public abstract class Expression
 			return parseNum(token.toString());
 		if (isString(token.toString()))
 			return parseString(token.toString());
-		if (false) // is a reference
-			throw new UnsupportedOperationException();
-		if (ExpressionReference.isValidReference(token.toString())) // is a reference
-			return null; // new ExpressionReference(token.toString())
+		if (IdentifierMap.isValidIdentifier(token.toString())) // is a reference
+			return new ExpressionReference(token, stream);
 		if (false) // has operator/function
 			throw new UnsupportedOperationException();
 		else // can't actually think of any other cases

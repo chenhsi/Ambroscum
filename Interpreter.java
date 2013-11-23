@@ -27,9 +27,13 @@ public class Interpreter
 	 */
 	public static void interpret() {
 		Scanner in = new Scanner(System.in);
+		boolean firstLine = true;
 		String line;
 		while (true) {
-			System.out.print("\n>>> ");
+			if (!firstLine)
+				System.out.println();
+			firstLine = false;
+			System.out.print(">>> ");
 			line = in.nextLine() + "\n";
 			TokenStream tokens = Tokenizer.tokenize(line);
 			Line lineLine = Line.evalAsLine(tokens);

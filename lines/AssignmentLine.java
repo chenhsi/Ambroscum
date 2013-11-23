@@ -18,7 +18,7 @@ public class AssignmentLine extends Line
 	{
 		ArrayList<ExpressionReference> assignIDsList = new ArrayList<ExpressionReference>();
 		while (true) {
-			assignIDsList.add(new ExpressionReference(stream));
+			assignIDsList.add(new ExpressionReference(null, stream)); // randomly added null to make stuff work
 			if (stream.size() > 0) {
 				Token first = stream.getFirst();
 				if (Token.COMMA == first) {

@@ -13,10 +13,6 @@ public class Token
 		this.str = str;
 	}
 
-	public String getString() {
-		return str;
-	}
-
 	public String toString()
 	{
 		return str;

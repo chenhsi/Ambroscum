@@ -11,13 +11,16 @@ import java.util.*;
 
 public class Value
 {
-	public static final Value TRUE = new Value();
-	
 	private Map<String, Value> fields;
 	private Map<String, Function> functions;
 	
 	public Value()
 	{
 		
+	}
+	
+	public boolean equals(Object other)
+	{
+		return other instanceof Value && true; // needs working on
 	}
 }

@@ -19,9 +19,12 @@ public class PrintLine extends Line
 		
 		while (!stream.isEmpty())
 		{
-			Token token = stream.removeFirst();
+			Token token = stream.getFirst();
 			if (token == Token.NEWLINE)
+			{
+				stream.removeFirst();
 				break;
+			}
 			if (expectExpr)
 			{
 				if (token == Token.COMMA)
@@ -32,7 +35,10 @@ public class PrintLine extends Line
 			else if (token != Token.COMMA)
 				throw new SyntaxError("Unexpected token: " + token);
 			else
+			{
 				expectExpr = true;
+				stream.removeFirst();
+			}
 		}
 	}
 	
@@ -41,9 +47,9 @@ public class PrintLine extends Line
 		boolean first = true;
 		for (Expression expr : toPrint)
 		{
-			System.out.print(expr.evaluate(values));
 			if (!first)
 				System.out.print(" ");
+			System.out.print(expr.evaluate(values));
 			first = false;
 		}
 		if (newline)

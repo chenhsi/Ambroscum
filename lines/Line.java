@@ -31,10 +31,12 @@ public abstract class Line
 		if (token.toString().equals("return"))
 			return new ReturnLine(stream);
 		// Look-ahead to see if we hit '=' before the next line
+		TokenStream newStream = new TokenStream();
+		newStream.add(token);
 		Iterator<Token> streamIter = stream.iterator();
 		while (streamIter.hasNext()) {
 			Token next = streamIter.next();
-			String str = next.getString();
+			String str = next.toString();
 			if (str.equals("=")) {
 				return new AssignmentLine(stream);
 			} else if (str.equals("\n")) {

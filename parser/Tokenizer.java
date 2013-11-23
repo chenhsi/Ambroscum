@@ -70,7 +70,7 @@ public class Tokenizer
 		switch (c)
 		{
 			case '.': return Token.DOT;
-			case 'c': return Token.COMMA;
+			case ',': return Token.COMMA;
 		}
 		return new Token("" + c);
 	}
