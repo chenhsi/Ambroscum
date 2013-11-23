@@ -91,21 +91,24 @@ public class ExpressionReference extends Expression
 	}
 	
 	public static ExpressionReference createExpressionReference(Token start, TokenStream stream) {
+		// I will admit that this works mostly because of magic. And demi-recursion, which is effectively the same thing.
 		ExpressionReference outerRef = new ExpressionReference();
 		String baseReference = start.toString();
 		outerRef.baseReference = baseReference;
 		outerRef.type = ReferenceType.NONE;
 		
-			System.out.println(outerRef);
 		while (true) {
 			if (stream.size() > 0) {
 				String first = stream.getFirst().toString();
 				// If the references continue
 				if ("[".equals(first) || "{".equals(first)) {
+					// This reads in the next thing (e.g. "[fancy expression stuff]")
+					// and creates a new ExpressionReference
 					outerRef = new ExpressionReference(outerRef, stream);
 					continue;
 				}
 			}
+			// Essentially, if we don't read in another [0] thing, we're done here.
 			break;
 		}
 		return outerRef;
