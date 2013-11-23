@@ -50,32 +50,20 @@ public class Tokenizer
 			while (i < str.length() && !isSeparator(str.charAt(i)) && !isWhitespace(str.charAt(i)))
 				i++;
 			stream.offer(new Token(str.substring(j, i)));
-			/*if (isSeparator(str.charAt(i)))
-				stream.offer(getToken(str.charAt(i)));
-			if (str.charAt(i) == '\t')
-				throw new SyntaxError("Unexpected tab");
 			while (i < str.length() && closeParen(str.charAt(i)))
-			{
- 				while (str.charAt(i + 1) == '\n')
-					st
-				i++;
-				if (str.charAt(i) != ' ')
-					throw new SyntaxError("Missing whitespace");
-			}
-			if (str.charAt(i) == ',')
-			{
-				i++;
-				stream.offer(Token.COMMA);
-			}*/
-			while (i < str.length() && isSeparator(str.charAt(i)))
 				stream.offer(getToken(str.charAt(i++)));
 			if (i == str.length())
 				break;
-			if (!isWhitespace(str.charAt(i)))
-				throw new SyntaxError("Whitespace expected");
+			if (str.charAt(i) == ',')
+			{
+				stream.offer(Token.COMMA);
+				i++;
+			}
+			if (!isWhitespace(str.charAt(i)) && !openParen(str.charAt(i)))
+				throw new SyntaxError("Whitespace expected: " + i);
 			if (str.charAt(i) == '\t')
 				throw new SyntaxError("Unexpected tab");
-			if (str.charAt(i) == '\n')
+			if (str.charAt(i) == '\n' || openParen(str.charAt(i)))
 				i--;
 		}
 		return stream;
