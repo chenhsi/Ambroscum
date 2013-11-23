@@ -1,34 +1,53 @@
-Program	: (Script_Line "\n")*
+/* stuff to add:
+ *   for loop
+ *   loop labels
+ *   tuples/list/dictionary literals
+ *   ++ or -- expressions
+ *   ** power operator, bit shift operators
+ *   hex/octal/binary constants
+ *   objects/classes
+ *   typing
+ *
+ * stuff never to be done (will be dealt with in preprocessing):
+ *   comment
+ */
+
+Program	: (Script_Line Newline)*
         ;
 
 /*
  *	Simple Statement Lines
  */
 
-Script_Line : BlankLine
-            | Simple_ScriptStmt
+Script_Line : Empty_Line
+            | Assignment_Stmt
+            | Print_Stmt
+            | Assert_Stmt
+            | Expression
             | Compound_Stmt
             ;
 
-Simple_Script_Stmt : Assignment_Stmt
-                   | Print_Stmt
-                   | Assert_Stmt
-                   | Expression
-                   ;
-
-Assignment_Stmt : Type? Identifier (", " Identifier)* " = " Expression (", " Expression)*
+Assignment_Stmt : Reference (", " Reference)* " = " Expression (", " Expression)*
+                | Reference (" += " | " -= " | " *= " | " /= ") Expression
+                ;
 
 Print_Stmt : "print " (Expression (", " Expression)*)?
+           ;
 
 Assert_Stmt : "assert " Boolean_Expr (" : " Expression)?
+            ;
 
-Break_Stmt : "break\n"
+Break_Stmt : "break"
+           ;
 
-Continue_Stmt : "continue\n"
+Continue_Stmt : "continue"
+              ;
 
-Return_Stmt : "return " (Expression)? "\n"
+Return_Stmt : "return" (" " Expression)?
+            ;
 
-BlankLine : "\n"
+Empty_Line :
+           ;
 
 /*
  *	Compound Statement Lines
@@ -41,58 +60,110 @@ Compound_Stmt : If_Expr
               | Class_Expr
               ;
 
-If_Expr : "If " Boolean_Expr ":\n" Block ("ElseIf " Boolean_Expr ":\n" Block)* ("Else:\n" Block)?
+If_Expr : "If " Boolean_Expr ":" Newline Block ("ElseIf " Boolean_Expr ":" Newline Block)* ("Else:" Newline Block)?
         ;
 
-For_Expr : "For i in iterable
-         ;
-
-While_Expr : "While " Boolean_Expr ":\n" Loop_Block ("Else:\n" Loop_Block)?
+While_Expr : "While " Boolean_Expr ":" Newline Loop_Block ("Else:" Newline Loop_Block)?
            ;
 
-Func_Expr : "def " (Func_Modifier " ")* Type " " Identifier "(" (Func_Parameter (", " Func_Parameter)*)? "):\n" Func_Internals
+Func_Expr : "def " (Func_Modifier " ")* Identifier "(" (Func_Parameter (", " Func_Parameter)*)? "):" Newline Func_Internals
           ;
 
-Class_Expr : "class " Identifier ":\n" Class_Internals
+Class_Expr : "class " Identifier ":" Newline Class_Internals
            ;
 
-Func_Parameter : Type " " Identifier (" = " Expression)?
+Func_Parameter : Identifier (" = " Expression)?
           ;
+
+/*
+ *  Indentation
+ */
+
+{
+  /* semantics */
+  int indentation_level = 0;
+}
+
+Newline : "\n" Tabs
+        ;
+
+Tabs : "\t"* { assert "\t".count == indentation_level; }
+     ;
+
+Indent : { indentation_level++; }
+       ;
+
+Dedent : { dedentation_level++; }
+       ;
 
 /*
  *	Block Statements
  */
 
-Loop_Block : Indent ((Script_Line | Break_Stmt | Continue_Stmt) "\n")* Dedent End
+Loop_Block : Indent ((Script_Line | Break_Stmt | Continue_Stmt) Newline)* Dedent "End"
 
-Func_Internals : Indent (Script_Line | Return_Stmt)* Dedent End
+Func_Internals : Indent ((Script_Line | Return_Stmt) Newline)* Dedent "End"
 
-Class_Internals : 
+Class_Internals : // unimplemented
 
 /*
  *	Function Calls
  */
 
 Call : Identifier "(" (Expression (", " Expression)*)? ")"
-     | Expression Operator Expression
-     | Expression "[" Expression "]"
-     | Expression "(" Expression ")"
-     | Expression "{" Expression "}"
+     | Integer_Expr " " Integer_Op " " Integer_Expr
+     | Boolean_Expr " " Boolean_Op " " Integer_Expr
+     | String_Expr " " String_Op " " String_Expr
      ;
+
+Integer_Op : "+" | "-" | "*" | "/" | "%"
+           ;
+
+Boolean_Op : "and" | "or" | "xor"
+           ;
+
+String_Op : "+"
+          ;
 
 /*
  *	Expressions
  */
 
-Expression : 
+Reference : Identifier
+          | Identifier "(" Expression ")"
+          | Identifier "[" Expression "]"
+          | Identifier "{" Expression "}"
+          ;
 
-Boolean_Expr : Identifier
+Expression : Integer_Expr
+           | Boolean_Expr
+           | String_Expr
+           | Call
+           | "(" Expression ")"
+           ;
+
+Integer_Expr : Reference
+             | Call
+             | Integer_Constant
+             | "(" Integer_Expr ")"
+             ;
+
+Integer_Constant : ("0" .. "9")+
+
+Boolean_Expr : Reference
              | Call
              | "True"
              | "False"
              | "not " Boolean_Expr
+             | "(" Boolean_Expr ")"
              ;
 
-Identifier : 
+String_Expr : Reference
+            | Call
+            | String_Literal
+            | "(" String_Expr ")"
+            ;
 
-Type : 
+String_Literal : "\"" (*) "\""
+
+Identifier : (*)
