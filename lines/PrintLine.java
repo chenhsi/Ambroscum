@@ -19,7 +19,7 @@ public class PrintLine extends Line
 		
 		while (!stream.isEmpty())
 		{
-			Token token = stream.removeFirst();
+			Token token = stream.getFirst();
 			if (token == Token.NEWLINE)
 				break;
 			if (expectExpr)

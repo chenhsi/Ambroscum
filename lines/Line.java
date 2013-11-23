@@ -9,11 +9,11 @@ package ambroscum.lines;
 
 import ambroscum.*;
 import ambroscum.parser.TokenStream;
+import ambroscum.parser.Token;
 
 public abstract class Line
 {
 	public abstract void evaluate(IdentifierMap values);
-<<<<<<< HEAD
 
 	public static Line evalAsLine(TokenStream stream)
 	{
@@ -26,6 +26,7 @@ public abstract class Line
 		if (token.toString().equals("print") || token.toString().equals("println"))
 		{
 			stream.removeFirst();
+<<<<<<< HEAD
 			return new PrintLine(stream, token.length() == 7);
 		} else {
 			// Look-ahead to see if we hit '=' before the next line
@@ -41,6 +42,23 @@ public abstract class Line
 			}
 			//int index = first.indexOf(" = ");
 			//return new AssignmentLine(first.substring(0, index), first.substring(index + 3));
+=======
+			return new PrintLine(stream, token.toString().length() == 7);
+		}
+		if (token.toString().equals("break"))
+		{
+			return new BreakLine();
+		}
+		if (token.toString().equals("continue"))
+		{
+			return new ContinueLine();
+		}
+		if (token.toString().equals("return"))
+		{
+			return new ReturnLine(stream);
+		}
+		
+>>>>>>> dc8c10ef8926910674b0aec203c462eceb5636e6
 //		if (code.contains(" = "))
 //		{
 //			int index = code.indexOf(" = ");

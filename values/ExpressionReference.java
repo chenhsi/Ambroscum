@@ -1,6 +1,7 @@
 package ambroscum.values;
 
 import ambroscum.*;
+import ambroscum.parser.TokenStream;
 import java.util.*;
 
 public class ExpressionReference extends Expression
@@ -9,12 +10,15 @@ public class ExpressionReference extends Expression
 	private Expression secondary;
 	private ReferenceType type;
 
-	ExpressionReference(TokenStream stream) {
-		for (char ch : REFERENCE_DELIMITERS) {
+	public ExpressionReference(TokenStream stream)
+	{
+		String text = "";
+		for (char ch : REFERENCE_DELIMITERS)
+		{
 			int index = text.indexOf(ch);
 			if (index > -1) {
 				name = text.substring(0, index);
-				secondary = Expression.interpret(text.substring(index + 1, text.length() - 1));
+				secondary = null; //Expression.interpret(text.substring(index + 1, text.length() - 1));
 				switch (ch) {
 					case '(':
 						type = ReferenceType.PARENTHESIS;
@@ -38,7 +42,7 @@ public class ExpressionReference extends Expression
 			int index = text.indexOf(ch);
 			if (index > -1) {
 				name = text.substring(0, index);
-				secondary = Expression.interpret(text.substring(index + 1, text.length() - 1));
+				secondary = null; //Expression.interpret(text.substring(index + 1, text.length() - 1));
 				switch (ch) {
 					case '(':
 						type = ReferenceType.PARENTHESIS;

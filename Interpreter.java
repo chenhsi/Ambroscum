@@ -10,6 +10,8 @@ package ambroscum;
 import java.io.*;
 import java.util.*;
 import ambroscum.lines.Line;
+import ambroscum.parser.TokenStream;
+import ambroscum.parser.Tokenizer;
 
 public class Interpreter
 {
@@ -27,13 +29,14 @@ public class Interpreter
 		Scanner in = new Scanner(System.in);
 		String line;
 		while (true) {
-			System.out.print(">>> ");
-			line = in.nextLine();
-			Line lineLine = Line.evalAsLine(line, null);
+			System.out.print("\n>>> ");
+			line = in.nextLine() + "\n";
+			TokenStream tokens = Tokenizer.tokenize(line);
+			Line lineLine = Line.evalAsLine(tokens);
 			lineLine.evaluate(identifiers);
 		}
 	}
-	public static void interpret(String filename) throws IOException {
+/*	public static void interpret(String filename) throws IOException {
 		interpret(new File(filename));
 	}
 	public static void interpret(File file) throws IOException {
@@ -43,5 +46,5 @@ public class Interpreter
 			line = reader.readLine();
 			Line lineLine = Line.evalAsLine(line, null);
 		} while(line != null);
-	}
+	}*/
 }
