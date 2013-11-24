@@ -56,9 +56,10 @@ public abstract class Expression
 				result = new ExpressionCall(result, stream);
 			}
 		}
-		else if (token.toString().equals("["))
+		else if (token.toString().equals("[")) {
 			result = new ExpressionList(token, stream);
-		else if (token.toString().equals("(")) {
+			result = ExpressionReference.createExpressionReference(result, stream);
+		} else if (token.toString().equals("(")) {
 			result = Expression.interpret(stream);
 			if (!")".equals(stream.getFirst().toString())) {
 				throw new SyntaxError("Expected \")\" at end of expression");
