@@ -26,6 +26,7 @@ public class IfLine extends Line {
 	}
 	public void setBlock(Block b) {
 		block = b;
+		System.out.println(block);
 	}
 	
 	public void evaluate(IdentifierMap values) {
@@ -34,8 +35,8 @@ public class IfLine extends Line {
 			if (((BooleanValue) conditionValue).getValue()) {
 				block.evaluate(values);
 			}
-		}
-		throw new SyntaxError("Expected a boolean for if statement condition: " + condition);
+		} else
+			throw new SyntaxError("Expected a boolean for if statement condition: " + condition);
 	}
 	
 	public String toString() {

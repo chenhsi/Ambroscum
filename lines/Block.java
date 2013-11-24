@@ -24,4 +24,8 @@ public class Block extends Line {
 			l.evaluate(values);
 		}
 	}
+	
+	public String toString() {
+		return lines.toString();
+	}
 }

@@ -47,6 +47,7 @@ public class Interpreter
 				} else {
 					Block block = readBlock(in, 1);
 					lineLine.setBlock(block);
+					lineLine.evaluate(identifiers);
 				}
 			} catch (AmbroscumError ex) {
 				ex.printStackTrace();
