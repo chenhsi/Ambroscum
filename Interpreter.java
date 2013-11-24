@@ -69,7 +69,7 @@ public class Interpreter
 			String line = in.nextLine() + "\n";
 			TokenStream tokens = Tokenizer.tokenize(line);
 			lineLine = Line.interpret(tokens, indentation);
-			System.out.println("interpret as " + lineLine);
+//			System.out.println("interpret as " + lineLine);
 			if (lineLine instanceof ElseLine) {
 				if (root instanceof IfLine) {
 					Block block = readBlock(in, indentation, lineLine);

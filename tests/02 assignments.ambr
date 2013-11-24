@@ -17,3 +17,6 @@ x = [1, 2, 3]
 x[0] = [2, 3, 4]
 println x
 println x[0][0]
+
+x[0][0] = 1000
+println x

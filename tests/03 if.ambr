@@ -1,0 +1,27 @@
+if true:
+	println 1
+end
+
+if 1 < 2:
+	println 1
+else:
+	println 2
+end
+
+x, y = 1, 2
+if 1 < 2:
+	x = 5
+else:
+	y = 5
+end
+println x, y
+
+if 1 < 2:
+	if 4 < 3:
+		println 5
+	else:
+		println 1000
+	end
+else:
+	print "wtf"
+end
