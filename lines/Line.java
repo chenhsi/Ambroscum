@@ -31,6 +31,8 @@ public abstract class Line
 			{
 				if (i == indentation - 1)
 				{
+					if (!tab.toString().equals("end"))
+						throw new SyntaxError("Missing indentation");
 					Token temp = stream.removeFirst();
 					if (temp != Token.NEWLINE)
 						throw new SyntaxError("Unexpected token after end:" + temp);

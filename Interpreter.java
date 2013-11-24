@@ -1,7 +1,7 @@
 /**
  * The interpreter itself. Parses input files and executes the code.
  * 
- * @author Chenhsi Steven Bi, Jing-Lun Edward Gao
+ * @author Chen-Hsi Steven Bi, Jing-Lun Edward Gao
  * @version 1.0
  */
 

@@ -7,95 +7,167 @@ public class Tokenizer
 	public static TokenStream tokenize(String str)
 	{
 		TokenStream stream = new TokenStream();
-		
-		for (int i = 0; i < str.length(); i++)
+		int i = 0;
+		while (i < str.length())
 		{
-			if (str.charAt(i) == '\n')
+			switch (str.charAt(i))
 			{
-				stream.offer(Token.NEWLINE);
-				while (i + 1 < str.length() && str.charAt(i + 1) == '\t')
-				{
-					i++;
-					stream.offer(Token.TAB);
-				}
-				continue;
-			}
-			if (str.charAt(i) == ' ')
-				throw new SyntaxError("Unexpected whitespace");
-			if (str.charAt(i) == '"')
-			{
-				int j = i++;
-				while (i < str.length() && str.charAt(i) != '\n' && str.charAt(i) != '"')
-					i++;
-				if (i == str.length() || str.charAt(i) == '\n')
-					throw new SyntaxError("Nonterminating string");
-				stream.offer(new Token(str.substring(j, i + 1)));
-				if (i + 1 == str.length())
+				case ')': case ']': case '}': case '\t': case ' ': case '.': case ',':
+					throw new SyntaxError("Unexpected character: " + str.charAt(i));
+				
+				case '(': case '[': case '{':
+					i = openParen(str, i, stream);
 					break;
-				if (str.charAt(i + 1) == '\n')
-					continue;
-				i++;
-				if (str.charAt(i) != ' ')
-					throw new SyntaxError("Missing whitespace");
-				continue;
-			}
-			if (openParen(str.charAt(i)))
-			{
-				stream.offer(getToken(str.charAt(i)));
-				if (i + 1 == str.length())
-					throw new SyntaxError("Unclosed grouping");
-				if (closeParen(str.charAt(i + 1)))
-				{
-					if (matching(str.charAt(i), str.charAt(i + 1)))
-						stream.offer(getToken(str.charAt(i + 1)));
-					else
-						throw new SyntaxError("non-matching grouping");
+				case '\n':
+					i = newline(str, i, stream);
+					break;
+				case '"':
+					i = string(str, i, stream);
+					if (!isWhitespace(str.charAt(i)))
+						throw new SyntaxError("Expecting whitespace after quotes");
 					i++;
-				}
-				continue;
+					continue;
+				default:
+					i = normalToken(str, i, stream);
 			}
-			if (closeParen(str.charAt(i)) || str.charAt(i) == ',' || str.charAt(i) == '.')
-				throw new SyntaxError("Unexpected token: " + str.charAt(i));
-			int j = i++;
-			while (i < str.length() && !isSeparator(str.charAt(i)) && !isWhitespace(str.charAt(i)))
-				i++;
-			stream.offer(new Token(str.substring(j, i)));
-			while (i < str.length() && closeParen(str.charAt(i)))
-				stream.offer(getToken(str.charAt(i++)));
-			if (i == str.length())
-				break;
-			if (str.charAt(i) == ',')
-			{
-				stream.offer(Token.COMMA);
-				i++;
-			}
-			if (str.charAt(i) == ':')
-			{
-				stream.offer(Token.COLON);
-				continue;
-			}
-			if (!isWhitespace(str.charAt(i)) && !openParen(str.charAt(i)))
-				throw new SyntaxError("Whitespace expected: " + i);
-			if (str.charAt(i) == '\t')
-				throw new SyntaxError("Unexpected tab");
-			if (str.charAt(i) == '\n' || openParen(str.charAt(i)))
-				i--;
 		}
 		System.out.println(stream);
 		return stream;
 	}
 	
-	private static Token getToken(char c)
+	private static int newline(String str, int i, TokenStream stream)
 	{
-		switch (c)
+		stream.offer(Token.NEWLINE);
+		i++;
+		while (i < str.length() && str.charAt(i) == '\t')
 		{
-			case '\n': return Token.NEWLINE;
-			case '\t': return Token.TAB;
-			case '.': return Token.DOT;
-			case ',': return Token.COMMA;
-			case ':': return Token.COLON;
+			i++;
+			stream.offer(Token.TAB);
 		}
-		return new Token("" + c);
+		return i;
+	}
+	
+	private static int openParen(String str, int i, TokenStream stream)
+	{
+		char initial = str.charAt(i);
+		stream.offer(Token.getToken(initial + ""));
+		i++;
+		outer: while (i < str.length())
+		{
+			switch (str.charAt(i))
+			{
+				case ')': case ']': case '}':
+					if (Math.abs(str.charAt(i) - initial) > 2)
+						throw new SyntaxError("Mismatched grouping characters");
+					else
+						break outer;
+				
+				case '(': case '[': case '{': i = openParen(str, i, stream); break;
+				
+				case '\n': throw new SyntaxError("Unexpected newline in grouping");
+				case '\t': throw new SyntaxError("Unexpected tab");
+				case ' ': throw new SyntaxError("Unexpected whitespace");
+				case '.': throw new SyntaxError("Unexpected period");
+				case ',': throw new SyntaxError("Unexpected comma");
+				
+				case '"':
+					i = string(str, i, stream);
+					if (!closeParen(str.charAt(i)) && !isWhitespace(str.charAt(i)))
+						throw new SyntaxError("Expecting whitespace after quotes");
+					continue;
+				default:
+					i = normalToken(str, i, stream);
+			}
+		}
+		if (i == str.length())
+			throw new SyntaxError("Nonterminating grouping");
+		stream.offer(Token.getToken("" + str.charAt(i++)));
+		switch (str.charAt(i))
+		{
+			case ')': case ']': case '}':
+				return i;
+			case '.':
+				if (str.charAt(i + 1) == '\n')
+					throw new SyntaxError("Trailing dot at end of line");
+				stream.offer(Token.DOT);
+				return i + 1;
+			case ',':
+				stream.offer(Token.COMMA);
+				if (str.charAt(i + 1) == '\n' || str.charAt(i + 2) == '\n')
+					throw new SyntaxError("Trailing comma at end of line");
+				return i + 2;
+			case ':':
+				stream.offer(Token.COLON);
+				return i + 1;
+			case ' ':
+				if (str.charAt(i + 1) == '\n')
+					throw new SyntaxError("Trailing space at end of line");
+				return i + 1;
+			case '\n':
+				return newline(str, i, stream);
+			default:
+				throw new SyntaxError("Expected whitespace after grouping, found " + str.charAt(i));
+		}
+	}
+	
+	private static int string(String str, int i, TokenStream stream)
+	{
+		int start = i++;
+		while (i < str.length() && str.charAt(i) != '\n' && str.charAt(i) != '"')
+			i++;
+		if (i == str.length() || str.charAt(i) == '\n')
+			throw new SyntaxError("Nonterminating string");
+		stream.offer(Token.getToken(str.substring(start, i + 1)));
+		return i + 1;
+	}
+	
+	private static int normalToken(String str, int i, TokenStream stream)
+	{
+		boolean alphanumeric = Character.isLetterOrDigit(str.charAt(i));
+		int start = i++;
+		while (i < str.length())
+		{
+			switch (str.charAt(i))
+			{
+				case '\t': throw new SyntaxError("Unexpected tab");
+				case '"': throw new SyntaxError("Unexpected string");
+				
+				case '(': case '[': case '{': case ')': case ']': case '}': case '\n': case ' ': case '.': case ',':
+					break;
+			}
+			if (alphanumeric != Character.isLetterOrDigit(str.charAt(i)))
+				break;
+			i++;
+		}
+		stream.offer(Token.getToken(str.substring(start, i)));
+		if (i == str.length())
+			return i;
+		switch (str.charAt(i))
+		{
+			case '(': case '[': case '{':
+				return openParen(str, i, stream);
+			case ')': case ']': case '}': 
+				return i;
+			case '\n':
+				return newline(str, i, stream);
+			case ' ':
+				if (str.charAt(i + 1) != '\n')
+					return i + 1;
+				else
+					throw new SyntaxError("Extra space at end of line");
+			case '.':
+				stream.offer(Token.DOT);
+				return normalToken(str, i + 1, stream);
+			case ',':
+				stream.offer(Token.COMMA);
+				if (str.charAt(i + 1) == '\n' || str.charAt(i + 2) == '\n')
+					throw new SyntaxError("Trailing comma at end of line");
+				else if (str.charAt(i + 1) != ' ')
+					throw new SyntaxError("Whitespace expected");
+				return i + 2;
+			default:
+				return normalToken(str, i, stream);
+		}
 	}
 	
 	private static boolean isSeparator(char c)

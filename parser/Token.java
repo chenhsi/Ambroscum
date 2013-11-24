@@ -10,9 +10,24 @@ public class Token
 	
 	private String str;
 
-	public Token(String str)
+	private Token(String str)
 	{
 		this.str = str;
+	}
+	
+	public static Token getToken(String str)
+	{
+		if (str.equals("\n"))
+			return NEWLINE;
+		if (str.equals("\t"))
+			return TAB;
+		if (str.equals(","))
+			return COMMA;
+		if (str.equals(","))
+			return DOT;
+		if (str.equals(":"))
+			return COLON;
+		return new Token(str);
 	}
 
 	public String toString()
