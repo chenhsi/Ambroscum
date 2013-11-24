@@ -45,9 +45,15 @@ public class DefLine extends Line
 			list.add(new Parameter(token.toString()));
 			token = stream.removeFirst();
 		}
-		if (stream.removeFirst().toString() != Token.COLON)
+		if (stream.removeFirst() != Token.COLON)
 			throw new SyntaxError("Missing colon in function definition");
 //		block = new Block(stream, indentationLevel + 1);
+	}
+	
+	public void setBlock(Block b) {
+	}
+	public boolean expectsBlock() {
+		return true;
 	}
 	
 	@Override

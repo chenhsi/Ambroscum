@@ -12,6 +12,9 @@ public class IfLine extends Line {
 	
 	public IfLine(TokenStream stream) {
 		condition = Expression.interpret(stream);
+		if (!stream.getFirst().toString().equals(":")) {
+			throw new SyntaxError("Expected colon after if statement");
+		}
 	}
 	
 	public boolean expectsBlock() {
