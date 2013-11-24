@@ -4,6 +4,7 @@ import ambroscum.*;
 import ambroscum.errors.*;
 import ambroscum.parser.*;
 import ambroscum.values.*;
+import ambroscum.expressions.Expression;
 
 public class WhileLine extends Line
 {

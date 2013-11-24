@@ -4,7 +4,8 @@ import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
-import ambroscum.values.ExpressionCall;
+import ambroscum.expressions.Expression;
+import ambroscum.expressions.ExpressionCall;
 
 public class CallLine extends Line
 {

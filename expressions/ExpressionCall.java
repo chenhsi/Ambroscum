@@ -1,4 +1,4 @@
-package ambroscum.values;
+package ambroscum.expressions;
 
 import java.util.*;
 import ambroscum.*;
@@ -6,6 +6,8 @@ import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.FunctionNotFoundException;
 import ambroscum.errors.SyntaxError;
+import ambroscum.values.Value;
+import ambroscum.values.Function;
 
 public class ExpressionCall extends Expression
 {

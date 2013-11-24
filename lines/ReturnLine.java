@@ -4,6 +4,8 @@ import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
+import ambroscum.values.Value;
+import ambroscum.expressions.Expression;
 
 public class ReturnLine extends Line
 {

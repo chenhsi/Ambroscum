@@ -5,10 +5,11 @@
  * @version 1.0
  */
 
-package ambroscum;
+package ambroscum.tests;
 
 import java.io.*;
 import java.util.*;
+import ambroscum.Interpreter;
 
 public class AutoTester {
 	

@@ -8,6 +8,8 @@ import ambroscum.*;
 import ambroscum.errors.*;
 import ambroscum.values.*;
 import ambroscum.parser.*;
+import ambroscum.expressions.Expression;
+import ambroscum.expressions.ExpressionReference;
 
 public class AssignmentLine extends Line
 {

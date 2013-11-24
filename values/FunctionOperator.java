@@ -4,12 +4,12 @@ package ambroscum.values;
 
 import java.util.List;
 import java.util.LinkedList;
-import ambroscum.Expression;
-import ambroscum.Function;
 import ambroscum.IdentifierMap;
 import ambroscum.Parameter;
-import ambroscum.Value;
+import ambroscum.expressions.Expression;
 import ambroscum.lines.Block;
+import ambroscum.values.Value;
+import ambroscum.values.Function;
 import ambroscum.values.IntValue;
 import ambroscum.errors.FunctionNotFoundException;
 

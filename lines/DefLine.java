@@ -8,7 +8,9 @@ import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
-import ambroscum.values.ExpressionReference;
+import ambroscum.expressions.ExpressionReference;
+import ambroscum.expressions.Expression;
+import ambroscum.values.Value;
 
 public class DefLine extends Line
 {

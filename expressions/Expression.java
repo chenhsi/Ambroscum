@@ -1,12 +1,13 @@
-package ambroscum;
+package ambroscum.expressions;
 
 import java.util.Arrays;
 import java.util.Stack;
+import ambroscum.IdentifierMap;
 import ambroscum.values.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
-import ambroscum.values.ExpressionOperator;
+import ambroscum.expressions.ExpressionOperator;
 
 public abstract class Expression
 {

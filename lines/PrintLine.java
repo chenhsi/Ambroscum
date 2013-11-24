@@ -4,6 +4,7 @@ import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
+import ambroscum.expressions.Expression;
 import java.util.*;
 
 public class PrintLine extends Line

@@ -1,8 +1,10 @@
-package ambroscum.values;
+package ambroscum.expressions;
 
 import java.util.*;
 import ambroscum.*;
 import ambroscum.parser.Token;
+import ambroscum.values.Value;
+import ambroscum.values.FunctionOperator;
 
 public class ExpressionOperator extends Expression
 {

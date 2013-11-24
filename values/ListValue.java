@@ -1,7 +1,9 @@
 package ambroscum.values;
 
 import ambroscum.*;
-import ambroscum.error.*;
+import ambroscum.errors.*;
+import ambroscum.values.Value;
+import ambroscum.values.IntValue;
 import java.util.*;
 
 public class ListValue extends Value {

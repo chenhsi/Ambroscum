@@ -5,7 +5,7 @@
  * @version 1.0
  */
 
-package ambroscum;
+package ambroscum.values;
 
 import java.util.*;
 

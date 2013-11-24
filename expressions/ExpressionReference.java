@@ -1,9 +1,12 @@
-package ambroscum.values;
+package ambroscum.expressions;
 
 import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
+import ambroscum.values.Value;
+import ambroscum.values.ListValue;
+
 import java.util.*;
 
 public class ExpressionReference extends Expression

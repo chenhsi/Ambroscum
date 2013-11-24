@@ -1,9 +1,11 @@
 // haven't decided if global or local
 
-package ambroscum;
+package ambroscum.values;
 
 import java.util.List;
 import ambroscum.lines.Block;
+import ambroscum.Parameter;
+import ambroscum.IdentifierMap;
 
 public class Function extends Value
 {

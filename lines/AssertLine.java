@@ -6,6 +6,8 @@ import ambroscum.parser.Token;
 import ambroscum.errors.AssertionError;
 import ambroscum.errors.SyntaxError;
 import ambroscum.values.BooleanValue;
+import ambroscum.values.Value;
+import ambroscum.expressions.Expression;
 
 public class AssertLine extends Line
 {

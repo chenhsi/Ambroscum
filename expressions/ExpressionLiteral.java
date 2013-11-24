@@ -1,7 +1,8 @@
-package ambroscum.values;
+package ambroscum.expressions;
 
 import ambroscum.*;
 import java.util.*;
+import ambroscum.values.Value;
 
 public class ExpressionLiteral extends Expression
 {
