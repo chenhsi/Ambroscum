@@ -41,7 +41,17 @@ public class Tokenizer
 			}
 			if (openParen(str.charAt(i)))
 			{
-				stream.offer(new Token("" + str.charAt(i)));
+				stream.offer(getToken(str.charAt(i)));
+				if (i + 1 == str.length())
+					throw new SyntaxError("Unclosed grouping");
+				if (closeParen(str.charAt(i + 1)))
+				{
+					if (matching(str.charAt(i), str.charAt(i + 1)))
+						stream.offer(getToken(str.charAt(i + 1)));
+					else
+						throw new SyntaxError("non-matching grouping");
+					i++;
+				}
 				continue;
 			}
 			if (closeParen(str.charAt(i)) || str.charAt(i) == ',' || str.charAt(i) == '.')
@@ -59,6 +69,11 @@ public class Tokenizer
 				stream.offer(Token.COMMA);
 				i++;
 			}
+			if (str.charAt(i) == ':')
+			{
+				stream.offer(Token.COLON);
+				continue;
+			}
 			if (!isWhitespace(str.charAt(i)) && !openParen(str.charAt(i)))
 				throw new SyntaxError("Whitespace expected: " + i);
 			if (str.charAt(i) == '\t')
@@ -66,6 +81,7 @@ public class Tokenizer
 			if (str.charAt(i) == '\n' || openParen(str.charAt(i)))
 				i--;
 		}
+		System.out.println(stream);
 		return stream;
 	}
 	
@@ -74,8 +90,10 @@ public class Tokenizer
 		switch (c)
 		{
 			case '\n': return Token.NEWLINE;
+			case '\t': return Token.TAB;
 			case '.': return Token.DOT;
 			case ',': return Token.COMMA;
+			case ':': return Token.COLON;
 		}
 		return new Token("" + c);
 	}
@@ -98,5 +116,10 @@ public class Tokenizer
 	private static boolean closeParen(char c)
 	{
 		return c == ')' || c == ']' || c == '}';
+	}
+	
+	private static boolean matching(char a, char b)
+	{
+		return a == '(' && b == ')' || a == '[' && b == ']' || a == '{' && b == '}';
 	}
 }

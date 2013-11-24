@@ -9,7 +9,7 @@ public class Parameter
 		name = n;
 	}
 	
-	public String getName()
+	public String toString()
 	{
 		return name;
 	}

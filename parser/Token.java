@@ -6,6 +6,7 @@ public class Token
 	public static final Token TAB = new Token("\t");
 	public static final Token COMMA = new Token(",");
 	public static final Token DOT = new Token(".");
+	public static final Token COLON = new Token(":");
 	
 	private String str;
 

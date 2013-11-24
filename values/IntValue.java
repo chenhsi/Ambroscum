@@ -3,7 +3,7 @@ package ambroscum.values;
 import ambroscum.*;
 import java.util.*;
 
-public class IntValue extends Value implements Comparable<IntValue>
+public class IntValue extends Value
 {
 	private int value;
 	
@@ -17,15 +17,9 @@ public class IntValue extends Value implements Comparable<IntValue>
 	}
 	
 	@Override
-	public boolean equals(Object o) {
-		if (o instanceof IntValue) {
-			return value == ((IntValue) o).value;
-		}
-		return false;
-	}
-	@Override
-	public int compareTo(IntValue o) {
-		return value - o.value;
+	public boolean equals(Object o)
+	{
+		return (o instanceof IntValue) && value == ((IntValue) o).value;
 	}
 	
 	@Override

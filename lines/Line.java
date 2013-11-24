@@ -55,7 +55,8 @@ public abstract class Line
 			return new ReturnLine(stream);
 		if (token.toString().equals("if"))
 			return new IfLine(stream);
-		// Look-ahead to see if we hit '=' before the next line
+		if (token.toString().equals("def"))
+			return new DefLine(stream, indentation);
 		TokenStream newStream = new TokenStream();
 		newStream.add(token);
 		while (true) {

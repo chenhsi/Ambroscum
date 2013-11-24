@@ -104,10 +104,7 @@ public class FunctionOperator extends Function
 					throw new AssertionError("how did we even get to functionoperator without 2 arguments");
 				if (!(arguments.get(0) instanceof BooleanValue) || !(arguments.get(1) instanceof BooleanValue))
 					throw new FunctionNotFoundException("or not defined for non-boolean inputs");
-				if (((BooleanValue) arguments.get(0)) == BooleanValue.TRUE || ((BooleanValue) arguments.get(1)) == BooleanValue.TRUE)
-					return BooleanValue.TRUE;
-				else
-					return BooleanValue.FALSE;
+				return BooleanValue.fromBoolean(((BooleanValue) arguments.get(0)) == BooleanValue.TRUE || ((BooleanValue) arguments.get(1)) == BooleanValue.TRUE);
 			case "=":
 				if (arguments.size() != 2)
 					throw new AssertionError("how did we even get to functionoperator without 2 arguments");
@@ -115,27 +112,27 @@ public class FunctionOperator extends Function
 			case ">":
 				if (arguments.size() != 2)
 					throw new AssertionError("how did we even get to functionoperator without 2 arguments");
-				if (!(arguments.get(0) instanceof Comparable) || !(arguments.get(1) instanceof Comparable))
-					throw new FunctionNotFoundException("> not defined for non-comparable arguments");
-				return BooleanValue.fromBoolean(((Comparable) arguments.get(0)).compareTo(arguments.get(1)) > 0);
+				if (!(arguments.get(0) instanceof IntValue) || !(arguments.get(1) instanceof IntValue))
+					throw new FunctionNotFoundException("> not defined for non-integer inputs");
+				return BooleanValue.fromBoolean(((IntValue) arguments.get(0)).getValue() > ((IntValue) arguments.get(1)).getValue());
 			case "<":
 				if (arguments.size() != 2)
 					throw new AssertionError("how did we even get to functionoperator without 2 arguments");
-				if (!(arguments.get(0) instanceof Comparable) || !(arguments.get(1) instanceof Comparable))
-					throw new FunctionNotFoundException("> not defined for non-comparable arguments");
-				return BooleanValue.fromBoolean(((Comparable) arguments.get(0)).compareTo(arguments.get(1)) < 0);
+				if (!(arguments.get(0) instanceof IntValue) || !(arguments.get(1) instanceof IntValue))
+					throw new FunctionNotFoundException("< not defined for non-integer inputs");
+				return BooleanValue.fromBoolean(((IntValue) arguments.get(0)).getValue() < ((IntValue) arguments.get(1)).getValue());
 			case ">=":
 				if (arguments.size() != 2)
 					throw new AssertionError("how did we even get to functionoperator without 2 arguments");
-				if (!(arguments.get(0) instanceof Comparable) || !(arguments.get(1) instanceof Comparable))
-					throw new FunctionNotFoundException("> not defined for non-comparable arguments");
-				return BooleanValue.fromBoolean(((Comparable) arguments.get(0)).compareTo(arguments.get(1)) >= 0);
+				if (!(arguments.get(0) instanceof IntValue) || !(arguments.get(1) instanceof IntValue))
+					throw new FunctionNotFoundException(">= not defined for non-integer inputs");
+				return BooleanValue.fromBoolean(((IntValue) arguments.get(0)).getValue() >= ((IntValue) arguments.get(1)).getValue());
 			case "<=":
 				if (arguments.size() != 2)
 					throw new AssertionError("how did we even get to functionoperator without 2 arguments");
-				if (!(arguments.get(0) instanceof Comparable) || !(arguments.get(1) instanceof Comparable))
-					throw new FunctionNotFoundException("> not defined for non-comparable arguments");
-				return BooleanValue.fromBoolean(((Comparable) arguments.get(0)).compareTo(arguments.get(1)) <= 0);
+				if (!(arguments.get(0) instanceof IntValue) || !(arguments.get(1) instanceof IntValue))
+					throw new FunctionNotFoundException("<= not defined for non-integer inputs");
+				return BooleanValue.fromBoolean(((IntValue) arguments.get(0)).getValue() <= ((IntValue) arguments.get(1)).getValue());
 		}
 		throw new UnsupportedOperationException();
 	}
