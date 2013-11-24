@@ -29,13 +29,14 @@ public class Tokenizer
 					i = string(str, i, stream);
 					if (!isWhitespace(str.charAt(i)))
 						throw new SyntaxError("Expecting whitespace after quotes");
-					i++;
+					if (str.charAt(i) == ' ')
+						i++;
 					continue;
 				default:
 					i = normalToken(str, i, stream);
 			}
 		}
-		System.out.println(stream);
+//		System.out.println(stream);
 		return stream;
 	}
 	

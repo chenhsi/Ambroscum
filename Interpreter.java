@@ -46,7 +46,7 @@ public class Interpreter
 					continue;
 				TokenStream tokens = Tokenizer.tokenize(line);
 				Line lineLine = Line.evalAsLine(tokens, 0);
-				System.out.println("Interpret as " + lineLine);
+//				System.out.println("Interpret as " + lineLine);
 				if (!lineLine.expectsBlock()) {
 					lineLine.evaluate(identifiers);
 				} else {

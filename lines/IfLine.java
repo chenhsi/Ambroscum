@@ -11,9 +11,10 @@ public class IfLine extends Line {
 	private Block block;
 	private ElseLine elseClause;
 	
-	public IfLine(TokenStream stream) {
+	public IfLine(TokenStream stream)
+	{
 		condition = Expression.interpret(stream);
-		System.out.println(condition + " " + stream);
+//		System.out.println(condition + " " + stream);
 		if (stream.removeFirst() != Token.COLON)
 			throw new SyntaxError("Expected colon after if statement");
 		Token temp = stream.removeFirst();
@@ -32,7 +33,9 @@ public class IfLine extends Line {
 	{
 		block = b;
 	}
-	public void setElseClause(ElseLine elseClause) {
+
+	public void setElseClause(ElseLine elseClause)
+	{
 		this.elseClause = elseClause;
 	}
 	

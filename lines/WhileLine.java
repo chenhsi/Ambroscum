@@ -13,7 +13,6 @@ public class WhileLine extends Line
 	public WhileLine(TokenStream stream)
 	{
 		condition = Expression.interpret(stream);
-		System.out.println(condition + " " + stream);
 		if (stream.removeFirst() != Token.COLON)
 			throw new SyntaxError("Expected colon after while statement");
 		Token temp = stream.removeFirst();
@@ -42,6 +41,8 @@ public class WhileLine extends Line
 			{
 				if (conditionValue == BooleanValue.TRUE)
 					block.evaluate(values);
+				else
+					break;
 			}
 			else
 				throw new SyntaxError("Expected a boolean for while statement condition: " + condition);
