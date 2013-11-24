@@ -5,20 +5,20 @@ import ambroscum.errors.*;
 import ambroscum.parser.*;
 import ambroscum.values.*;
 
-public class IfLine extends Line {
-	
+public class WhileLine extends Line
+{
 	private Expression condition;
 	private Block block;
 	
-	public IfLine(TokenStream stream) {
+	public IfLine(TokenStream stream)
+	{
 		condition = Expression.interpret(stream);
 		System.out.println(condition + " " + stream);
 		if (stream.removeFirst() != Token.COLON)
-			throw new SyntaxError("Expected colon after if statement");
+			throw new SyntaxError("Expected colon after while statement");
 		Token temp = stream.removeFirst();
 		if (temp != Token.NEWLINE)
-			throw new SyntaxError("Unexpected token after if statement: " + temp);
-		
+			throw new SyntaxError("Unexpected token after while statement: " + temp);
 	}
 	
 	@Override
@@ -35,18 +35,22 @@ public class IfLine extends Line {
 	@Override
 	public void evaluate(IdentifierMap values)
 	{
-		Value conditionValue = condition.evaluate(values);
-		if (conditionValue instanceof BooleanValue)
+		while (true)
 		{
-			if (conditionValue == BooleanValue.TRUE)
-				block.evaluate(values);
+			Value conditionValue = condition.evaluate(values);
+			if (conditionValue instanceof BooleanValue)
+			{
+				if (conditionValue == BooleanValue.True)
+					block.evaluate(values);
+			}
+			else
+				throw new SyntaxError("Expected a boolean for while statement condition: " + condition);
 		}
-		throw new SyntaxError("Expected a boolean for if statement condition: " + condition);
 	}
 	
 	@Override
 	public String toString()
 	{
-		return "(if " + condition + " (" + block + "))";
+		return "(while " + condition + " (" + block + "))";
 	}
 }

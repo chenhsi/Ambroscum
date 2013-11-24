@@ -58,6 +58,8 @@ public abstract class Line
 			return new ReturnLine(stream);
 		if (token.toString().equals("if"))
 			return new IfLine(stream);
+		if (token.toString().equals("while"))
+			return new WhileLine(stream);
 		if (token.toString().equals("def"))
 			return new DefLine(stream, indentation);
 		TokenStream newStream = new TokenStream();

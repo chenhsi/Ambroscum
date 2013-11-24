@@ -16,9 +16,6 @@ public class DefLine extends Line
 	private final List<Parameter> list;
 	private Block block;
 	
-	public boolean expectsBlock() {return true;}
-	public void setBlock(Block b) {}
-	
 	DefLine(TokenStream stream, int indentationLevel)
 	{
 		Token id = stream.removeFirst();
@@ -50,7 +47,15 @@ public class DefLine extends Line
 		}
 		if (stream.removeFirst() != Token.COLON)
 			throw new SyntaxError("Missing colon in function definition");
-//		block = new Block(stream, indentationLevel + 1);
+	}
+
+	public boolean expectsBlock()
+	{
+		return true;
+	}
+	public void setBlock(Block b)
+	{
+		block = b;
 	}
 	
 	@Override
