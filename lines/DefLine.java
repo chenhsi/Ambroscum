@@ -11,17 +11,19 @@ import ambroscum.errors.SyntaxError;
 import ambroscum.expressions.ExpressionReference;
 import ambroscum.expressions.Expression;
 import ambroscum.values.Value;
+import ambroscum.values.Function;
 
 public class DefLine extends Line
 {
-	private final ExpressionReference name;
+	private final String name;
 	private final List<Parameter> list;
 	private Block block;
 	
 	DefLine(TokenStream stream)
 	{
-		Token id = stream.removeFirst();
-		name = ExpressionReference.createExpressionReference(id, new TokenStream());
+		name = stream.removeFirst().toString();
+		if (!IdentifierMap.isValidIdentifier(name))
+			throw new SyntaxError("Not a valid function name: " + name);
 		Token temp = stream.removeFirst();
 		if (!temp.toString().equals("("))
 			throw new SyntaxError("Unexpected token in function definition: " + temp);
@@ -63,7 +65,7 @@ public class DefLine extends Line
 	@Override
 	public void evaluate(IdentifierMap values)
 	{
-		
+		values.add(name, new Function(list, block));
 	}
 	
 	@Override

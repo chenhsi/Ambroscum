@@ -1,7 +1,7 @@
 /**
  * The entry point to the program.
  * 
- * @author Chenhsi Steven Bi, Jing-Lun Edward Gao
+ * @author Chen-Hsi Steven Bi, Jing-Lun Edward Gao
  * @version 1.0
  */
 
@@ -20,5 +20,6 @@ public class Ambroscum
 			ex.printStackTrace();
 		}*/
 		Interpreter.interpret();
+//		Interpreter.interpret(new File("tests/tests.ambr"));
 	}
 }

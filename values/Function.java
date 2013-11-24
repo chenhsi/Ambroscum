@@ -1,11 +1,10 @@
-// haven't decided if global or local
-
 package ambroscum.values;
 
 import java.util.List;
 import ambroscum.lines.Block;
 import ambroscum.Parameter;
 import ambroscum.IdentifierMap;
+import ambroscum.errors.InvalidArgumentException;
 
 public class Function extends Value
 {
@@ -20,6 +19,12 @@ public class Function extends Value
 	
 	public Value evaluate(List<Value> arguments, IdentifierMap values)
 	{
+		IdentifierMap ownScope = new IdentifierMap(values);
+		if (params.size() != arguments.size())
+			throw new InvalidArgumentException("wrong number of arguments");
+		for (int i = 0; i < params.size(); i++)
+			ownScope.add(params.get(i).toString(), arguments.get(i));
+		code.evaluate(ownScope);
 		return null;
 	}
 }
