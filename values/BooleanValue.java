@@ -8,12 +8,10 @@ public class BooleanValue extends Value
 	public static final BooleanValue TRUE = new BooleanValue(true);
 	public static final BooleanValue FALSE = new BooleanValue(false);
 	private final boolean value;
-	private final String str;
 	
 	private BooleanValue(boolean val)
 	{
 		value = val;
-		str = value ? "True" : "False";
 	}
 	
 	public boolean getValue()
@@ -21,17 +19,9 @@ public class BooleanValue extends Value
 		return value;
 	}
 	
-	@Override
-	public String toString()
+	public static BooleanValue fromBoolean(boolean bool)
 	{
-		return str;
-	}
-	
-	public static BooleanValue fromBoolean(boolean bool) {
-		if (bool)
-			return TRUE;
-		else
-			return FALSE;
+		return bool ? TRUE : FALSE;
 	}
 	
 	@Override

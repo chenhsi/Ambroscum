@@ -39,9 +39,9 @@ public abstract class Expression
 		Expression result = null;
 		if (token == Token.NEWLINE)
 			throw new SyntaxError("Expression expected");
-		if (token.toString().equals("True"))
+		if (token.toString().equals("true"))
 			result = new ExpressionLiteral(BooleanValue.TRUE);
-		else if (token.toString().equals("False"))
+		else if (token.toString().equals("false"))
 			result = new ExpressionLiteral(BooleanValue.FALSE);
 		else if (isNumber(token.toString()))
 			result = parseNum(token.toString());
