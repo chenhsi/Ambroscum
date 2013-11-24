@@ -20,7 +20,7 @@ public abstract class Line
 	public abstract boolean expectsBlock();	
 	public abstract void setBlock(Block b);
 
-	public static Line evalAsLine(TokenStream stream, int indentation)
+	public static Line interpret(TokenStream stream, int indentation)
 	{
 		for (int i = 0; i < indentation; i++)
 		{
@@ -29,12 +29,17 @@ public abstract class Line
 			{
 				if (i == indentation - 1)
 				{
-					if (tab.toString().equals("else")) {
-						// Remove the colon and newline
-						stream.removeFirst();
-						stream.removeFirst();
+					if (tab.toString().equals("else"))
+					{
+						Token temp = stream.removeFirst();
+						if (temp != Token.COLON)
+							throw new SyntaxError("Expected colon after else");
+						temp = stream.removeFirst();
+						if (temp != Token.NEWLINE)
+							throw new SyntaxError("Unexpected token after else:" + temp);
 						return new ElseLine();
-					} else if (!tab.toString().equals("end"))
+					}
+					else if (!tab.toString().equals("end"))
 						throw new SyntaxError("Missing indentation");
 					Token temp = stream.removeFirst();
 					if (temp != Token.NEWLINE)
@@ -46,11 +51,6 @@ public abstract class Line
 			}
 		}
 		Token token = stream.removeFirst();
-		token = Token.getToken(token.toString().trim());
-		if (token == Token.TAB)
-			throw new SyntaxError("Unexpected indentation");
-		if (token == Token.NEWLINE)
-			return new EndLine();
 		if (token.toString().equals("assert"))
 			return new AssertLine(stream);
 		if (token.toString().equals("print") || token.toString().equals("println"))
@@ -66,20 +66,17 @@ public abstract class Line
 		if (token.toString().equals("while"))
 			return new WhileLine(stream);
 		if (token.toString().equals("def"))
-			return new DefLine(stream, indentation);
+			return new DefLine(stream);
 		TokenStream newStream = new TokenStream();
 		newStream.add(token);
-		while (true) {
+		while (true)
+		{
 			Token next = stream.removeFirst();
 			if (next.toString().equals("="))
 				return new AssignmentLine(newStream, stream);
-			else if (next == Token.NEWLINE) {
-				throw new UnsupportedOperationException("Call expressions not implemented!");
-			} else {
-				newStream.add(next);
-			}
+			newStream.add(next);
+			if (next == Token.NEWLINE)
+				return new CallLine(newStream);
 		}
-
-		//throw new UnsupportedOperationException();
 	}
 }

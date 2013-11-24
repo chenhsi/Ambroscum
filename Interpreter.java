@@ -24,7 +24,8 @@ public class Interpreter
 	
 	private static IdentifierMap identifiers;
 	
-	static {
+	static
+	{
 		identifiers = new IdentifierMap(null);
 	}
 	
@@ -45,7 +46,7 @@ public class Interpreter
 				if (line.trim().equals(""))
 					continue;
 				TokenStream tokens = Tokenizer.tokenize(line);
-				Line lineLine = Line.evalAsLine(tokens, 0);
+				Line lineLine = Line.interpret(tokens, 0);
 //				System.out.println("Interpret as " + lineLine);
 				if (!lineLine.expectsBlock()) {
 					lineLine.evaluate(identifiers);
@@ -67,7 +68,7 @@ public class Interpreter
 			System.out.print("...");
 			String line = in.nextLine() + "\n";
 			TokenStream tokens = Tokenizer.tokenize(line);
-			lineLine = Line.evalAsLine(tokens, indentation);
+			lineLine = Line.interpret(tokens, indentation);
 			System.out.println("interpret as " + lineLine);
 			if (lineLine instanceof ElseLine) {
 				if (root instanceof IfLine) {
@@ -92,7 +93,7 @@ public class Interpreter
 		String line;
 		do {
 			line = reader.readLine();
-			Line lineLine = Line.evalAsLine(line, null);
+			Line lineLine = Line.interpret(line, null);
 		} while(line != null);
 	}*/
 }

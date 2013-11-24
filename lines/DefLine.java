@@ -16,7 +16,7 @@ public class DefLine extends Line
 	private final List<Parameter> list;
 	private Block block;
 	
-	DefLine(TokenStream stream, int indentationLevel)
+	DefLine(TokenStream stream)
 	{
 		Token id = stream.removeFirst();
 		name = ExpressionReference.createExpressionReference(id, new TokenStream());

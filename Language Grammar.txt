@@ -60,10 +60,10 @@ Compound_Stmt : If_Expr
               | Class_Expr
               ;
 
-If_Expr : "If " Boolean_Expr ":" Newline Block ("ElseIf " Boolean_Expr ":" Newline Block)* ("Else:" Newline Block)?
+If_Expr : "if " Boolean_Expr ":" Newline Block ("elif " Boolean_Expr ":" Newline Block)* ("else:" Newline Block)?
         ;
 
-While_Expr : "While " Boolean_Expr ":" Newline Loop_Block ("Else:" Newline Loop_Block)?
+While_Expr : "while " Boolean_Expr ":" Newline Loop_Block ("else:" Newline Loop_Block)?
            ;
 
 Func_Expr : "def " (Func_Modifier " ")* Identifier "(" (Func_Parameter (", " Func_Parameter)*)? "):" Newline Func_Internals
