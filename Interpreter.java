@@ -11,7 +11,7 @@ import java.io.*;
 import java.util.*;
 import ambroscum.errors.AmbroscumError;
 import ambroscum.lines.Block;
-import ambroscum.lines.EmptyLine;
+import ambroscum.lines.EndLine;
 import ambroscum.lines.Line;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Tokenizer;
@@ -45,19 +45,31 @@ public class Interpreter
 					System.out.println("Interpret as " + lineLine);
 					lineLine.evaluate(identifiers);
 				} else {
-					Block block = new Block(Block.OUTER_BLOCK);
-					while (block != Block.OUTER_BLOCK) {
-						line = in.nextLine() + "\n";
-						tokens = Tokenizer.tokenize(line);
-						Line subLine = Line.evalAsLine(tokens, block.getIndentation());
-						block = block.readLines(tokens);
-					}
+					Block block = readBlock(in, 1);
 					lineLine.setBlock(block);
 				}
 			} catch (AmbroscumError ex) {
 				ex.printStackTrace();
 			}
 		}
+	}
+	
+	private static Block readBlock(Scanner in, int indentation) {
+		ArrayList<Line> newBlock = new ArrayList<>();
+		Line lineLine;
+		do {
+			System.out.print("...");
+			String line = in.nextLine() + "\n";
+			TokenStream tokens = Tokenizer.tokenize(line);
+			lineLine = Line.evalAsLine(tokens, indentation);
+			System.out.println("interpret as " + lineLine);
+			if (lineLine.expectsBlock()) {
+				Block block = readBlock(in, indentation + 1);
+				lineLine.setBlock(block);
+			}
+			newBlock.add(lineLine);
+		} while (!(lineLine instanceof EndLine));
+		return new Block(newBlock);
 	}
 /*	public static void interpret(String filename) throws IOException {
 		interpret(new File(filename));

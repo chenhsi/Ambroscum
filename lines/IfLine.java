@@ -15,6 +15,7 @@ public class IfLine extends Line {
 		if (!stream.getFirst().toString().equals(":")) {
 			throw new SyntaxError("Expected colon after if statement");
 		}
+		
 	}
 	
 	public boolean expectsBlock() {
@@ -32,5 +33,9 @@ public class IfLine extends Line {
 			}
 		}
 		throw new SyntaxError("Expected a boolean for if statement condition: " + condition);
+	}
+	
+	public String toString() {
+		return "if " + condition + ":\n" + block;
 	}
 }

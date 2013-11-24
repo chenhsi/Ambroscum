@@ -18,6 +18,7 @@ public class EmptyLine extends Line {
 	}
 	public void setBlock(Block b) {}
 	
+	
 	@Override
 	public void evaluate(IdentifierMap values) {}
 	

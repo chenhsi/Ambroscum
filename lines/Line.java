@@ -17,15 +17,14 @@ import java.util.Iterator;
 public abstract class Line
 {
 	public abstract void evaluate(IdentifierMap values);
-	public abstract boolean expectsBlock();
+	public abstract boolean expectsBlock();	
 	public abstract void setBlock(Block b);
 
 	public static Line evalAsLine(TokenStream stream, int indentation)
 	{
+		System.out.println("START " + stream + " INDENTATION " + indentation);
 		for (int i = 0; i < indentation; i++)
 		{
-			if (stream.size() == 0)
-				return new EmptyLine(stream);
 			Token tab = stream.removeFirst();
 			if (tab != Token.TAB)
 			{
@@ -42,7 +41,9 @@ public abstract class Line
 					throw new SyntaxError("Missing indentation");
 			}
 		}
+		System.out.println("UP HERE " + stream);
 		Token token = stream.removeFirst();
+		token = new Token(token.toString().trim());
 		if (token == Token.TAB)
 			throw new SyntaxError("Unexpected indentation");
 		if (token.toString().equals("assert"))
@@ -59,6 +60,7 @@ public abstract class Line
 			return new IfLine(stream);
 		if (token.toString().equals("def"))
 			return new DefLine(stream, indentation);
+		System.out.println("DOWN HERE \"" + stream + "\"");
 		TokenStream newStream = new TokenStream();
 		newStream.add(token);
 		while (true) {

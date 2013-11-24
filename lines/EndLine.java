@@ -7,6 +7,9 @@ import ambroscum.errors.SyntaxError;
 
 public class EndLine extends Line
 {
+	
+	private int indentation;
+	
 	EndLine() {}
 	
 	public boolean expectsBlock() {
