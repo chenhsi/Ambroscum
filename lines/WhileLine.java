@@ -10,7 +10,7 @@ public class WhileLine extends Line
 	private Expression condition;
 	private Block block;
 	
-	public IfLine(TokenStream stream)
+	public WhileLine(TokenStream stream)
 	{
 		condition = Expression.interpret(stream);
 		System.out.println(condition + " " + stream);
