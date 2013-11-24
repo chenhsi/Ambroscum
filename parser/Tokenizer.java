@@ -89,7 +89,7 @@ public class Tokenizer
 		stream.offer(Token.getToken("" + str.charAt(i++)));
 		switch (str.charAt(i))
 		{
-			case ')': case ']': case '}':
+			case ')': case ']': case '}': case '(': case '[': case '{':
 				return i;
 			case '.':
 				if (str.charAt(i + 1) == '\n')
