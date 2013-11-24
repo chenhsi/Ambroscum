@@ -29,7 +29,12 @@ public abstract class Line
 			{
 				if (i == indentation - 1)
 				{
-					if (!tab.toString().equals("end"))
+					if (tab.toString().equals("else")) {
+						// Remove the colon and newline
+						stream.removeFirst();
+						stream.removeFirst();
+						return new ElseLine();
+					} else if (!tab.toString().equals("end"))
 						throw new SyntaxError("Missing indentation");
 					Token temp = stream.removeFirst();
 					if (temp != Token.NEWLINE)

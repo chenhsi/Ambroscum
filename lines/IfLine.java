@@ -9,6 +9,7 @@ public class IfLine extends Line {
 	
 	private Expression condition;
 	private Block block;
+	private ElseLine elseClause;
 	
 	public IfLine(TokenStream stream) {
 		condition = Expression.interpret(stream);
@@ -30,7 +31,9 @@ public class IfLine extends Line {
 	public void setBlock(Block b)
 	{
 		block = b;
-		System.out.println(block);
+	}
+	public void setElseClause(ElseLine elseClause) {
+		this.elseClause = elseClause;
 	}
 	
 	@Override
@@ -39,10 +42,14 @@ public class IfLine extends Line {
 		Value conditionValue = condition.evaluate(values);
 		if (conditionValue instanceof BooleanValue)
 		{
-			if (conditionValue == BooleanValue.TRUE)
+			if (conditionValue == BooleanValue.TRUE) {
 				block.evaluate(values);
-		}
-		else
+			} else {
+				if (elseClause != null) {
+					elseClause.evaluate(values);
+				}
+			}
+		} else
 			throw new SyntaxError("Expected a boolean for if statement condition: " + condition);
 	}
 	

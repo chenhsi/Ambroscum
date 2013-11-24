@@ -31,4 +31,9 @@ public class BooleanValue extends Value
 		}
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		return Boolean.toString(value);
+	}
 }
