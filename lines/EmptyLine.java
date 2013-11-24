@@ -5,13 +5,12 @@ import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
 
-public class ContinueLine extends Line
-{
-	ContinueLine(TokenStream stream)
-	{
+public class EmptyLine extends Line {
+	
+	EmptyLine(TokenStream stream) 	{
 		Token temp = stream.removeFirst();
 		if (temp != Token.NEWLINE)
-			throw new SyntaxError("Unexpected token after continue: " + temp);
+			throw new SyntaxError("Unexpected token after empty line: " + temp);
 	}
 	
 	public boolean expectsBlock() {
@@ -23,8 +22,7 @@ public class ContinueLine extends Line
 	public void evaluate(IdentifierMap values) {}
 	
 	@Override
-	public String toString()
-	{
-		return "(continue)";
+	public String toString() {
+		return "";
 	}
 }

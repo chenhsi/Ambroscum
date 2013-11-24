@@ -9,6 +9,11 @@ public class EndLine extends Line
 {
 	EndLine() {}
 	
+	public boolean expectsBlock() {
+		return false;
+	}
+	public void setBlock(Block b) {}
+	
 	@Override
 	public void evaluate(IdentifierMap values) {}
 	

@@ -25,6 +25,11 @@ public class AssertLine extends Line
 				throw new SyntaxError("Unexpected token in assert line: " + temp);
 		}
 	}
+	
+	public boolean expectsBlock() {
+		return false;
+	}
+	public void setBlock(Block b) {}
 
 	@Override
 	public void evaluate(IdentifierMap values)

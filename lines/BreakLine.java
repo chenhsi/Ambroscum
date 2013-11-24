@@ -14,6 +14,11 @@ public class BreakLine extends Line
 			throw new SyntaxError("Unexpected token after break: " + temp);
 	}
 	
+	public boolean expectsBlock() {
+		return false;
+	}
+	public void setBlock(Block b) {}
+	
 	@Override
 	public void evaluate(IdentifierMap values) {}
 	

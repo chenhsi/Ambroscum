@@ -17,11 +17,15 @@ import java.util.Iterator;
 public abstract class Line
 {
 	public abstract void evaluate(IdentifierMap values);
+	public abstract boolean expectsBlock();
+	public abstract void setBlock(Block b);
 
 	public static Line evalAsLine(TokenStream stream, int indentation)
 	{
 		for (int i = 0; i < indentation; i++)
 		{
+			if (stream.size() == 0)
+				return new EmptyLine(stream);
 			Token tab = stream.removeFirst();
 			if (tab != Token.TAB)
 			{
@@ -49,6 +53,8 @@ public abstract class Line
 			return new ContinueLine(stream);
 		if (token.toString().equals("return"))
 			return new ReturnLine(stream);
+		if (token.toString().equals("if"))
+			return new IfLine(stream);
 		// Look-ahead to see if we hit '=' before the next line
 		TokenStream newStream = new TokenStream();
 		newStream.add(token);

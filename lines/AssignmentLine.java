@@ -55,6 +55,11 @@ public class AssignmentLine extends Line
 		if (expressions.length != assignIDs.length)
 			throw new SyntaxError("Invalid assignment line: " + Arrays.toString(assignIDs) + " = " + Arrays.toString(expressions));
 	}
+	
+	public boolean expectsBlock() {
+		return false;
+	}
+	public void setBlock(Block b) {}
 
 	@Override
 	public void evaluate(IdentifierMap values)
