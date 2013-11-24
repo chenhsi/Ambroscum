@@ -19,7 +19,6 @@ public class Ambroscum
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}*/
-//		Interpreter.interpret();
-		Interpreter.interpret(new File("tests/tests.ambr"));
+		Interpreter.interpret();
 	}
 }

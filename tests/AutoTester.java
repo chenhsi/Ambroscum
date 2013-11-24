@@ -13,7 +13,8 @@ import ambroscum.Interpreter;
 
 public class AutoTester {
 	
-	public static final String TEST_DIRECTORY = "tests",
+	public static final String TEST_DIRECTORY = System.getProperty("user.dir") + "/tests",
+								TEST_EXTENSION = ".ambr",
 								CORRECT_EXTENSION = ".correct";
 	
 	public static void main(String[] args) throws IOException {
@@ -21,16 +22,18 @@ public class AutoTester {
 		
 		File testsFolder = new File(TEST_DIRECTORY);
 		File[] testFiles = testsFolder.listFiles();
+		System.out.println(System.getProperty("user.dir"));
 		for (File file : testFiles) {
+			String fileName= file.getName();
+			if (fileName.lastIndexOf(TEST_EXTENSION) < fileName.length() - TEST_EXTENSION.length()) {
+				// This is not a test file
+				continue;
+			}
+			
 			PipedOutputStream pipeOut = new PipedOutputStream();
 			PipedInputStream pipeIn = new PipedInputStream(pipeOut);
 			System.setOut(new PrintStream(pipeOut));
 			
-			String fileName =file.getName();
-			if (fileName.lastIndexOf(CORRECT_EXTENSION) != -1) {
-				// This is not a test file; it is a correct results file
-				continue;
-			}
 			Interpreter.interpret(file);
 			
 			Scanner correctFile = new Scanner(new File(file.getPath() + CORRECT_EXTENSION));
