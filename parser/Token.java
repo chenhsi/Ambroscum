@@ -32,6 +32,8 @@ public class Token
 
 	public String toString()
 	{
+		if (str.equals("\n"))
+			return "\\n";
 		return str;
 	}
 }

@@ -12,9 +12,13 @@ public class Tokenizer
 		{
 			switch (str.charAt(i))
 			{
-				case ')': case ']': case '}': case '\t': case ' ': case '.': case ',':
+				case ')': case ']': case '}': case ' ': case '.': case ',':
 					throw new SyntaxError("Unexpected character: " + str.charAt(i));
 				
+				case '\t':
+					stream.offer(Token.TAB);
+					i++;
+					break;
 				case '(': case '[': case '{':
 					i = openParen(str, i, stream);
 					break;
@@ -41,8 +45,8 @@ public class Tokenizer
 		i++;
 		while (i < str.length() && str.charAt(i) == '\t')
 		{
-			i++;
 			stream.offer(Token.TAB);
+			i++;
 		}
 		return i;
 	}
@@ -125,7 +129,7 @@ public class Tokenizer
 	{
 		boolean alphanumeric = Character.isLetterOrDigit(str.charAt(i));
 		int start = i++;
-		while (i < str.length())
+		outer: while (i < str.length())
 		{
 			switch (str.charAt(i))
 			{
@@ -133,7 +137,7 @@ public class Tokenizer
 				case '"': throw new SyntaxError("Unexpected string");
 				
 				case '(': case '[': case '{': case ')': case ']': case '}': case '\n': case ' ': case '.': case ',':
-					break;
+					break outer;
 			}
 			if (alphanumeric != Character.isLetterOrDigit(str.charAt(i)))
 				break;

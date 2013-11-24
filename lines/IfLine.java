@@ -12,9 +12,12 @@ public class IfLine extends Line {
 	
 	public IfLine(TokenStream stream) {
 		condition = Expression.interpret(stream);
-		if (!stream.getFirst().toString().equals(":")) {
+		System.out.println(condition + " " + stream);
+		if (stream.removeFirst() != Token.COLON)
 			throw new SyntaxError("Expected colon after if statement");
-		}
+		Token temp = stream.removeFirst();
+		if (temp != Token.NEWLINE)
+			throw new SyntaxError("Unexpected token after if statement: " + temp);
 		
 	}
 	
