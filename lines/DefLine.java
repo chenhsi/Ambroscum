@@ -53,12 +53,6 @@ public class DefLine extends Line
 //		block = new Block(stream, indentationLevel + 1);
 	}
 	
-	public void setBlock(Block b) {
-	}
-	public boolean expectsBlock() {
-		return true;
-	}
-	
 	@Override
 	public void evaluate(IdentifierMap values)
 	{

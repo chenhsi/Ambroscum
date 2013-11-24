@@ -43,7 +43,6 @@ public abstract class Line
 		}
 		System.out.println("UP HERE " + stream);
 		Token token = stream.removeFirst();
-		token = new Token(token.toString().trim());
 		if (token == Token.TAB)
 			throw new SyntaxError("Unexpected indentation");
 		if (token.toString().equals("assert"))
