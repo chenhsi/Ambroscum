@@ -1,0 +1,19 @@
+x = 3
+println x
+
+y = 4
+println x + y
+
+x = [1, 2, 3]
+println x
+println x[0]
+
+x = [[1, 2, 3], [4, 5, 6]]
+println x
+println x[0]
+println x[0][0]
+
+x = [1, 2, 3]
+x[0] = [2, 3, 4]
+println x
+println x[0][0]

@@ -65,7 +65,7 @@ public class Interpreter
 		ArrayList<Line> newBlock = new ArrayList<>();
 		Line lineLine;
 		do {
-			System.out.print("...");
+//			System.out.print("...");
 			String line = in.nextLine() + "\n";
 			TokenStream tokens = Tokenizer.tokenize(line);
 			lineLine = Line.interpret(tokens, indentation);
@@ -85,15 +85,32 @@ public class Interpreter
 		} while (!(lineLine instanceof EndLine));
 		return new Block(newBlock);
 	}
-/*	public static void interpret(String filename) throws IOException {
-		interpret(new File(filename));
-	}
+	
+//	public static void interpret(String filename) throws IOException {
+//		interpret(new File(filename));
+//	}
 	public static void interpret(File file) throws IOException {
-		BufferedReader reader = new BufferedReader(new FileReader(file));
+		Scanner in = new Scanner(new FileInputStream(file));
+		boolean firstLine = true;
 		String line;
-		do {
-			line = reader.readLine();
-			Line lineLine = Line.interpret(line, null);
-		} while(line != null);
-	}*/
+		while (in.hasNextLine()) {
+			try {
+				firstLine = false;
+				line = in.nextLine() + "\n";
+				if (line.trim().equals(""))
+					continue;
+				TokenStream tokens = Tokenizer.tokenize(line);
+				Line lineLine = Line.interpret(tokens, 0);
+				if (!lineLine.expectsBlock()) {
+					lineLine.evaluate(identifiers);
+				} else {
+					Block block = readBlock(in, 1, lineLine);
+					lineLine.setBlock(block);
+					lineLine.evaluate(identifiers);
+				}
+			} catch (AmbroscumError ex) {
+				ex.printStackTrace();
+			}
+		}
+	}
 }
