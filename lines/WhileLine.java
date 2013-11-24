@@ -40,7 +40,7 @@ public class WhileLine extends Line
 			Value conditionValue = condition.evaluate(values);
 			if (conditionValue instanceof BooleanValue)
 			{
-				if (conditionValue == BooleanValue.True)
+				if (conditionValue == BooleanValue.TRUE)
 					block.evaluate(values);
 			}
 			else

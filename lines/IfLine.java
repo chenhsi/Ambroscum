@@ -30,6 +30,7 @@ public class IfLine extends Line {
 	public void setBlock(Block b)
 	{
 		block = b;
+		System.out.println(block);
 	}
 	
 	@Override
@@ -41,7 +42,8 @@ public class IfLine extends Line {
 			if (conditionValue == BooleanValue.TRUE)
 				block.evaluate(values);
 		}
-		throw new SyntaxError("Expected a boolean for if statement condition: " + condition);
+		else
+			throw new SyntaxError("Expected a boolean for if statement condition: " + condition);
 	}
 	
 	@Override
