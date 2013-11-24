@@ -39,6 +39,6 @@ public class IfLine extends Line {
 	}
 	
 	public String toString() {
-		return "if " + condition + ":\n" + block;
+		return "(if " + condition + " " + block + " end)";
 	}
 }

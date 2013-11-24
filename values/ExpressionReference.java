@@ -11,6 +11,7 @@ public class ExpressionReference extends Expression
 	private Expression primary;
 	private Expression secondary;
 	private ReferenceType type;
+	// If this is set, primary is always null and type is always NONE
 	private String baseReference;
 
 	private ExpressionReference() {}
@@ -73,7 +74,7 @@ public class ExpressionReference extends Expression
 					throw new SyntaxError("Cannot set the value of " + primary);
 				break;
 			case BRACKET:
-				Value outerList = values.get(primary.toString());
+				Value outerList = primary.evaluate(values);
 				if (outerList instanceof ListValue) {
 					((ListValue) outerList).set(secondary.evaluate(values), value);
 				} else

@@ -41,8 +41,8 @@ public class Interpreter
 				line = in.nextLine() + "\n";
 				TokenStream tokens = Tokenizer.tokenize(line);
 				Line lineLine = Line.evalAsLine(tokens, 0);
+				System.out.println("Interpret as " + lineLine);
 				if (!lineLine.expectsBlock()) {
-					System.out.println("Interpret as " + lineLine);
 					lineLine.evaluate(identifiers);
 				} else {
 					Block block = readBlock(in, 1);
