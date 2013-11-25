@@ -17,68 +17,52 @@ import ambroscum.lines.ElseLine;
 import ambroscum.lines.IfLine;
 import ambroscum.lines.Line;
 import ambroscum.parser.TokenStream;
-import ambroscum.parser.Tokenizer;
 
 public class Interpreter
 {
-	
-	private static IdentifierMap identifiers;
-	
-	static
-	{
-		identifiers = new IdentifierMap(null);
-	}
-	
 	/**
 	 * Starts a command-line interactive Ambroscum session.
 	 */
-	public static void interpret() {
-		Scanner in = new Scanner(System.in);
-		boolean firstLine = true;
-		String line;
-		while (true) {
-			try {
-				if (!firstLine)
-					System.out.println();
-				firstLine = false;
-				System.out.print(">>> ");
-				line = in.nextLine() + "\n";
-				if (line.trim().equals(""))
-					continue;
-				TokenStream tokens = Tokenizer.tokenize(line);
-				Line lineLine = Line.interpret(tokens, 0);
-//				System.out.println("Interpret as " + lineLine);
-				if (!lineLine.expectsBlock()) {
-					lineLine.evaluate(identifiers);
-				} else {
-					Block block = readBlock(in, 1, lineLine);
-					lineLine.setBlock(block);
-					lineLine.evaluate(identifiers);
+	public static void interpret()
+	{
+		TokenStream stream = TokenStream.interactiveInput();
+		IdentifierMap identifiers = new IdentifierMap(null);
+		while (true)
+		{
+			try
+			{
+				Line line = Line.interpret(stream, 0);
+				if (!line.expectsBlock())
+					line.evaluate(identifiers);
+				else
+				{
+					Block block = readBlock(stream, line, 1);
+					line.setBlock(block);
+					line.evaluate(identifiers);
 				}
-			} catch (AmbroscumError ex) {
+				System.out.println();
+			}
+			catch (AmbroscumError ex)
+			{
 				ex.printStackTrace();
 			}
 		}
 	}
 	
-	private static Block readBlock(Scanner in, int indentation, Line root) {
+	private static Block readBlock(TokenStream stream, Line root, int indentation) {
 		ArrayList<Line> newBlock = new ArrayList<>();
 		Line lineLine;
 		do {
-//			System.out.print("...");
-			String line = in.nextLine() + "\n";
-			TokenStream tokens = Tokenizer.tokenize(line);
-			lineLine = Line.interpret(tokens, indentation);
-//			System.out.println("interpret as " + lineLine);
+			lineLine = Line.interpret(stream, indentation);
 			if (lineLine instanceof ElseLine) {
 				if (root instanceof IfLine) {
-					Block block = readBlock(in, indentation, lineLine);
+					Block block = readBlock(stream, lineLine, indentation);
 					lineLine.setBlock(block);
 					((IfLine) root).setElseClause((ElseLine) lineLine);
 					break;
 				}
 			} else if (lineLine.expectsBlock()) {
-				Block block = readBlock(in, indentation + 1, lineLine);
+				Block block = readBlock(stream, lineLine, indentation + 1);
 				lineLine.setBlock(block);
 			}
 			newBlock.add(lineLine);
@@ -86,29 +70,40 @@ public class Interpreter
 		return new Block(newBlock);
 	}
 	
-//	public static void interpret(String filename) throws IOException {
-//		interpret(new File(filename));
-//	}
-	public static void interpret(File file) throws IOException {
-		Scanner in = new Scanner(new FileInputStream(file));
-		boolean firstLine = true;
-		String line;
-		while (in.hasNextLine()) {
-			try {
-				firstLine = false;
-				line = in.nextLine() + "\n";
-				if (line.trim().equals(""))
-					continue;
-				TokenStream tokens = Tokenizer.tokenize(line);
-				Line lineLine = Line.interpret(tokens, 0);
-				if (!lineLine.expectsBlock()) {
-					lineLine.evaluate(identifiers);
-				} else {
-					Block block = readBlock(in, 1, lineLine);
-					lineLine.setBlock(block);
-					lineLine.evaluate(identifiers);
+	public static void interpret(File file) throws FileNotFoundException
+	{
+		TokenStream stream = TokenStream.readFile(file);
+		IdentifierMap identifiers = new IdentifierMap(null);
+		while (stream.hasNext())
+		{
+			Line line = Line.interpret(stream, 0);
+			if (!line.expectsBlock())
+				line.evaluate(identifiers);
+			else
+			{
+				Block block = readBlock(stream, line, 1);
+				line.setBlock(block);
+				line.evaluate(identifiers);
+			}
+		}
+		stream.makeInteractive();
+		while (true)
+		{
+			try
+			{
+				Line line = Line.interpret(stream, 0);
+				if (!line.expectsBlock())
+					line.evaluate(identifiers);
+				else
+				{
+					Block block = readBlock(stream, line, 1);
+					line.setBlock(block);
+					line.evaluate(identifiers);
 				}
-			} catch (AmbroscumError ex) {
+				System.out.println();
+			}
+			catch (AmbroscumError ex)
+			{
 				ex.printStackTrace();
 			}
 		}

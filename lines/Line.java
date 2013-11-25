@@ -67,16 +67,16 @@ public abstract class Line
 			return new WhileLine(stream);
 		if (token.toString().equals("def"))
 			return new DefLine(stream);
-		TokenStream newStream = new TokenStream();
+		List<Token> newStream = new LinkedList<Token>();
 		newStream.add(token);
 		while (true)
 		{
 			Token next = stream.removeFirst();
-			if (next.toString().equals("="))
-				return new AssignmentLine(newStream, stream);
 			newStream.add(next);
+			if (next.toString().equals("="))
+				return new AssignmentLine(TokenStream.readAsStream(newStream), stream);
 			if (next == Token.NEWLINE)
-				return new CallLine(newStream);
+				return new CallLine(TokenStream.readAsStream(newStream));
 		}
 	}
 }

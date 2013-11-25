@@ -1,12 +1,17 @@
 package ambroscum.parser;
 
+import java.util.LinkedList;
 import ambroscum.errors.SyntaxError;
 
 public class Tokenizer
 {
-	public static TokenStream tokenize(String str)
+	private static String str;
+	private static LinkedList<Token> stream;
+	
+	public static LinkedList<Token> tokenize(String s)
 	{
-		TokenStream stream = new TokenStream();
+		str = s;
+		stream = new LinkedList<Token>();
 		int i = 0;
 		while (i < str.length())
 		{
@@ -20,27 +25,27 @@ public class Tokenizer
 					i++;
 					break;
 				case '(': case '[': case '{':
-					i = openParen(str, i, stream);
+					i = openParen(i);
 					break;
 				case '\n':
-					i = newline(str, i, stream);
+					i = newline(i);
 					break;
 				case '"':
-					i = string(str, i, stream);
+					i = string(i);
 					if (!isWhitespace(str.charAt(i)))
 						throw new SyntaxError("Expecting whitespace after quotes");
 					if (str.charAt(i) == ' ')
 						i++;
 					continue;
 				default:
-					i = normalToken(str, i, stream);
+					i = normalToken(i);
 			}
 		}
 //		System.out.println(stream);
 		return stream;
 	}
 	
-	private static int newline(String str, int i, TokenStream stream)
+	private static int newline(int i)
 	{
 		stream.offer(Token.NEWLINE);
 		i++;
@@ -52,7 +57,7 @@ public class Tokenizer
 		return i;
 	}
 	
-	private static int openParen(String str, int i, TokenStream stream)
+	private static int openParen(int i)
 	{
 		char initial = str.charAt(i);
 		stream.offer(Token.getToken(initial + ""));
@@ -67,7 +72,7 @@ public class Tokenizer
 					else
 						break outer;
 				
-				case '(': case '[': case '{': i = openParen(str, i, stream); break;
+				case '(': case '[': case '{': i = openParen(i); break;
 				
 				case '\n': throw new SyntaxError("Unexpected newline in grouping");
 				case '\t': throw new SyntaxError("Unexpected tab");
@@ -76,12 +81,12 @@ public class Tokenizer
 				case ',': throw new SyntaxError("Unexpected comma");
 				
 				case '"':
-					i = string(str, i, stream);
+					i = string(i);
 					if (!closeParen(str.charAt(i)) && !isWhitespace(str.charAt(i)))
 						throw new SyntaxError("Expecting whitespace after quotes");
 					continue;
 				default:
-					i = normalToken(str, i, stream);
+					i = normalToken(i);
 			}
 		}
 		if (i == str.length())
@@ -109,13 +114,13 @@ public class Tokenizer
 					throw new SyntaxError("Trailing space at end of line");
 				return i + 1;
 			case '\n':
-				return newline(str, i, stream);
+				return newline(i);
 			default:
 				throw new SyntaxError("Expected whitespace after grouping, found " + str.charAt(i));
 		}
 	}
 	
-	private static int string(String str, int i, TokenStream stream)
+	private static int string(int i)
 	{
 		int start = i++;
 		while (i < str.length() && str.charAt(i) != '\n' && str.charAt(i) != '"')
@@ -126,7 +131,7 @@ public class Tokenizer
 		return i + 1;
 	}
 	
-	private static int normalToken(String str, int i, TokenStream stream)
+	private static int normalToken(int i)
 	{
 		boolean alphanumeric = Character.isLetterOrDigit(str.charAt(i));
 		int start = i++;
@@ -150,11 +155,11 @@ public class Tokenizer
 		switch (str.charAt(i))
 		{
 			case '(': case '[': case '{':
-				return openParen(str, i, stream);
+				return openParen(i);
 			case ')': case ']': case '}': 
 				return i;
 			case '\n':
-				return newline(str, i, stream);
+				return newline(i);
 			case ' ':
 				if (str.charAt(i + 1) != '\n')
 					return i + 1;
@@ -162,7 +167,7 @@ public class Tokenizer
 					throw new SyntaxError("Extra space at end of line");
 			case '.':
 				stream.offer(Token.DOT);
-				return normalToken(str, i + 1, stream);
+				return normalToken(i + 1);
 			case ',':
 				stream.offer(Token.COMMA);
 				if (str.charAt(i + 1) == '\n' || str.charAt(i + 2) == '\n')
@@ -171,7 +176,7 @@ public class Tokenizer
 					throw new SyntaxError("Whitespace expected");
 				return i + 2;
 			default:
-				return normalToken(str, i, stream);
+				return normalToken(i);
 		}
 	}
 	

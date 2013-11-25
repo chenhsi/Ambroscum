@@ -21,8 +21,7 @@ public class ExpressionReference extends Expression
 	private ExpressionReference(ExpressionReference p, TokenStream stream)
 	{
 		primary = p;
-		Token peek = stream.size() > 0 ? stream.getFirst() : null;
-		String peekStr = peek != null ? peek.toString() : null;
+		String peekStr = stream.getFirst().toString();
 		if ("[".equals(peekStr))
 		{
 			stream.removeFirst();
@@ -106,40 +105,24 @@ public class ExpressionReference extends Expression
 		outerRef.baseReference = baseReference;
 		outerRef.type = ReferenceType.NONE;
 		
-		while (true) {
-			if (stream.size() > 0) {
-				String first = stream.getFirst().toString();
-				// If the references continue
-				if ("[".equals(first) || "{".equals(first)) {
-					// This reads in the next thing (e.g. "[fancy expression stuff]")
-					// and creates a new ExpressionReference
-					outerRef = new ExpressionReference(outerRef, stream);
-					continue;
-				}
-			}
-			// Essentially, if we don't read in another [0] thing, we're done here.
-			break;
-		}
-		return outerRef;
+		return createExpressionReferenceHelper(outerRef, stream);
 	}
 	public static ExpressionReference createExpressionReference(Expression base, TokenStream stream) {
 		ExpressionReference outerRef = new ExpressionReference();
 		outerRef.primary = base;
 		outerRef.type = ReferenceType.NONE;
 		
-		while (true) {
-			if (stream.size() > 0) {
-				String first = stream.getFirst().toString();
-				// If the references continue
-				if ("[".equals(first) || "{".equals(first)) {
-					// This reads in the next thing (e.g. "[fancy expression stuff]")
-					// and creates a new ExpressionReference
-					outerRef = new ExpressionReference(outerRef, stream);
-					continue;
-				}
-			}
-			// Essentially, if we don't read in another [0] thing, we're done here.
-			break;
+		return createExpressionReferenceHelper(outerRef, stream);
+	}
+	private static ExpressionReference createExpressionReferenceHelper(ExpressionReference outerRef, TokenStream stream)
+	{
+		while (stream.getFirst() != Token.NEWLINE && (stream.getFirst().toString().equals("[") || stream.getFirst().toString().equals("{")))
+		{
+			// If the references continue
+			// This reads in the next thing (e.g. "[fancy expression stuff]")
+			// and creates a new ExpressionReference
+			outerRef = new ExpressionReference(outerRef, stream);
+			continue;
 		}
 		return outerRef;
 	}
