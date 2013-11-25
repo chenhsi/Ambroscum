@@ -1,17 +1,3 @@
-/* stuff to add:
- *   for loop
- *   loop labels
- *   tuples/list/dictionary literals
- *   ++ or -- expressions
- *   ** power operator, bit shift operators
- *   hex/octal/binary constants
- *   objects/classes
- *   typing
- *
- * stuff never to be done (will be dealt with in preprocessing):
- *   comment
- */
-
 Program	: (Script_Line Newline)*
         ;
 

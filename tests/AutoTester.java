@@ -22,7 +22,6 @@ public class AutoTester {
 		
 		File testsFolder = new File(TEST_DIRECTORY);
 		File[] testFiles = testsFolder.listFiles();
-		System.out.println(System.getProperty("user.dir"));
 		for (File file : testFiles) {
 			String fileName= file.getName();
 			if (fileName.lastIndexOf(TEST_EXTENSION) < fileName.length() - TEST_EXTENSION.length()) {
@@ -33,8 +32,8 @@ public class AutoTester {
 			PipedOutputStream pipeOut = new PipedOutputStream();
 			PipedInputStream pipeIn = new PipedInputStream(pipeOut);
 			System.setOut(new PrintStream(pipeOut));
-			
-			Interpreter.interpret(file);
+
+			Interpreter.interpret(file, false);
 			
 			Scanner correctFile = new Scanner(new File(file.getPath() + CORRECT_EXTENSION));
 			StringBuilder correctOutput = new StringBuilder();
@@ -47,9 +46,8 @@ public class AutoTester {
 				int read = pipeIn.read();
 				testOutput.append((char) read);
 			}
-			String correctOutputStr = correctOutput.toString().replaceAll(System.getProperty("line.separator"), "\n");
-			String testOutputStr = testOutput.toString().replaceAll(System.getProperty("line.separator"), "\n");
-			
+			String correctOutputStr = correctOutput.toString().replaceAll(System.getProperty("line.separator"), "\n").trim();
+			String testOutputStr = testOutput.toString().replaceAll(System.getProperty("line.separator"), "\n").trim();
 			if (correctOutputStr.equals(testOutputStr)) {
 				System.err.println("Tests passed for " + fileName);
 			} else {

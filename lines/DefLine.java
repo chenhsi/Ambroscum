@@ -51,6 +51,9 @@ public class DefLine extends Line
 		}
 		if (stream.removeFirst() != Token.COLON)
 			throw new SyntaxError("Missing colon in function definition");
+		temp = stream.removeFirst();
+		if (temp != Token.NEWLINE)
+			throw new SyntaxError("Unexpected token at end of function definition: " + temp);
 	}
 
 	public boolean expectsBlock()

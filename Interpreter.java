@@ -25,8 +25,11 @@ public class Interpreter
 	 */
 	public static void interpret()
 	{
-		TokenStream stream = TokenStream.interactiveInput();
-		IdentifierMap identifiers = new IdentifierMap(null);
+		interactive(TokenStream.interactiveInput(), new IdentifierMap(null));
+	}
+	
+	private static void interactive(TokenStream stream, IdentifierMap identifiers)
+	{
 		while (true)
 		{
 			try
@@ -70,7 +73,7 @@ public class Interpreter
 		return new Block(newBlock);
 	}
 	
-	public static void interpret(File file) throws FileNotFoundException
+	public static void interpret(File file, boolean thenInteract) throws FileNotFoundException
 	{
 		TokenStream stream = TokenStream.readFile(file);
 		IdentifierMap identifiers = new IdentifierMap(null);
@@ -86,26 +89,10 @@ public class Interpreter
 				line.evaluate(identifiers);
 			}
 		}
-		stream.makeInteractive();
-		while (true)
+		if (thenInteract)
 		{
-			try
-			{
-				Line line = Line.interpret(stream, 0);
-				if (!line.expectsBlock())
-					line.evaluate(identifiers);
-				else
-				{
-					Block block = readBlock(stream, line, 1);
-					line.setBlock(block);
-					line.evaluate(identifiers);
-				}
-				System.out.println();
-			}
-			catch (AmbroscumError ex)
-			{
-				ex.printStackTrace();
-			}
+			stream.makeInteractive();
+			interactive(stream, identifiers);
 		}
 	}
 }

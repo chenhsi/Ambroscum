@@ -1,0 +1,19 @@
+def sort(array):
+	i = 0
+	while i < 9:
+		s = i
+		j = i + 1
+		while j < 9:
+			if array[j] < array[s]:
+				s = j
+			end
+			j = j + 1
+		end
+		array[s], array[i] = array[i], array[s]
+		i = i + 1
+	end
+end
+
+a = [1, 6, 3, 5, 9, 7, 2, 8, 4]
+sort(a)
+print a

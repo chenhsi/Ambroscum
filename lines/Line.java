@@ -51,6 +51,8 @@ public abstract class Line
 			}
 		}
 		Token token = stream.removeFirst();
+		if (token == Token.NEWLINE)
+			return Line.interpret(stream, indentation);
 		if (token.toString().equals("assert"))
 			return new AssertLine(stream);
 		if (token.toString().equals("print") || token.toString().equals("println"))
