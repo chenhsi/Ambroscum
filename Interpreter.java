@@ -52,7 +52,7 @@ public class Interpreter
 		}
 	}
 	
-	private static Block readBlock(TokenStream stream, Line root, int indentation) {
+	public static Block readBlock(TokenStream stream, Line root, int indentation) {
 		ArrayList<Line> newBlock = new ArrayList<>();
 		Line lineLine;
 		do {

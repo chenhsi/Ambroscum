@@ -12,16 +12,15 @@ public class IfLine extends Line {
 	private Block block;
 	private ElseLine elseClause;
 	
-	public IfLine(TokenStream stream)
+	public IfLine(TokenStream stream, int indentationLevel)
 	{
 		condition = Expression.interpret(stream);
-//		System.out.println(condition + " " + stream);
 		if (stream.removeFirst() != Token.COLON)
 			throw new SyntaxError("Expected colon after if statement");
 		Token temp = stream.removeFirst();
 		if (temp != Token.NEWLINE)
 			throw new SyntaxError("Unexpected token after if statement: " + temp);
-		
+//		block = new Block(stream, indentationLevel + 1);
 	}
 	
 	@Override

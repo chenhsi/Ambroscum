@@ -8,8 +8,22 @@ import java.util.*;
 
 public class Block extends Line {
 	
-	private ArrayList<Line> lines;
+	private List<Line> lines;
 	
+	public Block(TokenStream stream, int indentationLevel)
+	{
+		lines = new LinkedList<Line>();
+		while (true)
+		{
+			Line line = Line.interpret(stream, indentationLevel);
+			if (line instanceof EndLine)
+				break;
+			if (line.expectsBlock())
+				line.setBlock(new Block(stream, indentationLevel + 1));
+			lines.add(line);
+		}
+	}
+
 	public Block(ArrayList<Line> lines) {
 		this.lines = lines;
 	}

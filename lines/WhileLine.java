@@ -11,7 +11,7 @@ public class WhileLine extends Line
 	private Expression condition;
 	private Block block;
 	
-	public WhileLine(TokenStream stream)
+	public WhileLine(TokenStream stream, int indentationLevel)
 	{
 		condition = Expression.interpret(stream);
 		if (stream.removeFirst() != Token.COLON)
@@ -19,12 +19,13 @@ public class WhileLine extends Line
 		Token temp = stream.removeFirst();
 		if (temp != Token.NEWLINE)
 			throw new SyntaxError("Unexpected token after while statement: " + temp);
+		block = new Block(stream, indentationLevel + 1);
 	}
 	
 	@Override
 	public boolean expectsBlock()
 	{
-		return true;
+		return false;
 	}
 	@Override
 	public void setBlock(Block b)

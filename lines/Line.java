@@ -64,11 +64,11 @@ public abstract class Line
 		if (token.toString().equals("return"))
 			return new ReturnLine(stream);
 		if (token.toString().equals("if"))
-			return new IfLine(stream);
+			return new IfLine(stream, indentation);
 		if (token.toString().equals("while"))
-			return new WhileLine(stream);
+			return new WhileLine(stream, indentation);
 		if (token.toString().equals("def"))
-			return new DefLine(stream);
+			return new DefLine(stream, indentation);
 		List<Token> newStream = new LinkedList<Token>();
 		newStream.add(token);
 		while (true)
