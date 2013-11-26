@@ -20,6 +20,9 @@ public class Tokenizer
 				case ')': case ']': case '}': case ' ': case '.': case ',':
 					throw new SyntaxError("Unexpected character: " + str.charAt(i));
 				
+				case ';':
+					i = comment(i);
+					break;
 				case '\t':
 					stream.offer(Token.TAB);
 					i++;
@@ -57,6 +60,14 @@ public class Tokenizer
 		return i;
 	}
 	
+	private static int comment(int i)
+	{
+		while (i < str.length() && str.charAt(i) != '\n')
+			i++;
+		stream.offer(Token.NEWLINE);
+		return i + 1;
+	}
+	
 	private static int openParen(int i)
 	{
 		char initial = str.charAt(i);
@@ -74,7 +85,8 @@ public class Tokenizer
 				
 				case '(': case '[': case '{': i = openParen(i); break;
 				
-				case '\n': throw new SyntaxError("Unexpected newline in grouping");
+				case '\n': throw new SyntaxError("Unexpected end of line in grouping");
+				case ';': throw new SyntaxError("Unexpected end of line in grouping");
 				case '\t': throw new SyntaxError("Unexpected tab");
 				case ' ': throw new SyntaxError("Unexpected whitespace");
 				case '.': throw new SyntaxError("Unexpected period");
@@ -113,6 +125,8 @@ public class Tokenizer
 				if (str.charAt(i + 1) == '\n')
 					throw new SyntaxError("Trailing space at end of line");
 				return i + 1;
+			case ';':
+				return comment(i);
 			case '\n':
 				return newline(i);
 			default:
@@ -142,7 +156,7 @@ public class Tokenizer
 				case '\t': throw new SyntaxError("Unexpected tab");
 				case '"': throw new SyntaxError("Unexpected string");
 				
-				case '(': case '[': case '{': case ')': case ']': case '}': case '\n': case ' ': case '.': case ',':
+				case '(': case '[': case '{': case ')': case ']': case '}': case '\n': case ' ': case '.': case ',': case ';':
 					break outer;
 			}
 			if (alphanumeric != Character.isLetterOrDigit(str.charAt(i)))
@@ -158,6 +172,8 @@ public class Tokenizer
 				return openParen(i);
 			case ')': case ']': case '}': 
 				return i;
+			case ';':
+				return comment(i);
 			case '\n':
 				return newline(i);
 			case ' ':

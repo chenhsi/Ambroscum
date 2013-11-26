@@ -1,4 +1,4 @@
-println 1
-println [1, 2, 3]
+println 1 ; these are tests
+println [1, 2, 3]; for comments
 println []
 println [1, 2, 3][0]
