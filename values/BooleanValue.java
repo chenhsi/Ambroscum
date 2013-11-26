@@ -1,9 +1,10 @@
 package ambroscum.values;
 
-import ambroscum.*;
 import java.util.*;
+import ambroscum.*;
+import ambroscum.errors.FunctionNotFoundException;
 
-public class BooleanValue extends Value
+public class BooleanValue extends ObjectValue
 {
 	public static final BooleanValue TRUE = new BooleanValue(true);
 	public static final BooleanValue FALSE = new BooleanValue(false);
@@ -22,6 +23,23 @@ public class BooleanValue extends Value
 	public static BooleanValue fromBoolean(boolean bool)
 	{
 		return bool ? TRUE : FALSE;
+	}
+	
+	@Override
+	public Value applyOperator(FunctionOperator op, Value otherValue)
+	{
+		switch (op.toString())
+		{
+			case "and":
+				if (!(otherValue instanceof BooleanValue))
+					throw new FunctionNotFoundException("bool's 'and' operator not defined with value " + otherValue);
+				return BooleanValue.fromBoolean(value && ((BooleanValue) otherValue).getValue());
+			case "or":
+				if (!(otherValue instanceof BooleanValue))
+					throw new FunctionNotFoundException("bool's 'or' operator not defined with value " + otherValue);
+				return BooleanValue.fromBoolean(value || ((BooleanValue) otherValue).getValue());
+		}
+		return super.applyOperator(op, otherValue);
 	}
 	
 	@Override

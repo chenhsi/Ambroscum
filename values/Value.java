@@ -11,9 +11,6 @@ import java.util.*;
 
 public class Value
 {
-	private Map<String, Value> fields;
-	private Map<String, Function> functions;
-	
 	public Value()
 	{
 		

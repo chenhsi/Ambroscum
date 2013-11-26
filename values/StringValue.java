@@ -1,15 +1,49 @@
 package ambroscum.values;
 
-import ambroscum.*;
 import java.util.*;
+import ambroscum.*;
+import ambroscum.errors.FunctionNotFoundException;
 
-public class StringValue extends Value
+public class StringValue extends ObjectValue
 {
 	private String value;
 	
 	public StringValue(String val)
 	{
 		value = val;
+	}
+	
+	@Override
+	public Value applyOperator(FunctionOperator op, Value otherValue)
+	{
+		switch (op.toString())
+		{
+			case "+":
+				if (!(otherValue instanceof StringValue))
+					throw new FunctionNotFoundException("string's '+' operator not defined with value " + otherValue);
+				return new StringValue(value + ((StringValue) otherValue).toString());
+			case "<":
+				if (!(otherValue instanceof StringValue))
+					throw new FunctionNotFoundException("string's '<' operator not defined with value " + otherValue);
+				return BooleanValue.fromBoolean(value.compareTo(((StringValue) otherValue).toString()) < 0);
+			case ">":
+				if (!(otherValue instanceof StringValue))
+					throw new FunctionNotFoundException("string's '>' operator not defined with value " + otherValue);
+				return BooleanValue.fromBoolean(value.compareTo(((StringValue) otherValue).toString()) > 0);
+			case "<=":
+				if (!(otherValue instanceof StringValue))
+					throw new FunctionNotFoundException("string's '<=' operator not defined with value " + otherValue);
+				return BooleanValue.fromBoolean(value.compareTo(((StringValue) otherValue).toString()) <= 0);
+			case ">=":
+				if (!(otherValue instanceof StringValue))
+					throw new FunctionNotFoundException("string's '>=' operator not defined with value " + otherValue);
+				return BooleanValue.fromBoolean(value.compareTo(((StringValue) otherValue).toString()) >= 0);
+			case "=":
+				if (!(otherValue instanceof StringValue))
+					throw new FunctionNotFoundException("string's '=' operator not defined with value " + otherValue);
+				return BooleanValue.fromBoolean(value.compareTo(((StringValue) otherValue).toString()) == 0);
+		}
+		return super.applyOperator(op, otherValue);
 	}
 	
 	@Override
