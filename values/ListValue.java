@@ -6,7 +6,7 @@ import ambroscum.values.Value;
 import ambroscum.values.IntValue;
 import java.util.*;
 
-public class ListValue extends Value {
+public class ListValue extends ObjectValue {
 	
 	private Value[] list;
 	
@@ -28,6 +28,17 @@ public class ListValue extends Value {
 		} else
 			throw new SyntaxError("Expected int for list index");
 	}
+	
+	@Override
+	public Value applyOperator(FunctionOperator op, List<Value> otherValues)
+	{
+		switch (op.toString())
+		{
+			// should decide how these work
+		}
+		return super.applyOperator(op, otherValues);
+	}
+
 	
 	@Override
 	public boolean equals(Object o) {

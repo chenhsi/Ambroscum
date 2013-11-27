@@ -14,36 +14,41 @@ public class StringValue extends ObjectValue
 	}
 	
 	@Override
-	public Value applyOperator(FunctionOperator op, Value otherValue)
+	public Value applyOperator(FunctionOperator op, List<Value> otherValues)
 	{
+		if (otherValues.size() != 1)
+			throw new UnsupportedOperationException("Non-binary operators are not yet supported");
+		Value other = otherValues.get(0);
 		switch (op.toString())
 		{
 			case "+":
-				if (!(otherValue instanceof StringValue))
-					throw new FunctionNotFoundException("string's '+' operator not defined with value " + otherValue);
-				return new StringValue(value + ((StringValue) otherValue).toString());
+				if (other instanceof IntValue)
+					return new StringValue(value + ((IntValue) other).getValue());
+				if (other instanceof StringValue)
+					return new StringValue(value + ((StringValue) other).toString());
+				throw new FunctionNotFoundException("string's '+' operator not defined with value " + other);
 			case "<":
-				if (!(otherValue instanceof StringValue))
-					throw new FunctionNotFoundException("string's '<' operator not defined with value " + otherValue);
-				return BooleanValue.fromBoolean(value.compareTo(((StringValue) otherValue).toString()) < 0);
+				if (other instanceof StringValue)
+					return BooleanValue.fromBoolean(value.compareTo(((StringValue) other).toString()) < 0);
+				throw new FunctionNotFoundException("string's '<' operator not defined with value " + other);
 			case ">":
-				if (!(otherValue instanceof StringValue))
-					throw new FunctionNotFoundException("string's '>' operator not defined with value " + otherValue);
-				return BooleanValue.fromBoolean(value.compareTo(((StringValue) otherValue).toString()) > 0);
+				if (other instanceof StringValue)
+					return BooleanValue.fromBoolean(value.compareTo(((StringValue) other).toString()) > 0);
+				throw new FunctionNotFoundException("string's '>' operator not defined with value " + other);
 			case "<=":
-				if (!(otherValue instanceof StringValue))
-					throw new FunctionNotFoundException("string's '<=' operator not defined with value " + otherValue);
-				return BooleanValue.fromBoolean(value.compareTo(((StringValue) otherValue).toString()) <= 0);
+				if (other instanceof StringValue)
+					return BooleanValue.fromBoolean(value.compareTo(((StringValue) other).toString()) <= 0);
+				throw new FunctionNotFoundException("string's '<=' operator not defined with value " + other);
 			case ">=":
-				if (!(otherValue instanceof StringValue))
-					throw new FunctionNotFoundException("string's '>=' operator not defined with value " + otherValue);
-				return BooleanValue.fromBoolean(value.compareTo(((StringValue) otherValue).toString()) >= 0);
+				if (other instanceof StringValue)
+					return BooleanValue.fromBoolean(value.compareTo(((StringValue) other).toString()) >= 0);
+				throw new FunctionNotFoundException("string's '>=' operator not defined with value " + other);
 			case "=":
-				if (!(otherValue instanceof StringValue))
-					throw new FunctionNotFoundException("string's '=' operator not defined with value " + otherValue);
-				return BooleanValue.fromBoolean(value.compareTo(((StringValue) otherValue).toString()) == 0);
+				if (other instanceof StringValue)
+					return BooleanValue.fromBoolean(value.compareTo(((StringValue) other).toString()) == 0);
+				throw new FunctionNotFoundException("string's '=' operator not defined with value " + other);
 		}
-		return super.applyOperator(op, otherValue);
+		return super.applyOperator(op, otherValues);
 	}
 	
 	@Override

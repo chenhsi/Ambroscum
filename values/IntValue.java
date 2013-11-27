@@ -18,52 +18,59 @@ public class IntValue extends ObjectValue
 	}
 	
 	@Override
-	public Value applyOperator(FunctionOperator op, Value otherValue)
+	public Value applyOperator(FunctionOperator op, List<Value> otherValues)
 	{
+		if (otherValues.size() != 1)
+			throw new UnsupportedOperationException("Non-binary operators are not yet supported");
+		Value other = otherValues.get(0);
 		switch (op.toString())
 		{
 			case "+":
-				if (!(otherValue instanceof IntValue))
-					throw new FunctionNotFoundException("int's '+' operator not defined with value " + otherValue);
-				return new IntValue(value + ((IntValue) otherValue).getValue());
+				if (other instanceof IntValue)
+					return new IntValue(value + ((IntValue) other).getValue());
+				throw new FunctionNotFoundException("int's '+' operator not defined with value " + other);
 			case "-":
-				if (!(otherValue instanceof IntValue))
-					throw new FunctionNotFoundException("int's '-' operator not defined with value " + otherValue);
-				return new IntValue(value - ((IntValue) otherValue).getValue());
+				if (other instanceof IntValue)
+					return new IntValue(value - ((IntValue) other).getValue());
+				throw new FunctionNotFoundException("int's '-' operator not defined with value " + other);
 			case "*":
-				if (!(otherValue instanceof IntValue))
-					throw new FunctionNotFoundException("int's '*' operator not defined with value " + otherValue);
-				return new IntValue(value * ((IntValue) otherValue).getValue());
+				if (other instanceof IntValue)
+					return new IntValue(value * ((IntValue) other).getValue());
+				throw new FunctionNotFoundException("int's '*' operator not defined with value " + other);
 			case "/":
-				if (!(otherValue instanceof IntValue))
-					throw new FunctionNotFoundException("int's '/' operator not defined with value " + otherValue);
-				return new IntValue(value / ((IntValue) otherValue).getValue());
+				if (other instanceof IntValue)
+					return new IntValue(value / ((IntValue) other).getValue());
+				throw new FunctionNotFoundException("int's '/' operator not defined with value " + other);
 			case "%":
-				if (!(otherValue instanceof IntValue))
-					throw new FunctionNotFoundException("int's '%' operator not defined with value " + otherValue);
-				return new IntValue(value % ((IntValue) otherValue).getValue());
+				if (other instanceof IntValue)
+					return new IntValue(value % ((IntValue) other).getValue());
+				throw new FunctionNotFoundException("int's '%' operator not defined with value " + other);
 			case "<":
-				if (!(otherValue instanceof IntValue))
-					throw new FunctionNotFoundException("int's '<' operator not defined with value " + otherValue);
-				return BooleanValue.fromBoolean(value < ((IntValue) otherValue).getValue());
+				if (other instanceof IntValue)
+					return BooleanValue.fromBoolean(value < ((IntValue) other).getValue());
+				throw new FunctionNotFoundException("int's '<' operator not defined with value " + other);
 			case ">":
-				if (!(otherValue instanceof IntValue))
-					throw new FunctionNotFoundException("int's '>' operator not defined with value " + otherValue);
-				return BooleanValue.fromBoolean(value > ((IntValue) otherValue).getValue());
+				if (other instanceof IntValue)
+					return BooleanValue.fromBoolean(value > ((IntValue) other).getValue());
+				throw new FunctionNotFoundException("int's '>' operator not defined with value " + other);
 			case "<=":
-				if (!(otherValue instanceof IntValue))
-					throw new FunctionNotFoundException("int's '<=' operator not defined with value " + otherValue);
-				return BooleanValue.fromBoolean(value <= ((IntValue) otherValue).getValue());
+				if (other instanceof IntValue)
+					return BooleanValue.fromBoolean(value <= ((IntValue) other).getValue());
+				throw new FunctionNotFoundException("int's '<=' operator not defined with value " + other);
 			case ">=":
-				if (!(otherValue instanceof IntValue))
-					throw new FunctionNotFoundException("int's '>=' operator not defined with value " + otherValue);
-				return BooleanValue.fromBoolean(value >= ((IntValue) otherValue).getValue());
+				if (other instanceof IntValue)
+					return BooleanValue.fromBoolean(value >= ((IntValue) other).getValue());
+				throw new FunctionNotFoundException("int's '>=' operator not defined with value " + other);
 			case "=":
-				if (!(otherValue instanceof IntValue))
-					throw new FunctionNotFoundException("int's '=' operator not defined with value " + otherValue);
-				return BooleanValue.fromBoolean(value == ((IntValue) otherValue).getValue());
+				if (other instanceof IntValue)
+					return BooleanValue.fromBoolean(value == ((IntValue) other).getValue());
+				throw new FunctionNotFoundException("int's '=' operator not defined with value " + other);
+			case "!=":
+				if (other instanceof IntValue)
+					return BooleanValue.fromBoolean(value != ((IntValue) other).getValue());
+				throw new FunctionNotFoundException("int's '!=' operator not defined with value " + other);
 		}
-		return super.applyOperator(op, otherValue);
+		return super.applyOperator(op, otherValues);
 	}
 	
 	@Override

@@ -48,27 +48,35 @@ public class FunctionOperator extends Function
 	{
 		if (!(arguments.get(0) instanceof ObjectValue))
 			throw new InvalidArgumentException("Can not invoke an operator on a function");
-		return ((ObjectValue) arguments.get(0)).applyOperator(this, arguments.get(1));
+		return ((ObjectValue) arguments.get(0)).applyOperator(this, arguments.subList(1, arguments.size()));
 	}
 	
 	enum Operator
 	{
-		ADD("+", 2), SUB("-", 2), MUL("*", 2), DIV("/", 2), MOD("%", 2), AND("and", 2), OR("or", 2),
-		IS_EQUAL("=", 2), GREATER_THAN(">", 2), LESS_THAN("<", 2), GREATER_THAN_EQUAL(">=", 2), LESS_THAN_EQUAL("<=", 2);
+		NOT("not", 1, 1), MUL("*", 2, 2), DIV("/", 2, 2), MOD("%", 2, 2), ADD("+", 2, 3), SUB("-", 2, 3),
+		GREATER_THAN(">", 2, 4), LESS_THAN("<", 2, 4), GREATER_THAN_EQUAL(">=", 2, 4), LESS_THAN_EQUAL("<=", 2, 4),
+		IS_EQUAL("=", 2, 5), NOT_EQUAL("!=", 2, 5), AND("and", 2, 6), OR("or", 2, 7);
 		
-		private int numOperands;
 		private String name;
+		private int numOperands;
+		private int priority;
 		
-		Operator(String name, int operands)
+		Operator(String name, int operands, int priority)
 		{
 			FunctionOperator.map.put(name, new FunctionOperator(this));
 			numOperands = operands;
 			this.name = name;
+			this.priority = priority; // higher is grouped first (e.g. "*".priority > "+".priority)
 		}
 		
 		public int getNumOperands()
 		{
 			return numOperands;
+		}
+		
+		public int getPriority()
+		{
+			return priority;
 		}
 		
 		@Override
@@ -77,9 +85,6 @@ public class FunctionOperator extends Function
 			return name;
 		}
 		
-		public static void ready()
-		{
-			
-		}
+		public static void ready() {} // exists just to be called for the static initializer
 	}
 }

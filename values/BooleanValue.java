@@ -26,20 +26,31 @@ public class BooleanValue extends ObjectValue
 	}
 	
 	@Override
-	public Value applyOperator(FunctionOperator op, Value otherValue)
+	public Value applyOperator(FunctionOperator op, List<Value> otherValues)
 	{
+		if (otherValues.size() != 1)
+			throw new UnsupportedOperationException("Non-binary operators are not yet supported");
+		Value other = otherValues.get(0);
 		switch (op.toString())
 		{
 			case "and":
-				if (!(otherValue instanceof BooleanValue))
-					throw new FunctionNotFoundException("bool's 'and' operator not defined with value " + otherValue);
-				return BooleanValue.fromBoolean(value && ((BooleanValue) otherValue).getValue());
+				if (other instanceof BooleanValue)
+					return BooleanValue.fromBoolean(value && ((BooleanValue) other).value);
+				throw new FunctionNotFoundException("bool's 'and' operator not defined with value " + other);
 			case "or":
-				if (!(otherValue instanceof BooleanValue))
-					throw new FunctionNotFoundException("bool's 'or' operator not defined with value " + otherValue);
-				return BooleanValue.fromBoolean(value || ((BooleanValue) otherValue).getValue());
+				if (other instanceof BooleanValue)
+					return BooleanValue.fromBoolean(value || ((BooleanValue) other).value);
+				throw new FunctionNotFoundException("bool's 'or' operator not defined with value " + other);
+			case "=":
+				if (other instanceof BooleanValue)
+					return BooleanValue.fromBoolean(value == ((BooleanValue) other).value);
+				throw new FunctionNotFoundException("bool's '=' operator not defined with value " + other);
+			case "!=":
+				if (other instanceof BooleanValue)
+					return BooleanValue.fromBoolean(value != ((BooleanValue) other).value);
+				throw new FunctionNotFoundException("bool's '!=' operator not defined with value " + other);
 		}
-		return super.applyOperator(op, otherValue);
+		return super.applyOperator(op, otherValues);
 	}
 	
 	@Override
