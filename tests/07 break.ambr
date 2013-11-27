@@ -1,0 +1,31 @@
+; Basic break statement
+while true:
+	println 1
+	break
+	println 2
+end
+
+; Slightly fancier - break out from an inner block
+x = 0
+while x < 5:
+	println x
+	x = x + 1
+	if x > 2:
+		break
+	end
+	println x
+end
+
+; Nested loops
+x = 0
+while x < 2:
+	y = 0
+	while y < 5:
+		println x, y
+		if y > 2:
+			break
+		end
+		y = y + 1
+	end
+	x = x + 1
+end
