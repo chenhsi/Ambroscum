@@ -5,6 +5,7 @@ import ambroscum.lines.Block;
 import ambroscum.Parameter;
 import ambroscum.IdentifierMap;
 import ambroscum.errors.InvalidArgumentException;
+import ambroscum.errors.SyntaxError;
 
 public class Function extends Value
 {
@@ -24,7 +25,14 @@ public class Function extends Value
 			throw new InvalidArgumentException("wrong number of arguments");
 		for (int i = 0; i < params.size(); i++)
 			ownScope.add(params.get(i).toString(), arguments.get(i));
-		code.evaluate(ownScope);
-		return null;
+		switch (code.evaluate(ownScope))
+		{
+			case CONTINUE:
+				throw new SyntaxError("continues should not be terminating function calls");
+			case BREAK:
+				throw new SyntaxError("breaks should not be terminating function calls");
+			default:
+				return null; // should be implemented
+		}
 	}
 }

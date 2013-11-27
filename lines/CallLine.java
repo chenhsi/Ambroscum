@@ -27,9 +27,10 @@ public class CallLine extends Line
 	}
 	
 	@Override
-	public void evaluate(IdentifierMap values)
+	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
 		expr.evaluate(values);
+		return Block.ExitStatus.NORMAL;
 	}
 	
 	@Override

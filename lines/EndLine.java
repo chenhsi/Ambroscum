@@ -18,7 +18,11 @@ public class EndLine extends Line
 	public void setBlock(Block b) {}
 	
 	@Override
-	public void evaluate(IdentifierMap values) {}
+	public Block.ExitStatus evaluate(IdentifierMap values)
+	{
+		return Block.ExitStatus.NORMAL;
+//		throw new AssertionError("EndLine's evaluate should never be called");
+	}
 	
 	@Override
 	public String toString()

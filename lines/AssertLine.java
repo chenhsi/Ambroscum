@@ -34,7 +34,7 @@ public class AssertLine extends Line
 	public void setBlock(Block b) {}
 
 	@Override
-	public void evaluate(IdentifierMap values)
+	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
 		Value testVal = test.evaluate(values);
 		if (!(testVal.equals(BooleanValue.TRUE)))
@@ -44,6 +44,7 @@ public class AssertLine extends Line
 			else
 				throw new AssertionError("Assertion failed");
 		}
+		return Block.ExitStatus.NORMAL;
 	}
 	
 	@Override

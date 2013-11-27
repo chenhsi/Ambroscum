@@ -28,10 +28,11 @@ public class ReturnLine extends Line
 	
 	
 	@Override
-	public void evaluate(IdentifierMap values)
+	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
 		// need to deal with null returns
 		value = expr.evaluate(values);
+		return Block.ExitStatus.RETURN;
 	}
 	
 	public Value getValue()

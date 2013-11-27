@@ -40,19 +40,17 @@ public class IfLine extends Line {
 	}
 	
 	@Override
-	public void evaluate(IdentifierMap values)
+	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
 		Value conditionValue = condition.evaluate(values);
 		if (conditionValue instanceof BooleanValue)
 		{
-			if (conditionValue == BooleanValue.TRUE) {
-				block.evaluate(values);
-			} else {
-				if (elseClause != null) {
-					elseClause.evaluate(values);
-				}
-			}
-		} else
+			if (conditionValue == BooleanValue.TRUE)
+				return block.evaluate(values);
+			else if (elseClause != null)
+				return elseClause.evaluate(values);
+			return Block.ExitStatus.NORMAL;
+		}
 			throw new SyntaxError("Expected a boolean for if statement condition: " + condition);
 	}
 	

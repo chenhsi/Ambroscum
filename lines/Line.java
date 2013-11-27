@@ -16,7 +16,7 @@ import java.util.Iterator;
 
 public abstract class Line
 {
-	public abstract void evaluate(IdentifierMap values);
+	public abstract Block.ExitStatus evaluate(IdentifierMap values);
 	public abstract boolean expectsBlock();	
 	public abstract void setBlock(Block b);
 

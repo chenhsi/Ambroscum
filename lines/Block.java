@@ -6,8 +6,8 @@ import ambroscum.lines.*;
 import ambroscum.parser.*;
 import java.util.*;
 
-public class Block extends Line {
-	
+public class Block extends Line
+{
 	private List<Line> lines;
 	
 	public Block(TokenStream stream, int indentationLevel)
@@ -33,14 +33,28 @@ public class Block extends Line {
 	}
 	public void setBlock(Block b) {}
 	
-	public void evaluate(IdentifierMap values) {
-		for (Line l : lines) {
-			l.evaluate(values);
+	public ExitStatus evaluate(IdentifierMap values)
+	{
+		for (Line line : lines)
+		{
+			if (line instanceof ContinueLine)
+				return ExitStatus.CONTINUE;
+			if (line instanceof BreakLine)
+				return ExitStatus.BREAK;
+			if (line instanceof ReturnLine)
+				return ExitStatus.RETURN;
+			line.evaluate(values);
 		}
+		return ExitStatus.NORMAL;
 	}
 	
 	public String toString()
 	{
 		return lines.toString();
+	}
+	
+	public enum ExitStatus
+	{
+		NORMAL, RETURN, CONTINUE, BREAK
 	}
 }

@@ -22,8 +22,9 @@ public class ElseLine extends Line {
 	}
 	
 	@Override
-	public void evaluate(IdentifierMap values) {
-		block.evaluate(values);
+	public Block.ExitStatus evaluate(IdentifierMap values)
+	{
+		return block.evaluate(values);
 	}
 	
 	@Override

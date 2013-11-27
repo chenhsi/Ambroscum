@@ -21,7 +21,10 @@ public class ContinueLine extends Line
 	
 	
 	@Override
-	public void evaluate(IdentifierMap values) {}
+	public Block.ExitStatus evaluate(IdentifierMap values)
+	{
+		return Block.ExitStatus.CONTINUE;
+	}
 	
 	@Override
 	public String toString()

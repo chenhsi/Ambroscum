@@ -50,7 +50,7 @@ public class PrintLine extends Line
 	
 	
 	@Override
-	public void evaluate(IdentifierMap values)
+	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
 		boolean first = true;
 		for (Expression expr : toPrint)
@@ -62,6 +62,7 @@ public class PrintLine extends Line
 		}
 		if (newline)
 			System.out.println();
+		return Block.ExitStatus.NORMAL;
 	}
 	
 	

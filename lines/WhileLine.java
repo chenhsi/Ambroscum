@@ -34,7 +34,7 @@ public class WhileLine extends Line
 	}
 	
 	@Override
-	public void evaluate(IdentifierMap values)
+	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
 		while (true)
 		{
@@ -42,13 +42,22 @@ public class WhileLine extends Line
 			if (conditionValue instanceof BooleanValue)
 			{
 				if (conditionValue == BooleanValue.TRUE)
-					block.evaluate(values);
+				{
+					Block.ExitStatus status = block.evaluate(values);
+					if (status == Block.ExitStatus.CONTINUE)
+						continue;
+					if (status == Block.ExitStatus.BREAK)
+						break;
+					if (status == Block.ExitStatus.RETURN)
+						return Block.ExitStatus.RETURN;
+				}
 				else
 					break;
 			}
 			else
 				throw new SyntaxError("Expected a boolean for while statement condition: " + condition);
 		}
+		return Block.ExitStatus.NORMAL;
 	}
 	
 	@Override

@@ -47,13 +47,14 @@ public class AssignmentLine extends Line
 	public void setBlock(Block b) {}
 
 	@Override
-	public void evaluate(IdentifierMap values)
+	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
 		List<Value> targetVals = new LinkedList<Value> ();
 		for (Expression expr : exprs)
 			targetVals.add(expr.evaluate(values));
 		for (int i = 0; i < exprs.size(); i++)
 			assignIDs.get(i).setValue(targetVals.get(i), values);
+		return Block.ExitStatus.NORMAL;
 	}
 	
 	@Override

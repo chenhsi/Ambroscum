@@ -21,7 +21,10 @@ public class BreakLine extends Line
 	
 	
 	@Override
-	public void evaluate(IdentifierMap values) {}
+	public Block.ExitStatus evaluate(IdentifierMap values)
+	{
+		return Block.ExitStatus.BREAK;
+	}
 	
 	@Override
 	public String toString()
