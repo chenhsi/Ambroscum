@@ -43,6 +43,16 @@ public class FunctionOperator extends Function
 		return map.get(name);
 	}
 	
+	public int getPriority()
+	{
+		return op.getPriority();
+	}
+	
+	public int getNumOperands()
+	{
+		return op.getNumOperands();
+	}
+	
 	@Override
 	public Value evaluate(List<Value> arguments, IdentifierMap values)
 	{
@@ -66,7 +76,7 @@ public class FunctionOperator extends Function
 			FunctionOperator.map.put(name, new FunctionOperator(this));
 			numOperands = operands;
 			this.name = name;
-			this.priority = priority; // higher is grouped first (e.g. "*".priority > "+".priority)
+			this.priority = priority; // lower is grouped first (e.g. "*".priority < "+".priority)
 		}
 		
 		public int getNumOperands()

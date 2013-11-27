@@ -8,11 +8,16 @@ import ambroscum.values.FunctionOperator;
 
 public class ExpressionOperator extends Expression
 {
-	private Value op;
+	private FunctionOperator op;
 	
 	public ExpressionOperator(Token token)
 	{
 		op = FunctionOperator.get(token.toString());
+	}
+	
+	public int getPriority()
+	{
+		return op.getPriority();
 	}
 	
 	@Override

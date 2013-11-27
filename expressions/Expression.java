@@ -21,10 +21,14 @@ public abstract class Expression
 		Stack<Expression> expressions = new Stack<Expression> ();
 		Stack<ExpressionOperator> operators = new Stack<ExpressionOperator> ();
 		expressions.push(result);
-		
 		while (isOperator(stream.getFirst()))
 		{
-			operators.push(new ExpressionOperator(stream.removeFirst()));
+			ExpressionOperator op = new ExpressionOperator(stream.removeFirst());
+			result = expressions.pop();
+			while (expressions.size() > 0 && op.getPriority() >= operators.peek().getPriority())
+				result = new ExpressionCall(operators.pop(), expressions.pop(), result);
+			expressions.push(result);
+			operators.push(op);
 			expressions.push(greedy(stream));
 		}
 		if (expressions.size() == 1)
@@ -58,16 +62,30 @@ public abstract class Expression
 				result = new ExpressionCall(result, stream);
 			}
 		}
-		else if (token.toString().equals("[")) {
+		else if (token.toString().equals("["))
+		{
 			result = new ExpressionList(token, stream);
 			result = ExpressionReference.createExpressionReference(result, stream);
-		} else if (token.toString().equals("(")) {
+		}
+		else if (token.toString().equals("("))
+		{
 			result = Expression.interpret(stream);
 			if (!")".equals(stream.getFirst().toString())) {
 				throw new SyntaxError("Expected \")\" at end of expression");
 			}
 			stream.removeFirst();
 		}
+		else if (isOperator(token))
+		{
+			if (FunctionOperator.get(token.toString()).getPriority() == 1)
+				result = new ExpressionCall(greedy(stream), result);
+			else
+				throw new SyntaxError(token + " cannot take only 1 operand");
+		}
+		else
+			throw new SyntaxError("not recognized token: " + token);
+		if (result == null)
+			throw new AssertionError("sigh, qq expression");
 		return result;
 	}
 
