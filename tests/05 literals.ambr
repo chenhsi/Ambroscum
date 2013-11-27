@@ -1,0 +1,10 @@
+println 56
+print 0b11011, 0b011
+println
+println 0x5f9
+
+a = 3
+b = 0b11
+print a + b
+c = 0x4a
+print c * a

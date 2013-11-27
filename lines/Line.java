@@ -39,12 +39,14 @@ public abstract class Line
 							throw new SyntaxError("Unexpected token after else:" + temp);
 						return new ElseLine();
 					}
-					else if (!tab.toString().equals("end"))
-						throw new SyntaxError("Missing indentation");
-					Token temp = stream.removeFirst();
-					if (temp != Token.NEWLINE)
-						throw new SyntaxError("Unexpected token after end:" + temp);
-					return new EndLine();
+					else if (tab.toString().equals("end"))
+					{
+						Token temp = stream.removeFirst();
+						if (temp != Token.NEWLINE)
+							throw new SyntaxError("Unexpected token after end:" + temp);
+						return new EndLine();
+					}
+					throw new SyntaxError("Missing indentation");
 				}
 				else
 					throw new SyntaxError("Missing indentation");

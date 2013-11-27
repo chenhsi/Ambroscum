@@ -68,6 +68,6 @@ public class PrintLine extends Line
 	@Override
 	public String toString()
 	{
-		return "(print " + toPrint + ")";
+		return "(" + (newline ? "println " : "print ") + toPrint + ")";
 	}
 }

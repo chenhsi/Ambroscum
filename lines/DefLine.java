@@ -15,6 +15,16 @@ import ambroscum.values.Function;
 
 public class DefLine extends Line
 {
+//	An idea for validating lines
+/*	private static final Set<Class<? extends Line>> validDefLines;
+	private static final Set<Class<? extends Line>> validEndLines;
+	static
+	{
+		Set<Class<? extends Line>> set = new HashSet<> ();
+		set.add(AssertLine.class);
+		validDefLines = Collections.unmodifiableSet(set);
+	}*/
+	
 	private final String name;
 	private final List<Parameter> list;
 	private Block block;

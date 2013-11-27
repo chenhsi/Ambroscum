@@ -73,17 +73,51 @@ public abstract class Expression
 
 	private static boolean isNumber(String text)
 	{
+		text = text.toLowerCase();
 		if (text.charAt(0) == '-')
-			text = text.substring(1);
-		for (char c : text.toCharArray())
-			if (!Character.isDigit(c))
+		{
+			if (text.length() == 1)
 				return false;
+			text = text.substring(1);
+		}
+		if (text.length() >= 2 && text.charAt(0) == '0' && text.charAt(1) == 'b')
+		{
+			text = text.substring(2);
+			for (char c : text.toCharArray())
+				if (c != '0' && c != '1')
+					return false;
+		}
+		else if (text.length() >= 2 && text.charAt(0) == '0' && text.charAt(1) == 'x')
+		{
+			text = text.substring(2);
+			for (char c : text.toCharArray())
+				if (!(Character.isDigit(c) || c == 'a' || c == 'b' || c == 'c' || c == 'd' || c == 'e' || c == 'f'))
+					return false;
+		}
+		else
+		{
+			for (char c : text.toCharArray())
+				if (!Character.isDigit(c))
+					return false;
+		}
 		return true;
 	}
 
 	private static ExpressionLiteral parseNum(String text)
 	{
-		return new ExpressionLiteral(new IntValue(Integer.parseInt(text)));
+		text = text.toLowerCase();
+		int mod = 1;
+		if (text.charAt(0) == '-')
+		{
+			mod = -1;
+			text = text.substring(1);
+		}
+		if (text.length() >= 2 && text.charAt(0) == '0' && text.charAt(1) == 'b')
+			return new ExpressionLiteral(new IntValue(mod * Integer.parseInt(text.substring(2), 2)));
+		else if (text.length() >= 2 && text.charAt(0) == '0' && text.charAt(1) == 'x')
+			return new ExpressionLiteral(new IntValue(mod * Integer.parseInt(text.substring(2), 16)));
+		else
+			return new ExpressionLiteral(new IntValue(mod * Integer.parseInt(text, 10)));
 	}
 
 	// needs to deal with escape characters + unicode characters
@@ -97,13 +131,8 @@ public abstract class Expression
 		return new ExpressionLiteral(new StringValue(text));
 	}
 	
-	private static final String[] OPERATOR_LIST = new String[] {"+", "-", "*", "/", "%", "and", "or", "=", ">", "<", ">=", "<="};
-	static
-	{
-		Arrays.sort(OPERATOR_LIST);
-	}
 	private static boolean isOperator(Token t)
 	{
-		return Arrays.binarySearch(OPERATOR_LIST, t.toString()) >= 0;
+		return FunctionOperator.get(t.toString()) != null;
 	}
 }
