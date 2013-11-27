@@ -85,6 +85,11 @@ public class AutoTester {
 				}
 			}
 			
+			// Read in the rest of the correct output
+			while (correctFileScanner.hasNextLine()) {
+				correctOutputStrBldr.append(correctFileScanner.nextLine() + "\n");
+			}
+			
 			String correctOutputStr = correctOutputStrBldr.toString().replaceAll(System.getProperty("line.separator"), "\n").trim();
 			if (correct) {
 				System.err.println("Tests passed for " + fileName);
