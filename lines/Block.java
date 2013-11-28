@@ -19,31 +19,20 @@ public class Block extends Line
 			Line line = Line.interpret(stream, indentationLevel);
 			if (line instanceof EndLine)
 				break;
-			if (line.expectsBlock())
-				line.setBlock(new Block(stream, indentationLevel + 1));
 			lines.add(line);
 		}
 	}
 
-	public Block(ArrayList<Line> lines) {
-		this.lines = lines;
-	}
-	
 	// holy crap this is such a hacky solution
 	// seriously is there no other way of dealing with this
 	// currently using/planning to use this for:
-	//    return values, break/continue labels, else blocks
+	//    return values, break/continue labels
 	// I guess I could break them into separate methods
 	// but that creates baggage and makes other lines qq
 	public Object getAssociatedValue()
 	{
 		return value;
 	}
-	
-	public boolean expectsBlock() {
-		return false;
-	}
-	public void setBlock(Block b) {}
 	
 	public ExitStatus evaluate(IdentifierMap values)
 	{

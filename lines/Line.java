@@ -17,30 +17,21 @@ import java.util.Iterator;
 public abstract class Line
 {
 	public abstract Block.ExitStatus evaluate(IdentifierMap values);
-	public abstract boolean expectsBlock();	
-	public abstract void setBlock(Block b);
 
 	public static Line interpret(TokenStream stream, int indentation)
 	{
 		for (int i = 0; i < indentation; i++)
 		{
-			Token tab = stream.removeFirst();
+			Token tab = stream.getFirst();
 			if (tab != Token.TAB)
 			{
 				if (i == indentation - 1)
 				{
-					if (tab.toString().equals("else"))
-					{
-						Token temp = stream.removeFirst();
-						if (temp != Token.COLON)
-							throw new SyntaxError("Expected colon after else");
-						temp = stream.removeFirst();
-						if (temp != Token.NEWLINE)
-							throw new SyntaxError("Unexpected token after else:" + temp);
-						return new ElseLine();
-					}
+					if (tab.toString().equals("else") || tab.toString().equals("elif"))
+						return new EndLine();
 					else if (tab.toString().equals("end"))
 					{
+						stream.removeFirst();
 						Token temp = stream.removeFirst();
 						if (temp != Token.NEWLINE)
 							throw new SyntaxError("Unexpected token after end:" + temp);
@@ -51,6 +42,7 @@ public abstract class Line
 				else
 					throw new SyntaxError("Missing indentation");
 			}
+			stream.removeFirst();
 		}
 		Token token = stream.removeFirst();
 		if (token == Token.NEWLINE)
@@ -71,6 +63,8 @@ public abstract class Line
 			return new WhileLine(stream, indentation);
 		if (token.toString().equals("def"))
 			return new DefLine(stream, indentation);
+		if (token.toString().equals("else") || token.toString().equals("elif"))
+			throw new SyntaxError("Unexpected " + token + " line");
 		List<Token> newStream = new LinkedList<Token>();
 		newStream.add(token);
 		while (true)

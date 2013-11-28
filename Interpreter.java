@@ -34,15 +34,7 @@ public class Interpreter
 		{
 			try
 			{
-				Line line = Line.interpret(stream, 0);
-				if (!line.expectsBlock())
-					line.evaluate(identifiers);
-				else
-				{
-					Block block = readBlock(stream, line, 1);
-					line.setBlock(block);
-					line.evaluate(identifiers);
-				}
+				Line.interpret(stream, 0).evaluate(identifiers);
 				System.out.println();
 			}
 			catch (AmbroscumError ex)
@@ -52,43 +44,12 @@ public class Interpreter
 		}
 	}
 	
-	public static Block readBlock(TokenStream stream, Line root, int indentation) {
-		ArrayList<Line> newBlock = new ArrayList<>();
-		Line lineLine;
-		do {
-			lineLine = Line.interpret(stream, indentation);
-			if (lineLine instanceof ElseLine) {
-				if (root instanceof IfLine) {
-					Block block = readBlock(stream, lineLine, indentation);
-					lineLine.setBlock(block);
-					((IfLine) root).setElseClause((ElseLine) lineLine);
-					break;
-				}
-			} else if (lineLine.expectsBlock()) {
-				Block block = readBlock(stream, lineLine, indentation + 1);
-				lineLine.setBlock(block);
-			}
-			newBlock.add(lineLine);
-		} while (!(lineLine instanceof EndLine));
-		return new Block(newBlock);
-	}
-	
 	public static void interpret(File file, boolean thenInteract) throws FileNotFoundException
 	{
 		TokenStream stream = TokenStream.readFile(file);
 		IdentifierMap identifiers = new IdentifierMap(null);
 		while (stream.hasNext())
-		{
-			Line line = Line.interpret(stream, 0);
-			if (!line.expectsBlock())
-				line.evaluate(identifiers);
-			else
-			{
-				Block block = readBlock(stream, line, 1);
-				line.setBlock(block);
-				line.evaluate(identifiers);
-			}
-		}
+			Line.interpret(stream, 0).evaluate(identifiers);
 		if (thenInteract)
 		{
 			stream.makeInteractive();

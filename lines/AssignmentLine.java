@@ -41,11 +41,6 @@ public class AssignmentLine extends Line
 			throw new SyntaxError("Assignment targets and values differ in number: " + assignIDs + " = " + exprs);
 	}
 	
-	public boolean expectsBlock() {
-		return false;
-	}
-	public void setBlock(Block b) {}
-
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{

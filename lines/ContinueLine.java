@@ -14,12 +14,6 @@ public class ContinueLine extends Line
 			throw new SyntaxError("Unexpected token after continue: " + temp);
 	}
 	
-	public boolean expectsBlock() {
-		return false;
-	}
-	public void setBlock(Block b) {}
-	
-	
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{

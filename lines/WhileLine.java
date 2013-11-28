@@ -22,16 +22,6 @@ public class WhileLine extends Line
 		block = new Block(stream, indentationLevel + 1);
 	}
 	
-	@Override
-	public boolean expectsBlock()
-	{
-		return false;
-	}
-	@Override
-	public void setBlock(Block b)
-	{
-		block = b;
-	}
 	
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)

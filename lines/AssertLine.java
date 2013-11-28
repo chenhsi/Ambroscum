@@ -28,11 +28,6 @@ public class AssertLine extends Line
 		}
 	}
 	
-	public boolean expectsBlock() {
-		return false;
-	}
-	public void setBlock(Block b) {}
-
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{

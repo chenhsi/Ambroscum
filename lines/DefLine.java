@@ -67,15 +67,6 @@ public class DefLine extends Line
 		block = new Block(stream, indentationLevel + 1);
 	}
 
-	public boolean expectsBlock()
-	{
-		return false;
-	}
-	public void setBlock(Block b)
-	{
-		block = b;
-	}
-	
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{

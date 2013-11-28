@@ -25,3 +25,19 @@ if 1 < 2:
 else:
 	print "wtf"
 end
+
+def test(x):
+	if x < 0:
+		y = -1
+	elif x = 0:
+		y = 0
+	else:
+		y = 1
+	end
+	return y
+end
+
+println test(-4)
+println test(5)
+println test(0)
+println test(test(1)) + test(test(-1))

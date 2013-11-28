@@ -11,11 +11,6 @@ public class CallLine extends Line
 {
 	private final Expression expr;
 	
-	@Override
-	public boolean expectsBlock() {return false; }
-	@Override
-	public void setBlock(Block b) {}
-	
 	CallLine(TokenStream stream)
 	{
 		expr = Expression.interpret(stream);

@@ -21,12 +21,6 @@ public class ReturnLine extends Line
 			throw new SyntaxError("Unexpected token after return: " + temp);
 	}
 	
-	public boolean expectsBlock() {
-		return false;
-	}
-	public void setBlock(Block b) {}
-	
-	
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
