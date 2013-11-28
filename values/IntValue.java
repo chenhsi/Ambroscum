@@ -8,18 +8,30 @@ public class IntValue extends ObjectValue
 {
 	private final int value;
 	
-	public IntValue(int num)
+	private IntValue(int num)
 	{
 		value = num;
 	}
 	
-	public int getValue() {
+	public static IntValue fromInt(int n)
+	{
+		return new IntValue(n);
+	}
+	
+	public int getValue()
+	{
 		return value;
 	}
 	
 	@Override
 	public Value applyOperator(FunctionOperator op, List<Value> otherValues)
 	{
+		if (otherValues.size() == 0)
+		{
+			if (op.toString().equals("-"))
+				return IntValue.fromInt(-value);
+			return super.applyOperator(op, otherValues);
+		}
 		if (otherValues.size() != 1)
 			throw new UnsupportedOperationException("Non-binary operators are not yet supported");
 		Value other = otherValues.get(0);
@@ -27,23 +39,23 @@ public class IntValue extends ObjectValue
 		{
 			case "+":
 				if (other instanceof IntValue)
-					return new IntValue(value + ((IntValue) other).getValue());
+					return IntValue.fromInt(value + ((IntValue) other).getValue());
 				throw new FunctionNotFoundException("int's '+' operator not defined with value " + other);
 			case "-":
 				if (other instanceof IntValue)
-					return new IntValue(value - ((IntValue) other).getValue());
+					return IntValue.fromInt(value - ((IntValue) other).getValue());
 				throw new FunctionNotFoundException("int's '-' operator not defined with value " + other);
 			case "*":
 				if (other instanceof IntValue)
-					return new IntValue(value * ((IntValue) other).getValue());
+					return IntValue.fromInt(value * ((IntValue) other).getValue());
 				throw new FunctionNotFoundException("int's '*' operator not defined with value " + other);
 			case "/":
 				if (other instanceof IntValue)
-					return new IntValue(value / ((IntValue) other).getValue());
+					return IntValue.fromInt(value / ((IntValue) other).getValue());
 				throw new FunctionNotFoundException("int's '/' operator not defined with value " + other);
 			case "%":
 				if (other instanceof IntValue)
-					return new IntValue(value % ((IntValue) other).getValue());
+					return IntValue.fromInt(value % ((IntValue) other).getValue());
 				throw new FunctionNotFoundException("int's '%' operator not defined with value " + other);
 			case "<":
 				if (other instanceof IntValue)

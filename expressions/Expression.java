@@ -78,7 +78,7 @@ public abstract class Expression
 		else if (isOperator(token))
 		{
 			ExpressionOperator op = new ExpressionOperator(token);
-			if (op.getNumOperands() == 1)
+			if (op.toString().equals("-") || op.getNumOperands() == 1)
 				result = new ExpressionCall(op, greedy(stream));
 			else
 				throw new SyntaxError(op + " cannot take only 1 operand");
@@ -93,12 +93,6 @@ public abstract class Expression
 	private static boolean isNumber(String text)
 	{
 		text = text.toLowerCase();
-		if (text.charAt(0) == '-')
-		{
-			if (text.length() == 1)
-				return false;
-			text = text.substring(1);
-		}
 		if (text.length() >= 2 && text.charAt(0) == '0' && text.charAt(1) == 'b')
 		{
 			text = text.substring(2);
@@ -125,18 +119,14 @@ public abstract class Expression
 	private static ExpressionLiteral parseNum(String text)
 	{
 		text = text.toLowerCase();
-		int mod = 1;
-		if (text.charAt(0) == '-')
-		{
-			mod = -1;
-			text = text.substring(1);
-		}
+		int value;
 		if (text.length() >= 2 && text.charAt(0) == '0' && text.charAt(1) == 'b')
-			return new ExpressionLiteral(new IntValue(mod * Integer.parseInt(text.substring(2), 2)));
+			value = Integer.parseInt(text.substring(2), 2);
 		else if (text.length() >= 2 && text.charAt(0) == '0' && text.charAt(1) == 'x')
-			return new ExpressionLiteral(new IntValue(mod * Integer.parseInt(text.substring(2), 16)));
+			value = Integer.parseInt(text.substring(2), 16);
 		else
-			return new ExpressionLiteral(new IntValue(mod * Integer.parseInt(text, 10)));
+			value = Integer.parseInt(text, 10);
+		return new ExpressionLiteral(IntValue.fromInt(value));
 	}
 
 	// needs to deal with escape characters + unicode characters
