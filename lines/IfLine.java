@@ -51,7 +51,7 @@ public class IfLine extends Line {
 				return elseClause.evaluate(values);
 			return Block.ExitStatus.NORMAL;
 		}
-			throw new SyntaxError("Expected a boolean for if statement condition: " + condition);
+		throw new SyntaxError("Expected a boolean for if statement condition: " + condition);
 	}
 	
 	@Override

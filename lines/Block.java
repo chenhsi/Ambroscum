@@ -37,13 +37,9 @@ public class Block extends Line
 	{
 		for (Line line : lines)
 		{
-			if (line instanceof ContinueLine)
-				return ExitStatus.CONTINUE;
-			if (line instanceof BreakLine)
-				return ExitStatus.BREAK;
-			if (line instanceof ReturnLine)
-				return ExitStatus.RETURN;
-			line.evaluate(values);
+			ExitStatus status = line.evaluate(values);
+			if (status != ExitStatus.NORMAL)
+				return status;
 		}
 		return ExitStatus.NORMAL;
 	}

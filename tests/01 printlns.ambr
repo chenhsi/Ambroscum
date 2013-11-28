@@ -5,6 +5,6 @@ println [1, 2, 3][0]
 println 2 + 3 * 4
 println 5 * 6 - 7
 println 8 / 2 % 3
-println true and 5 > 6
+println true and 5 > 6 - 3
 println 5 < 6 and true
 println 3 > 4 or true
