@@ -28,8 +28,14 @@ public class BooleanValue extends ObjectValue
 	@Override
 	public Value applyOperator(FunctionOperator op, List<Value> otherValues)
 	{
-		if (otherValues.size() != 1)
-			throw new UnsupportedOperationException("Non-binary operators are not yet supported");
+		if (otherValues.size() == 0)
+		{
+			if (op.toString().equals("not"))
+				return BooleanValue.fromBoolean(!value);
+			return super.applyOperator(op, otherValues);
+		}
+		if (otherValues.size() > 1)
+			throw new UnsupportedOperationException("ternary+ operators are not yet supported");
 		Value other = otherValues.get(0);
 		switch (op.toString())
 		{

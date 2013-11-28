@@ -1,4 +1,4 @@
-// strongly consider changing this to an enum
+// consider moving a lot of this code to ExpressionOperators
 
 package ambroscum.values;
 

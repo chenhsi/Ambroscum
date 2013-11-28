@@ -20,6 +20,11 @@ public class ExpressionOperator extends Expression
 		return op.getPriority();
 	}
 	
+	public int getNumOperands()
+	{
+		return op.getNumOperands();
+	}
+	
 	@Override
 	public Value evaluate(IdentifierMap values)
 	{

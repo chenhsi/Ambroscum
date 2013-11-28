@@ -77,10 +77,11 @@ public abstract class Expression
 		}
 		else if (isOperator(token))
 		{
-			if (FunctionOperator.get(token.toString()).getPriority() == 1)
-				result = new ExpressionCall(greedy(stream), result);
+			ExpressionOperator op = new ExpressionOperator(token);
+			if (op.getNumOperands() == 1)
+				result = new ExpressionCall(op, greedy(stream));
 			else
-				throw new SyntaxError(token + " cannot take only 1 operand");
+				throw new SyntaxError(op + " cannot take only 1 operand");
 		}
 		else
 			throw new SyntaxError("not recognized token: " + token);
@@ -146,7 +147,7 @@ public abstract class Expression
 
 	private static ExpressionLiteral parseString(String text)
 	{
-		return new ExpressionLiteral(new StringValue(text));
+		return new ExpressionLiteral(new StringValue(text.substring(1, text.length() - 1)));
 	}
 	
 	private static boolean isOperator(Token t)

@@ -1,11 +1,8 @@
-// map of variables to types and values
-// basically implemented as a Map<Identifier, Tuple<Type, Value>>
-
 /**
  * Represents a mapping of variable names to (Type, Value) tuples.
  * Can be contained within an outer scope.
  *
- * @author Chenhsi Steven Bi, Jing-Lun Edward Gao
+ * @author Chen-Hsi Steven Bi, Jing-Lun Edward Gao
  * @version 1.0
  */
 
@@ -17,6 +14,17 @@ import ambroscum.values.Value;
 
 public class IdentifierMap
 {
+	private static final Set<String> illegalIdentifiers;
+	static
+	{
+		Set<String> illegal = new HashSet<String> ();
+		illegal.add("true"); illegal.add("false"); illegal.add("and");
+		illegal.add("or"); illegal.add("not"); illegal.add("def");
+		illegal.add("class"); illegal.add("if"); illegal.add("for");
+		illegal.add("while"); illegal.add("break"); illegal.add("continue");
+		illegal.add("return");
+		illegalIdentifiers = Collections.unmodifiableSet(illegal);
+	}
 	private IdentifierMap previousblock; // represents link to previous block of code, might be null
 	private HashMap<String, Value> map;
 
@@ -61,7 +69,7 @@ public class IdentifierMap
 			if (!Character.isLetterOrDigit(name.charAt(i)))
 				return false;
 		}
-		return true;
+		return !illegalIdentifiers.contains(name);
 	}
 
 	// Returns the smallest IdentifierMap that contains the identifier

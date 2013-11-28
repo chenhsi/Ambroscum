@@ -9,6 +9,7 @@ import java.util.*;
 public class Block extends Line
 {
 	private List<Line> lines;
+	private Object value;
 	
 	public Block(TokenStream stream, int indentationLevel)
 	{
@@ -28,6 +29,17 @@ public class Block extends Line
 		this.lines = lines;
 	}
 	
+	// holy crap this is such a hacky solution
+	// seriously is there no other way of dealing with this
+	// currently using/planning to use this for:
+	//    return values, break/continue labels, else blocks
+	// I guess I could break them into separate methods
+	// but that creates baggage and makes other lines qq
+	public Object getAssociatedValue()
+	{
+		return value;
+	}
+	
 	public boolean expectsBlock() {
 		return false;
 	}
@@ -39,7 +51,11 @@ public class Block extends Line
 		{
 			ExitStatus status = line.evaluate(values);
 			if (status != ExitStatus.NORMAL)
+			{
+				if (status == ExitStatus.RETURN)
+					value = ((ReturnLine) line).getValue();
 				return status;
+			}
 		}
 		return ExitStatus.NORMAL;
 	}

@@ -8,3 +8,7 @@ b = 0b11
 print a + b
 c = 0x4a
 print c * a
+println
+
+println "strings also get to be tested"
+println true

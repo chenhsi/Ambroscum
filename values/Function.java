@@ -31,8 +31,11 @@ public class Function extends Value
 				throw new SyntaxError("continues should not be terminating function calls");
 			case BREAK:
 				throw new SyntaxError("breaks should not be terminating function calls");
+			case RETURN:
+				return (Value) code.getAssociatedValue();
 			default:
-				return null; // should be implemented
+				return null; // not sure how blank returns should be dealt with
+							 // then again, those aren't implemented in ReturnLine anyway
 		}
 	}
 }
