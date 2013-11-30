@@ -60,7 +60,7 @@ public abstract class Expression
 				result = new ExpressionCall(result, stream);
 			}
 		}
-		else if (token.toString().equals("["))
+		else if (token.toString().equals("[") || token.toString().equals("{"))
 		{
 			result = new ExpressionList(token, stream);
 			result = ExpressionReference.createExpressionReference(result, stream);

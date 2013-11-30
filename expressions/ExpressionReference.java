@@ -6,6 +6,7 @@ import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
 import ambroscum.values.Value;
 import ambroscum.values.ListValue;
+import ambroscum.values.DictValue;
 
 import java.util.*;
 
@@ -39,9 +40,15 @@ public class ExpressionReference extends Expression
 			Token close = stream.removeFirst();
 			if (!close.toString().equals("}"))
 				throw new SyntaxError("Missing close brace");
-		} else {
-			type = ReferenceType.NONE;
 		}
+		else if (".".equals(peekStr))
+		{
+			stream.removeFirst();
+			type = ReferenceType.DOT;
+			secondary = Expression.interpret(stream);
+		}
+		else
+			type = ReferenceType.NONE;
 	}
 
 	@Override
@@ -60,7 +67,10 @@ public class ExpressionReference extends Expression
 				}
 				throw new SyntaxError("Cannot use brackets to index a non-list: " + outerList);
 			case BRACE:
-				return null;
+				Value outerDict = primary.evaluate(values);
+				if (outerDict instanceof ListValue)
+					return ((DictValue) outerDict).get(secondary.evaluate(values));
+				throw new SyntaxError("Cannot use braces to index a non-dict: " + outerDict);
 		}
 		return null;
 	}
@@ -81,6 +91,13 @@ public class ExpressionReference extends Expression
 					((ListValue) outerList).set(secondary.evaluate(values), value);
 				} else
 					throw new SyntaxError("Cannot use brackets to index a non-list: " + outerList);
+				break;
+			case BRACE:
+				Value outerDict = primary.evaluate(values);
+				if (outerDict instanceof ListValue)
+					((DictValue) outerDict).set(secondary.evaluate(values), value);
+				else
+					throw new SyntaxError("Cannot use braces to index a non-dict: " + outerDict);
 				break;
 			default:
 				throw new UnsupportedOperationException("Fancy stuff doesn't work yet.");
@@ -116,20 +133,21 @@ public class ExpressionReference extends Expression
 	}
 	private static ExpressionReference createExpressionReferenceHelper(ExpressionReference outerRef, TokenStream stream)
 	{
-		while (stream.getFirst() != Token.NEWLINE && (stream.getFirst().toString().equals("[") || stream.getFirst().toString().equals("{")))
+		Token next = stream.getFirst();
+		while (next != Token.NEWLINE && (next.toString().equals("[") || next.toString().equals("{") || next.toString().equals(".")))
 		{
 			// If the references continue
 			// This reads in the next thing (e.g. "[fancy expression stuff]")
 			// and creates a new ExpressionReference
 			outerRef = new ExpressionReference(outerRef, stream);
-			continue;
+			next = stream.getFirst();
 		}
 		return outerRef;
 	}
 
 	private static enum ReferenceType
 	{
-		NONE("", ""), BRACKET("[", "]"), BRACE("{", "}");
+		NONE("", ""), DOT(".", ""), BRACKET("[", "]"), BRACE("{", "}");
 		
 		String open;
 		String close;
