@@ -18,3 +18,14 @@ end
 
 println h(6)
 println h(7)
+
+def f(a):
+	if a <= 2:
+		result = 1
+	else:
+		result = f(a - 1) + f(a - 2)
+	end
+	return result
+end
+
+println f(12)

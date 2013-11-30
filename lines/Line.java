@@ -27,9 +27,10 @@ public abstract class Line
 			{
 				if (i == indentation - 1)
 				{
-					if (tab.toString().equals("else") || tab.toString().equals("elif"))
+					String notTab = tab.toString();
+					if (notTab.equals("else") || notTab.equals("elif") || notTab.equals("also"))
 						return new EndLine();
-					else if (tab.toString().equals("end"))
+					else if (notTab.equals("end"))
 					{
 						stream.removeFirst();
 						Token temp = stream.removeFirst();

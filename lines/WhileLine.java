@@ -10,6 +10,7 @@ public class WhileLine extends Line
 {
 	private Expression condition;
 	private Block block;
+	private Block alsoBlock;
 	
 	public WhileLine(TokenStream stream, int indentationLevel)
 	{
@@ -20,12 +21,23 @@ public class WhileLine extends Line
 		if (temp != Token.NEWLINE)
 			throw new SyntaxError("Unexpected token after while statement: " + temp);
 		block = new Block(stream, indentationLevel + 1);
+		if (stream.hasNext() && stream.getFirst().toString().equals("also"))
+		{
+			stream.removeFirst();
+			if (stream.removeFirst() != Token.COLON)
+				throw new SyntaxError("Expected colon after also statement");
+			temp = stream.removeFirst();
+			if (temp != Token.NEWLINE)
+				throw new SyntaxError("Unexpected token after also statement: " + temp);
+			alsoBlock = new Block(stream, indentationLevel + 1);
+		}
 	}
 	
 	
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
+		boolean normalTermination = true;
 		while (true)
 		{
 			Value conditionValue = condition.evaluate(values);
@@ -37,7 +49,10 @@ public class WhileLine extends Line
 					if (status == Block.ExitStatus.CONTINUE)
 						continue;
 					if (status == Block.ExitStatus.BREAK)
+					{
+						normalTermination = false;
 						break;
+					}
 					if (status == Block.ExitStatus.RETURN)
 						return Block.ExitStatus.RETURN;
 				}
@@ -47,12 +62,18 @@ public class WhileLine extends Line
 			else
 				throw new SyntaxError("Expected a boolean for while statement condition: " + condition);
 		}
+		if (normalTermination && alsoBlock != null)
+			alsoBlock.evaluate(values);
 		return Block.ExitStatus.NORMAL;
 	}
 	
 	@Override
 	public String toString()
 	{
-		return "(while " + condition + " (" + block + "))";
+		StringBuilder sb = new StringBuilder("(while ");
+		sb.append(condition).append(" (").append(block).append(")");
+		if (alsoBlock != null)
+			sb.append(" ").append(alsoBlock);
+		return sb.append(")").toString();
 	}
 }

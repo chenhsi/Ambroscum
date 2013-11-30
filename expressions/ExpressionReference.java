@@ -71,7 +71,7 @@ public class ExpressionReference extends Expression
 		{
 			case NONE:
 				if (baseReference != null)
-					values.set(baseReference, value);
+					values.add(baseReference, value);
 				else
 					throw new SyntaxError("Cannot set the value of " + primary);
 				break;

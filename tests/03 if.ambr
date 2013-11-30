@@ -28,13 +28,12 @@ end
 
 def test(x):
 	if x < 0:
-		y = -1
+		return -1
 	elif x = 0:
-		y = 0
+		return 0
 	else:
-		y = 1
+		return 1
 	end
-	return y
 end
 
 println test(-4)

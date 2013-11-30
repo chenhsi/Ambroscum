@@ -1,0 +1,35 @@
+while true:
+	println "1"
+	break
+end
+
+while false:
+	println "2"
+end
+
+i = 3
+while i < 7:
+	i = i + 1
+	println i
+end
+
+while i < 15:
+	i = i + 1
+	if i = 11:
+		break
+	end
+	println i
+also:
+	println "nope"
+end
+
+while i < 15:
+	println i
+	if i = 16:
+		break
+	end
+	i = i + 1
+also:
+	println "here"
+end
+

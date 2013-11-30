@@ -82,4 +82,9 @@ public class IdentifierMap
 		}
 		return null;
 	}
+	
+	public String toString()
+	{
+		return map.toString();
+	}
 }

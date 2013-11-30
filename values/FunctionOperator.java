@@ -63,9 +63,13 @@ public class FunctionOperator extends Function
 	
 	enum Operator
 	{
-		NOT("not", 1, 1), MUL("*", 2, 2), DIV("/", 2, 2), MOD("%", 2, 2), ADD("+", 2, 3), SUB("-", 2, 3),
+		POST_INCREMENT("++_", 1, 0), POST_DECREMENT("--_", 1, 0),
+		NOT("not", 1, 1), PRE_INCREMENT("++_", 1, 1), PRE_DECREMENT("--_", 1, 1),
+		MUL("*", 2, 2), DIV("/", 2, 2), MOD("%", 2, 2),
+		ADD("+", 2, 3), SUB("-", 2, 3),
 		GREATER_THAN(">", 2, 4), LESS_THAN("<", 2, 4), GREATER_THAN_EQUAL(">=", 2, 4), LESS_THAN_EQUAL("<=", 2, 4),
-		IS_EQUAL("=", 2, 5), NOT_EQUAL("!=", 2, 5), AND("and", 2, 6), OR("or", 2, 7);
+		IS_EQUAL("=", 2, 5), NOT_EQUAL("!=", 2, 5),
+		AND("and", 2, 6), OR("or", 2, 7);
 		
 		private String name;
 		private int numOperands;

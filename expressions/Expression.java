@@ -13,8 +13,6 @@ public abstract class Expression
 {
 	public abstract Value evaluate(IdentifierMap values);
 
-	// need to implement unary operators and priority (* over +)
-	// is this erroring if input isn't a valid expression?
 	public static Expression interpret(TokenStream stream)
 	{
 		Expression result = greedy(stream);
@@ -75,6 +73,8 @@ public abstract class Expression
 			}
 			stream.removeFirst();
 		}
+//		else if (token.toString().equals("++") || token.toString().equals("--"))
+//			result = new ExpressionCall(token.toString() + "_", greedy(stream));
 		else if (isOperator(token))
 		{
 			ExpressionOperator op = new ExpressionOperator(token);
