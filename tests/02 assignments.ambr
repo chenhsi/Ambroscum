@@ -20,3 +20,10 @@ println x[0][0]
 
 x[0][0] = 1000
 println x
+
+y += 3
+println y
+x[0][0] -= 998
+println x[0][0]
+x[0][0] *= x[0][0]
+println x

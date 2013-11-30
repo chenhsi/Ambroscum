@@ -21,7 +21,7 @@ public abstract class Expression
 		expressions.push(result);
 		while (isOperator(stream.getFirst()))
 		{
-			ExpressionOperator op = new ExpressionOperator(stream.removeFirst());
+			ExpressionOperator op = new ExpressionOperator(stream.removeFirst().toString());
 			result = expressions.pop();
 			while (expressions.size() > 0 && op.getPriority() >= operators.peek().getPriority())
 				result = new ExpressionCall(operators.pop(), expressions.pop(), result);
@@ -77,7 +77,7 @@ public abstract class Expression
 //			result = new ExpressionCall(token.toString() + "_", greedy(stream));
 		else if (isOperator(token))
 		{
-			ExpressionOperator op = new ExpressionOperator(token);
+			ExpressionOperator op = new ExpressionOperator(token.toString());
 			if (op.toString().equals("-") || op.getNumOperands() == 1)
 				result = new ExpressionCall(op, greedy(stream));
 			else

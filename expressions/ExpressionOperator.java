@@ -10,9 +10,9 @@ public class ExpressionOperator extends Expression
 {
 	private FunctionOperator op;
 	
-	public ExpressionOperator(Token token)
+	public ExpressionOperator(String str)
 	{
-		op = FunctionOperator.get(token.toString());
+		op = FunctionOperator.get(str.toString());
 	}
 	
 	public int getPriority()

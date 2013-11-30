@@ -12,6 +12,7 @@ import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
+import ambroscum.expressions.ExpressionOperator;
 import java.util.Iterator;
 
 public abstract class Line
@@ -72,7 +73,7 @@ public abstract class Line
 		{
 			Token next = stream.removeFirst();
 			newStream.add(next);
-			if (next.toString().equals("="))
+			if (next.toString().endsWith("="))
 				return new AssignmentLine(TokenStream.readAsStream(newStream), stream);
 			if (next == Token.NEWLINE)
 				return new CallLine(TokenStream.readAsStream(newStream));
