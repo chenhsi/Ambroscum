@@ -33,7 +33,6 @@ public class WhileLine extends Line
 		}
 	}
 	
-	
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{

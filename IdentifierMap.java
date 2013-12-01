@@ -1,6 +1,8 @@
 /**
- * Represents a mapping of variable names to (Type, Value) tuples.
- * Can be contained within an outer scope.
+ * Represents a mapping of variable names to values.
+ * <p>
+ * When typing is implemented, this will also record type information about
+ * variables.
  *
  * @author Chen-Hsi Steven Bi, Jing-Lun Edward Gao
  * @version 1.0
@@ -18,17 +20,25 @@ public class IdentifierMap
 	static
 	{
 		Set<String> illegal = new HashSet<String> ();
-		illegal.add("true"); illegal.add("false"); illegal.add("and");
-		illegal.add("or"); illegal.add("not"); illegal.add("def");
-		illegal.add("class"); illegal.add("if"); illegal.add("for");
-		illegal.add("while"); illegal.add("break"); illegal.add("continue");
-		illegal.add("return");
+		illegal.add("true"); illegal.add("false");
+		illegal.add("and"); illegal.add("or"); illegal.add("not");
+		illegal.add("def"); illegal.add("class");
+		illegal.add("if"); illegal.add("for"); illegal.add("while");
+		illegal.add("elif"); illegal.add("else"); illegal.add("then");
+		illegal.add("break"); illegal.add("continue"); illegal.add("return");
+		illegal.add("end");
 		illegalIdentifiers = Collections.unmodifiableSet(illegal);
 	}
 	private IdentifierMap previousblock; // represents link to previous block of code, might be null
 	private HashMap<String, Value> map;
 
-	public IdentifierMap(IdentifierMap prev) {
+	/**
+	 * Constructs an <code>IdentifierMap</code>.
+	 *
+	 * @param	prev	the IdentifierMap associated with the parent scope
+	 */
+	public IdentifierMap(IdentifierMap prev)
+	{
 		previousblock = prev;
 		map = new HashMap<String, Value>();
 	}

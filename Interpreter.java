@@ -42,7 +42,14 @@ public class Interpreter
 			}
 		}
 	}
-	
+
+	/**
+	 * Reads data from an Ambroscum file, then optionally begins an interactive
+	 * session.
+	 *
+	 * @param	file			the Ambroscum file to read from and evaluate
+	 * @param	thenInteract	whether to begin interacitve input afterwards
+	 */
 	public static void interpret(File file, boolean thenInteract) throws FileNotFoundException
 	{
 		TokenStream stream = TokenStream.readFile(file);
