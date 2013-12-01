@@ -59,6 +59,11 @@ public abstract class Expression
 				stream.removeFirst();
 				result = new ExpressionCall(result, stream);
 			}
+			else if (stream.getFirst().toString().equals("++") || stream.getFirst().toString().equals("--"))
+			{
+				result = new ExpressionIncrement(result, stream.getFirst().toString().charAt(0) == '+', false);
+				stream.removeFirst();
+			}
 		}
 		else if (token.toString().equals("[") || token.toString().equals("{"))
 		{
@@ -73,8 +78,8 @@ public abstract class Expression
 			}
 			stream.removeFirst();
 		}
-//		else if (token.toString().equals("++") || token.toString().equals("--"))
-//			result = new ExpressionCall(token.toString() + "_", greedy(stream));
+		else if (token.toString().equals("++") || token.toString().equals("--"))
+			result = new ExpressionIncrement(greedy(stream), token.toString().charAt(0) == '+', true);
 		else if (isOperator(token))
 		{
 			ExpressionOperator op = new ExpressionOperator(token.toString());

@@ -129,6 +129,8 @@ public class Tokenizer
 				return comment(i);
 			case '\n':
 				return newline(i);
+			case '+': case '-':
+				return normalToken(i);
 			default:
 				throw new SyntaxError("Expected whitespace after grouping, found " + str.charAt(i));
 		}

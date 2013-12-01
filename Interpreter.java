@@ -13,7 +13,6 @@ import ambroscum.errors.AmbroscumError;
 import ambroscum.errors.SyntaxError;
 import ambroscum.lines.Block;
 import ambroscum.lines.EndLine;
-import ambroscum.lines.ElseLine;
 import ambroscum.lines.IfLine;
 import ambroscum.lines.Line;
 import ambroscum.parser.TokenStream;

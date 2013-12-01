@@ -27,3 +27,9 @@ x[0][0] -= 998
 println x[0][0]
 x[0][0] *= x[0][0]
 println x
+
+println x[0][0]++
+println ++x[0][0]
+println y++
+y--
+println ++y
