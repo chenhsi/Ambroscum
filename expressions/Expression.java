@@ -65,12 +65,14 @@ public abstract class Expression
 				stream.removeFirst();
 			}
 		}
-		else if (token.toString().equals("[") || token.toString().equals("{"))
+		else if (token.toString().equals("["))
 		{
 			result = new ExpressionList(token, stream);
 			result = ExpressionReference.createExpressionReference(result, stream);
-		}
-		else if (token.toString().equals("("))
+		} else if (token.toString().equals("{")) {
+			result = new ExpressionDict(token, stream);
+			result = ExpressionReference.createExpressionReference(result, stream);
+		} else if (token.toString().equals("("))
 		{
 			result = Expression.interpret(stream);
 			if (!")".equals(stream.getFirst().toString())) {

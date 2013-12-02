@@ -4,6 +4,7 @@ while true:
 	break
 	println 2
 end
+println
 
 ; Slightly fancier - break out from an inner block
 x = 0
@@ -15,6 +16,7 @@ while x < 5:
 	end
 	println x
 end
+println
 
 ; Nested loops
 x = 0
@@ -29,3 +31,4 @@ while x < 2:
 	end
 	x = x + 1
 end
+println

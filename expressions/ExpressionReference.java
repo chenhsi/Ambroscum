@@ -68,9 +68,11 @@ public class ExpressionReference extends Expression
 				throw new SyntaxError("Cannot use brackets to index a non-list: " + outerList);
 			case BRACE:
 				Value outerDict = primary.evaluate(values);
-				if (outerDict instanceof ListValue)
+				if (outerDict instanceof DictValue)
 					return ((DictValue) outerDict).get(secondary.evaluate(values));
 				throw new SyntaxError("Cannot use braces to index a non-dict: " + outerDict);
+			case DOT:
+				return primary.evaluate(values).dereference(secondary.evaluate(values));
 		}
 		return null;
 	}
