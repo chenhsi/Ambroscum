@@ -16,7 +16,10 @@ public abstract class Value
 		
 	}
 	
-	public Value dereference(Value v) {
+	public Value dereference(String ref) {
+		throw new AmbroscumError("Cannot dereference " + getClass());
+	}
+	public void setDereference(String ref, Value val) {
 		throw new AmbroscumError("Cannot dereference " + getClass());
 	}
 	

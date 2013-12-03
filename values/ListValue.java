@@ -38,6 +38,21 @@ public class ListValue extends ObjectValue {
 		}
 		return super.applyOperator(op, otherValues);
 	}
+	
+	@Override
+	public Value dereference(String ref) {
+		if ("length".equals(ref)) {
+			return IntValue.fromInt(list.length);
+		}
+		throw new VariableNotFoundError(ref);
+	}
+	@Override
+	public void setDereference(String ref, Value val) {
+		if ("length".equals(ref)) {
+			throw new NonassignableException(this + "." + ref + " is not assignable");
+		}
+		throw new VariableNotFoundError(ref);
+	}
 
 	
 	@Override

@@ -17,6 +17,9 @@ public class ExpressionReference extends Expression
 	private ReferenceType type;
 	// If this is set, primary is always null and type is always NONE
 	private String baseReference;
+	// Set if and only if this.type == DOT
+	// If set, then secondary = null
+	private String dotReference;
 
 	private ExpressionReference() {}
 	private ExpressionReference(ExpressionReference p, TokenStream stream)
@@ -45,7 +48,7 @@ public class ExpressionReference extends Expression
 		{
 			stream.removeFirst();
 			type = ReferenceType.DOT;
-			secondary = Expression.interpret(stream);
+			dotReference = stream.removeFirst().toString();
 		}
 		else
 			type = ReferenceType.NONE;
@@ -72,7 +75,7 @@ public class ExpressionReference extends Expression
 					return ((DictValue) outerDict).get(secondary.evaluate(values));
 				throw new SyntaxError("Cannot use braces to index a non-dict: " + outerDict);
 			case DOT:
-				return primary.evaluate(values).dereference(secondary.evaluate(values));
+				return primary.evaluate(values).dereference(dotReference);
 		}
 		return null;
 	}
@@ -101,6 +104,8 @@ public class ExpressionReference extends Expression
 				else
 					throw new SyntaxError("Cannot use braces to index a non-dict: " + outerDict);
 				break;
+			case DOT:
+				primary.evaluate(values).setDereference(dotReference, value);
 			default:
 				throw new UnsupportedOperationException("Fancy stuff doesn't work yet.");
 		}
