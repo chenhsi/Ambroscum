@@ -15,10 +15,8 @@ public class ExpressionList extends Expression {
 	public ExpressionList(Token opener, TokenStream stream) {
 		// Expects a stream of form "expression, expression, expression]"
 		ArrayList<Expression> exprsList = new ArrayList<Expression>();
-		if (!stream.getFirst().toString().equals("]"))
-		{
-			while (true)
-			{
+		if (!stream.getFirst().toString().equals("]")) {
+			while (true) {
 				exprsList.add(Expression.interpret(stream));
 				Token comma = stream.removeFirst(); // Remove the comma
 				if (comma == Token.NEWLINE)

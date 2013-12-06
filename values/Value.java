@@ -8,12 +8,19 @@
 package ambroscum.values;
 
 import java.util.*;
-
-public class Value
+import ambroscum.errors.AmbroscumError;
+public abstract class Value
 {
 	public Value()
 	{
 		
+	}
+	
+	public Value dereference(String ref) {
+		throw new AmbroscumError("Cannot dereference " + getClass());
+	}
+	public void setDereference(String ref, Value val) {
+		throw new AmbroscumError("Cannot dereference " + getClass());
 	}
 	
 	public boolean equals(Object other)

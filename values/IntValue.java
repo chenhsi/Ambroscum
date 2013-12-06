@@ -90,6 +90,10 @@ public class IntValue extends ObjectValue
 	{
 		return (o instanceof IntValue) && value == ((IntValue) o).value;
 	}
+	@Override
+	public int hashCode() {
+		return value;
+	}
 	
 	@Override
 	public String toString()
