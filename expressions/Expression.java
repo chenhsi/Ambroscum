@@ -73,10 +73,8 @@ public abstract class Expression
 		else if (token.toString().equals("("))
 		{
 			result = Expression.interpret(stream);
-			if (!")".equals(stream.getFirst().toString())) {
-				throw new SyntaxError("Expected \")\" at end of expression");
-			}
-			stream.removeFirst();
+			if (!")".equals(stream.removeFirst().toString()))
+				throw new SyntaxError("Missing close parenthesis after expression");
 		}
 		else if (token.toString().equals("++") || token.toString().equals("--"))
 			result = new ExpressionIncrement(greedy(stream), token.toString().charAt(0) == '+', true);

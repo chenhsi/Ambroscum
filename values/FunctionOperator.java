@@ -69,7 +69,8 @@ public class FunctionOperator extends Function
 		ADD("+", 2, 3), SUB("-", 2, 3),
 		GREATER_THAN(">", 2, 4), LESS_THAN("<", 2, 4), GREATER_THAN_EQUAL(">=", 2, 4), LESS_THAN_EQUAL("<=", 2, 4),
 		IS_EQUAL("=", 2, 5), NOT_EQUAL("!=", 2, 5),
-		AND("and", 2, 6), OR("or", 2, 7);
+		AND("and", 2, 6), OR("or", 2, 7),
+		GET(".[]", 1, -1), SET("[]=", 2, -1);
 		
 		private String name;
 		private int numOperands;

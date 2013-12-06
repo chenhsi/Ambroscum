@@ -32,9 +32,20 @@ public class ListValue extends ObjectValue {
 	@Override
 	public Value applyOperator(FunctionOperator op, List<Value> otherValues)
 	{
-		switch (op.toString())
+		Value first = otherValues.get(0);
+		switch (op.toString()) // the two current operators aren't actually supported/ever used
 		{
-			// should decide how these work
+			case ".[]":
+				if (first instanceof IntValue)
+					return list[((IntValue) first).getValue()];
+				throw new FunctionNotFoundException("list's indexing expects an int");
+			case "[]=":
+				if (first instanceof IntValue)
+				{
+					list[((IntValue) first).getValue()] = otherValues.get(1);
+					return NullValue.NULL;
+				}
+				throw new FunctionNotFoundException("list's indexing expects an int");
 		}
 		return super.applyOperator(op, otherValues);
 	}

@@ -28,9 +28,14 @@ public class DictValue extends ObjectValue
 	@Override
 	public Value applyOperator(FunctionOperator op, List<Value> otherValues)
 	{
+		Value first = otherValues.get(0);
 		switch (op.toString())
 		{
-			// should decide how these work
+			case ".[]":
+				return map.get(first); // should this error if map doesn't contain the key?
+			case "[]=":
+				map.put(first, otherValues.get(1));
+				return NullValue.NULL;
 		}
 		return super.applyOperator(op, otherValues);
 	}
