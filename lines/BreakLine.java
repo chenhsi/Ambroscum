@@ -7,8 +7,9 @@ import ambroscum.errors.SyntaxError;
 
 public class BreakLine extends Line
 {
-	BreakLine(TokenStream stream)
+	BreakLine(Line parent, TokenStream stream)
 	{
+		super(parent);
 		Token temp = stream.removeFirst();
 		if (temp != Token.NEWLINE)
 			throw new SyntaxError("Unexpected token after break: " + temp);

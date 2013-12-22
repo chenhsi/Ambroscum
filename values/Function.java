@@ -32,7 +32,7 @@ public class Function extends Value
 			case BREAK:
 				throw new SyntaxError("breaks should not be terminating function calls");
 			case RETURN:
-				return (Value) code.getAssociatedValue();
+				return code.getReturnValue();
 			default:
 				return NullValue.NULL;
 		}

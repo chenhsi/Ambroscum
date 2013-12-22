@@ -12,15 +12,16 @@ public class WhileLine extends Line
 	private Block block;
 	private Block alsoBlock;
 	
-	public WhileLine(TokenStream stream, int indentationLevel)
+	public WhileLine(Line parent, TokenStream stream, int indentationLevel)
 	{
+		super(parent);
 		condition = Expression.interpret(stream);
 		if (stream.removeFirst() != Token.COLON)
 			throw new SyntaxError("Expected colon after while statement");
 		Token temp = stream.removeFirst();
 		if (temp != Token.NEWLINE)
 			throw new SyntaxError("Unexpected token after while statement: " + temp);
-		block = new Block(stream, indentationLevel + 1);
+		block = new Block(this, stream, indentationLevel + 1);
 		if (stream.hasNext() && stream.getFirst().toString().equals("also"))
 		{
 			stream.removeFirst();
@@ -29,7 +30,7 @@ public class WhileLine extends Line
 			temp = stream.removeFirst();
 			if (temp != Token.NEWLINE)
 				throw new SyntaxError("Unexpected token after also statement: " + temp);
-			alsoBlock = new Block(stream, indentationLevel + 1);
+			alsoBlock = new Block(this, stream, indentationLevel + 1);
 		}
 	}
 	

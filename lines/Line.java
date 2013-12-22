@@ -13,13 +13,26 @@ import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
 import ambroscum.expressions.ExpressionOperator;
+import ambroscum.values.Value;
 import java.util.Iterator;
 
 public abstract class Line
 {
+	protected Line parent;
+	
+	protected Line(Line p)
+	{
+		parent = p;
+	}
+	
+	protected void setReturnValue(Value v)
+	{
+		parent.setReturnValue(v);
+	}
+	
 	public abstract Block.ExitStatus evaluate(IdentifierMap values);
 
-	public static Line interpret(TokenStream stream, int indentation)
+	public static Line interpret(Line parent, TokenStream stream, int indentation)
 	{
 		for (int i = 0; i < indentation; i++)
 		{
@@ -30,14 +43,14 @@ public abstract class Line
 				{
 					String notTab = tab.toString();
 					if (notTab.equals("else") || notTab.equals("elif") || notTab.equals("also"))
-						return new EndLine();
+						return new EndLine(parent);
 					else if (notTab.equals("end"))
 					{
 						stream.removeFirst();
 						Token temp = stream.removeFirst();
 						if (temp != Token.NEWLINE)
 							throw new SyntaxError("Unexpected token after end:" + temp);
-						return new EndLine();
+						return new EndLine(parent);
 					}
 					throw new SyntaxError("Missing indentation");
 				}
@@ -48,23 +61,23 @@ public abstract class Line
 		}
 		Token token = stream.removeFirst();
 		if (token == Token.NEWLINE)
-			return Line.interpret(stream, indentation);
+			return Line.interpret(parent, stream, indentation);
 		if (token.toString().equals("assert"))
-			return new AssertLine(stream);
+			return new AssertLine(parent, stream);
 		if (token.toString().equals("print") || token.toString().equals("println"))
-			return new PrintLine(stream, token.toString().length() == 7);
+			return new PrintLine(parent, stream, token.toString().length() == 7);
 		if (token.toString().equals("break"))
-			return new BreakLine(stream);
+			return new BreakLine(parent, stream);
 		if (token.toString().equals("continue"))
-			return new ContinueLine(stream);
+			return new ContinueLine(parent, stream);
 		if (token.toString().equals("return"))
-			return new ReturnLine(stream);
+			return new ReturnLine(parent, stream);
 		if (token.toString().equals("if"))
-			return new IfLine(stream, indentation);
+			return new IfLine(parent, stream, indentation);
 		if (token.toString().equals("while"))
-			return new WhileLine(stream, indentation);
+			return new WhileLine(parent, stream, indentation);
 		if (token.toString().equals("def"))
-			return new DefLine(stream, indentation);
+			return new DefLine(parent, stream, indentation);
 		if (token.toString().equals("else") || token.toString().equals("elif"))
 			throw new SyntaxError("Unexpected " + token + " line");
 		List<Token> newStream = new LinkedList<Token>();
@@ -74,9 +87,9 @@ public abstract class Line
 			Token next = stream.removeFirst();
 			newStream.add(next);
 			if (next.toString().endsWith("="))
-				return new AssignmentLine(TokenStream.readAsStream(newStream), stream);
+				return new AssignmentLine(parent, TokenStream.readAsStream(newStream), stream);
 			if (next == Token.NEWLINE)
-				return new CallLine(TokenStream.readAsStream(newStream));
+				return new CallLine(parent, TokenStream.readAsStream(newStream));
 		}
 	}
 }

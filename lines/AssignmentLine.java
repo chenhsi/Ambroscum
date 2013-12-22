@@ -39,8 +39,9 @@ public class AssignmentLine extends Line
 	 *						stream should be the same stream as the rest of the
 	 *						input.
 	 */
-	AssignmentLine(TokenStream idStream, TokenStream valueStream)
+	AssignmentLine(Line parent, TokenStream idStream, TokenStream valueStream)
 	{
+		super(parent);
 		assignIDs = new LinkedList<ExpressionReference>();
 		assignIDs.add(ExpressionReference.createExpressionReference(idStream.removeFirst(), idStream));
 		while (!idStream.getFirst().toString().endsWith("="))

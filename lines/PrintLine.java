@@ -12,8 +12,9 @@ public class PrintLine extends Line
 	private List<Expression> toPrint;
 	private boolean newline;
 
-	PrintLine(TokenStream stream, boolean newline)
+	PrintLine(Line parent, TokenStream stream, boolean newline)
 	{
+		super(parent);
 		this.newline = newline;
 		boolean expectExpr = true;
 		toPrint = new LinkedList<Expression> ();

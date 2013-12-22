@@ -29,8 +29,9 @@ public class DefLine extends Line
 	private final List<Parameter> list;
 	private Block block;
 	
-	DefLine(TokenStream stream, int indentationLevel)
+	DefLine(Line parent, TokenStream stream, int indentationLevel)
 	{
+		super(parent);
 		name = stream.removeFirst().toString();
 		if (!IdentifierMap.isValidIdentifier(name))
 			throw new SyntaxError("Not a valid function name: " + name);
@@ -64,7 +65,7 @@ public class DefLine extends Line
 		temp = stream.removeFirst();
 		if (temp != Token.NEWLINE)
 			throw new SyntaxError("Unexpected token at end of function definition: " + temp);
-		block = new Block(stream, indentationLevel + 1);
+		block = new Block(this, stream, indentationLevel + 1);
 	}
 
 	@Override

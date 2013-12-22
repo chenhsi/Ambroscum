@@ -30,8 +30,9 @@ public class AssertLine extends Line
 	 *
 	 * @param	stream	the <code>InputStream</code> to read tokens from
 	 */
-	AssertLine(TokenStream stream)
+	AssertLine(Line parent, TokenStream stream)
 	{
+		super(parent);
 		test = Expression.interpret(stream);
 		Token token = stream.removeFirst();
 		if (token != Token.NEWLINE)

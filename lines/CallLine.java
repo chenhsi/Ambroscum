@@ -11,8 +11,9 @@ public class CallLine extends Line
 {
 	private final Expression expr;
 	
-	CallLine(TokenStream stream)
+	CallLine(Line parent, TokenStream stream)
 	{
+		super(parent);
 		expr = Expression.interpret(stream);
 		if (!(expr instanceof ExpressionCall))
 			throw new SyntaxError("Single expression not a valid line: " + expr);

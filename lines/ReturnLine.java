@@ -5,15 +5,16 @@ import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
 import ambroscum.values.Value;
+import ambroscum.values.NullValue;
 import ambroscum.expressions.Expression;
 
 public class ReturnLine extends Line
 {
 	private Expression expr;
-	private Value value;
 	
-	ReturnLine(TokenStream stream)
+	ReturnLine(Line parent, TokenStream stream)
 	{
+		super(parent);
 		if (stream.getFirst() != Token.NEWLINE)
 			expr = Expression.interpret(stream);
 		Token temp = stream.removeFirst();
@@ -24,15 +25,13 @@ public class ReturnLine extends Line
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
-		// need to deal with null returns
-		value = expr.evaluate(values);
+		if (expr == null)
+			setReturnValue(NullValue.NULL);
+		else
+			setReturnValue(expr.evaluate(values));
 		return Block.ExitStatus.RETURN;
 	}
 	
-	public Value getValue()
-	{
-		return value;
-	}
 	
 	@Override
 	public String toString()

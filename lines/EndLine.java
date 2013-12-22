@@ -7,7 +7,10 @@ import ambroscum.errors.SyntaxError;
 
 public class EndLine extends Line
 {
-	EndLine() {}
+	EndLine(Line parent)
+	{
+		super(parent);
+	}
 	
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)

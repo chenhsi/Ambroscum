@@ -12,12 +12,13 @@ import ambroscum.*;
 import ambroscum.errors.*;
 import ambroscum.lines.*;
 import ambroscum.parser.*;
+import ambroscum.values.Value;
 import java.util.*;
 
 public class Block extends Line
 {
 	private List<Line> lines;
-	private Object value;
+	private Value returnValue;
 	
 	/**
 	 * Constructs a <code>Block</code> from the given input stream of tokens,
@@ -26,39 +27,17 @@ public class Block extends Line
 	 * @param	stream				the stream to read the block lines from
 	 * @param	indentationLevel	the level of indentation of the block
 	 */
-	public Block(TokenStream stream, int indentationLevel)
+	public Block(Line parent, TokenStream stream, int indentationLevel)
 	{
+		super(parent);
 		lines = new LinkedList<Line>();
 		while (true)
 		{
-			Line line = Line.interpret(stream, indentationLevel);
+			Line line = Line.interpret(this, stream, indentationLevel);
 			if (line instanceof EndLine)
 				break;
 			lines.add(line);
 		}
-	}
-
-	// holy crap this is such a hacky solution
-	// seriously is there no other way of dealing with this
-	// currently using/planning to use this for:
-	//    return values, break/continue labels
-	// I guess I could break them into separate methods
-	// but that creates baggage and makes other lines qq
-	// alternatively, a wrapper around ExitStatus?
-	/**
-	 * Returns an extra value stored from the last call to <code>evaluate</code>.
-	 * <p>
-	 * If the last call to <code>evaluate</code> returned an <code>ExitStatus.RETURN</code>
-	 * the stored value is the return value. If the last call to <code>evaluate</code>
-	 * returned an <code>ExitStatus.BREAK</code> or <code>ExitStatus.CONTINUE</code>,
-	 * the stored value is the label of the loop that the return status refers
-	 * to.
-	 *
-	 * @return	the stored value
-	 */
-	public Object getAssociatedValue()
-	{
-		return value;
 	}
 
 	/**
@@ -74,13 +53,19 @@ public class Block extends Line
 		{
 			ExitStatus status = line.evaluate(values);
 			if (status != ExitStatus.NORMAL)
-			{
-				if (status == ExitStatus.RETURN)
-					value = ((ReturnLine) line).getValue();
 				return status;
-			}
 		}
 		return ExitStatus.NORMAL;
+	}
+
+	public Value getReturnValue()
+	{
+		return returnValue;
+	}
+	
+	protected void setReturnValue(Value value)
+	{
+		returnValue = value;
 	}
 	
 	/**

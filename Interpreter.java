@@ -33,7 +33,7 @@ public class Interpreter
 		{
 			try
 			{
-				Line.interpret(stream, 0).evaluate(identifiers);
+				Line.interpret(null, stream, 0).evaluate(identifiers);
 				System.out.println();
 			}
 			catch (AmbroscumError ex)
@@ -55,7 +55,7 @@ public class Interpreter
 		TokenStream stream = TokenStream.readFile(file);
 		IdentifierMap identifiers = new IdentifierMap(null);
 		while (stream.hasNext())
-			Line.interpret(stream, 0).evaluate(identifiers);
+			Line.interpret(null, stream, 0).evaluate(identifiers);
 		if (thenInteract)
 		{
 			stream.makeInteractive();

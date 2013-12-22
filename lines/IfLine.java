@@ -14,8 +14,9 @@ public class IfLine extends Line
 	private List<Block> blocks;
 	private Block elseBlock;
 	
-	public IfLine(TokenStream stream, int indentationLevel)
+	public IfLine(Line parent, TokenStream stream, int indentationLevel)
 	{
+		super(parent);
 		conditions = new ArrayList<Expression> ();
 		blocks = new ArrayList<Block> ();
 		conditions.add(Expression.interpret(stream));
@@ -24,7 +25,7 @@ public class IfLine extends Line
 		Token temp = stream.removeFirst();
 		if (temp != Token.NEWLINE)
 			throw new SyntaxError("Unexpected token after if statement: " + temp);
-		blocks.add(new Block(stream, indentationLevel + 1));
+		blocks.add(new Block(this, stream, indentationLevel + 1));
 		while (stream.hasNext() && stream.getFirst().toString().equals("elif"))
 		{
 			stream.removeFirst();
@@ -35,7 +36,7 @@ public class IfLine extends Line
 			temp = stream.removeFirst();
 			if (temp != Token.NEWLINE)
 				throw new SyntaxError("Unexpected token after elif:" + temp);
-			blocks.add(new Block(stream, indentationLevel + 1));
+			blocks.add(new Block(this, stream, indentationLevel + 1));
 		}
 		if (stream.hasNext() && stream.getFirst().toString().equals("else"))
 		{
@@ -46,7 +47,7 @@ public class IfLine extends Line
 			temp = stream.removeFirst();
 			if (temp != Token.NEWLINE)
 				throw new SyntaxError("Unexpected token after else:" + temp);
-			elseBlock = new Block(stream, indentationLevel + 1);
+			elseBlock = new Block(this, stream, indentationLevel + 1);
 		}
 	}
 	

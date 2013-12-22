@@ -65,7 +65,8 @@ public class ExpressionCall extends Expression
 		Value f = func.evaluate(values);
 		if (!(f instanceof Function))
 			throw new FunctionNotFoundException(func + " does not evaluate to a function");
-		return ((Function) f).evaluate(eval, values);
+		Value v = ((Function) f).evaluate(eval, values);
+		return v;
 	}
 	
 	@Override

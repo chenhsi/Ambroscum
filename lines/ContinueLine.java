@@ -7,8 +7,9 @@ import ambroscum.errors.SyntaxError;
 
 public class ContinueLine extends Line
 {
-	ContinueLine(TokenStream stream)
+	ContinueLine(Line parent, TokenStream stream)
 	{
+		super(parent);
 		Token temp = stream.removeFirst();
 		if (temp != Token.NEWLINE)
 			throw new SyntaxError("Unexpected token after continue: " + temp);
