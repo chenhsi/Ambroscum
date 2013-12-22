@@ -54,7 +54,10 @@ public class WhileLine extends Line
 						break;
 					}
 					if (status == Block.ExitStatus.RETURN)
+					{
+						setReturnValue(block.getReturnValue());
 						return Block.ExitStatus.RETURN;
+					}
 				}
 				else
 					break;
@@ -63,7 +66,12 @@ public class WhileLine extends Line
 				throw new SyntaxError("Expected a boolean for while statement condition: " + condition);
 		}
 		if (normalTermination && alsoBlock != null)
-			alsoBlock.evaluate(values);
+		{
+			Block.ExitStatus status = alsoBlock.evaluate(values);
+			if (status == Block.ExitStatus.RETURN)
+				setReturnValue(alsoBlock.getReturnValue());
+			return status;
+		}
 		return Block.ExitStatus.NORMAL;
 	}
 	

@@ -63,6 +63,7 @@ public class Block extends Line
 		return returnValue;
 	}
 	
+	@Override
 	protected void setReturnValue(Value value)
 	{
 		returnValue = value;

@@ -26,6 +26,7 @@ public class IntValue extends ObjectValue
 	@Override
 	public Value applyOperator(FunctionOperator op, List<Value> otherValues)
 	{
+//		System.err.println(op + " " + otherValues);
 		if (otherValues.size() == 0)
 		{
 			if (op.toString().equals("-"))

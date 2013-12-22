@@ -37,4 +37,10 @@ public class Function extends Value
 				return NullValue.NULL;
 		}
 	}
+	
+	@Override
+	public String toString()
+	{
+		return "(func " + params + " " + code + ")";
+	}
 }

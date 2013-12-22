@@ -60,13 +60,23 @@ public class IfLine extends Line
 			if (conditionValue instanceof BooleanValue)
 			{
 				if (conditionValue == BooleanValue.TRUE)
-					return blocks.get(i).evaluate(values);
+				{
+					Block.ExitStatus evaled = blocks.get(i).evaluate(values);
+					if (evaled == Block.ExitStatus.RETURN)
+						setReturnValue(blocks.get(i).getReturnValue());
+					return evaled;
+				}
 			}
 			else
 				throw new SyntaxError("Expected a boolean for if statement condition: " + conditions.get(i));
 		}
 		if (elseBlock != null)
-			return elseBlock.evaluate(values);
+		{
+			Block.ExitStatus evaled = elseBlock.evaluate(values);
+			if (evaled == Block.ExitStatus.RETURN)
+				setReturnValue(elseBlock.getReturnValue());
+			return evaled;
+		}
 		return Block.ExitStatus.NORMAL;
 	}
 	

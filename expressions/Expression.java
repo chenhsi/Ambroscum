@@ -30,19 +30,17 @@ public abstract class Expression
 			operators.push(op);
 			expressions.push(greedy(stream));
 		}
-		if (expressions.size() == 1)
-			return result;
 		result = expressions.pop();
 		while (expressions.size() > 0)
 			result = new ExpressionCall(operators.pop(), expressions.pop(), result);
-		while (stream.getFirst().toString().equals("?"))
+		if (stream.getFirst().toString().equals("?")) // nested ternary operators (without using parens) not supported
 		{
 			stream.removeFirst();
 			Expression expr1 = greedy(stream);
 			if (stream.removeFirst() != Token.COLON)
 				throw new SyntaxError("Expected colon for ternary operator");
 			Expression expr2 = greedy(stream);
-			expressions.push(new ExpressionTernary(expressions.pop(), expr1, expr2));
+			result = new ExpressionTernary(result, expr1, expr2);
 		}
 		return result;
 	}
