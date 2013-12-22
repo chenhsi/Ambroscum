@@ -1,0 +1,7 @@
+{0=100, 1=200, 2=300}
+100
+-9001
+{0=-9001, 1=200, 2=300}
+5
+4
+ERROR: ambroscum.errors.NoSuchElementException

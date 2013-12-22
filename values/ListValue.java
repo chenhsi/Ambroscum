@@ -17,7 +17,10 @@ public class ListValue extends ObjectValue {
 	public Value get(Value index) {
 		if (index instanceof IntValue) {
 			int ind = ((IntValue) index).getValue();
-			return list[ind];
+			if (ind > -1 && ind < list.length)
+				return list[ind];
+			else
+				throw new ambroscum.errors.NoSuchElementException("List index out of bounds: " + this + " has no element #"+  index);
 		}
 		throw new SyntaxError("Expected int for list index");
 	}

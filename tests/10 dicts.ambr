@@ -1,0 +1,10 @@
+x = {0: 100, 1: 200, 2: 300}
+println x
+println x[0]
+x[0] = -9001
+println x[0]
+println x
+x[100] = 5
+println x[100]
+println x.length
+println x[-1]

@@ -15,7 +15,9 @@ public class DictValue extends ObjectValue {
 	}
 	
 	public Value get(Value key) {
-		return map.get(key);
+		if (map.containsKey(key))
+			return map.get(key);
+		throw new ambroscum.errors.NoSuchElementException(this + " has no element " + key);
 	}
 	public void set(Value key, Value value) {
 		map.put(key, value);
@@ -36,6 +38,20 @@ public class DictValue extends ObjectValue {
 		return super.applyOperator(op, otherValues);
 	}
 
+	@Override
+	public Value dereference(String ref) {
+		if ("length".equals(ref)) {
+			return IntValue.fromInt(map.size());
+		}
+		throw new VariableNotFoundException(ref);
+	}
+	@Override
+	public void setDereference(String ref, Value val) {
+		if ("length".equals(ref)) {
+			throw new NonassignableException(this + "." + ref + " is not assignable");
+		}
+		throw new VariableNotFoundException(ref);
+	}
 	
 	@Override
 	public boolean equals(Object other) {
