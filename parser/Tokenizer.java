@@ -35,7 +35,7 @@ public class Tokenizer
 					break;
 				case '"':
 					i = string(i);
-					if (!isWhitespace(str.charAt(i)))
+					if (!isSeparator(str.charAt(i)) && !isWhitespace(str.charAt(i)))
 						throw new SyntaxError("Expecting whitespace after quotes");
 					if (str.charAt(i) == ' ')
 						i++;
@@ -94,7 +94,7 @@ public class Tokenizer
 				
 				case '"':
 					i = string(i);
-					if (!closeParen(str.charAt(i)) && !isWhitespace(str.charAt(i)))
+					if (!isSeparator(str.charAt(i)) && !isWhitespace(str.charAt(i)) && str.charAt(i) != ':')
 						throw new SyntaxError("Expecting whitespace after quotes");
 					continue;
 				default:

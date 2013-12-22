@@ -13,6 +13,7 @@ public abstract class Expression
 {
 	public abstract Value evaluate(IdentifierMap values);
 
+//	do we not support ((3)) yet?
 	public static Expression interpret(TokenStream stream)
 	{
 		Expression result = greedy(stream);
@@ -34,6 +35,15 @@ public abstract class Expression
 		result = expressions.pop();
 		while (expressions.size() > 0)
 			result = new ExpressionCall(operators.pop(), expressions.pop(), result);
+		while (stream.getFirst().toString().equals("?"))
+		{
+			stream.removeFirst();
+			Expression expr1 = greedy(stream);
+			if (stream.removeFirst() != Token.COLON)
+				throw new SyntaxError("Expected colon for ternary operator");
+			Expression expr2 = greedy(stream);
+			expressions.push(new ExpressionTernary(expressions.pop(), expr1, expr2));
+		}
 		return result;
 	}
 	
