@@ -78,7 +78,8 @@ public class FunctionOperator extends Function
 		
 		Operator(String name, int operands, int priority)
 		{
-			FunctionOperator.map.put(name, new FunctionOperator(this));
+			if (priority > -1)
+				FunctionOperator.map.put(name, new FunctionOperator(this));
 			numOperands = operands;
 			this.name = name;
 			this.priority = priority; // lower is grouped first (e.g. "*".priority < "+".priority)
