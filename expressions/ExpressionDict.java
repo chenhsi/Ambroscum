@@ -34,6 +34,8 @@ public class ExpressionDict extends Expression {
 				if (comma != Token.COMMA)
 					throw new SyntaxError("Expected a comma delimiter in assignment");
 			}
+		} else {
+			stream.removeFirst();
 		}
 	}
 
