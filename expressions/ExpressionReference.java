@@ -10,8 +10,7 @@ import ambroscum.values.DictValue;
 
 import java.util.*;
 
-public class ExpressionReference extends Expression
-{
+public class ExpressionReference extends Expression {
 	private Expression primary;
 	private Expression secondary;
 	private ReferenceType type;
@@ -22,41 +21,26 @@ public class ExpressionReference extends Expression
 	private String dotReference;
 
 	private ExpressionReference() {}
-	private ExpressionReference(ExpressionReference p, TokenStream stream)
-	{
+	private ExpressionReference(ExpressionReference p, TokenStream stream) {
 		primary = p;
 		String peekStr = stream.getFirst().toString();
-		if ("[".equals(peekStr))
-		{
+		if ("[".equals(peekStr)) {
 			stream.removeFirst();
 			type = ReferenceType.BRACKET;
 			secondary = Expression.interpret(stream);
 			Token close = stream.removeFirst();
 			if (!close.toString().equals("]"))
 				throw new SyntaxError("Missing close bracket");
-		}
-		else if ("{".equals(peekStr))
-		{
-			stream.removeFirst();
-			type = ReferenceType.BRACE;
-			secondary = Expression.interpret(stream);
-			Token close = stream.removeFirst();
-			if (!close.toString().equals("}"))
-				throw new SyntaxError("Missing close brace");
-		}
-		else if (".".equals(peekStr))
-		{
+		} else if (".".equals(peekStr)) {
 			stream.removeFirst();
 			type = ReferenceType.DOT;
 			dotReference = stream.removeFirst().toString();
-		}
-		else
+		} else
 			type = ReferenceType.NONE;
 	}
 
 	@Override
-	public Value evaluate(IdentifierMap values)
-	{
+	public Value evaluate(IdentifierMap values) {
 		switch (type) {
 			case NONE:
 				if (baseReference != null)
@@ -67,23 +51,18 @@ public class ExpressionReference extends Expression
 				Value outerList = primary.evaluate(values);
 				if (outerList instanceof ListValue) {
 					return ((ListValue) outerList).get(secondary.evaluate(values));
+				} else if (outerList instanceof DictValue) {
+					return ((DictValue) outerList).get(secondary.evaluate(values));
 				}
-				throw new SyntaxError("Cannot use brackets to index a non-list: " + outerList);
-			case BRACE:
-				Value outerDict = primary.evaluate(values);
-				if (outerDict instanceof DictValue)
-					return ((DictValue) outerDict).get(secondary.evaluate(values));
-				throw new SyntaxError("Cannot use braces to index a non-dict: " + outerDict);
+				throw new SyntaxError("Cannot index: " + outerList);
 			case DOT:
 				return primary.evaluate(values).dereference(dotReference);
 		}
 		return null;
 	}
 
-	public void setValue(Value value, IdentifierMap values)
-	{
-		switch (type)
-		{
+	public void setValue(Value value, IdentifierMap values) {
+		switch (type) {
 			case NONE:
 				if (baseReference != null)
 					values.add(baseReference, value);
@@ -94,26 +73,22 @@ public class ExpressionReference extends Expression
 				Value outerList = primary.evaluate(values);
 				if (outerList instanceof ListValue) {
 					((ListValue) outerList).set(secondary.evaluate(values), value);
-				} else
+				} else if (outerList instanceof DictValue) {
+					((DictValue) outerList).set(secondary.evaluate(values), value);
+				} else {
 					throw new SyntaxError("Cannot use brackets to index a non-list: " + outerList);
-				break;
-			case BRACE:
-				Value outerDict = primary.evaluate(values);
-				if (outerDict instanceof ListValue)
-					((DictValue) outerDict).set(secondary.evaluate(values), value);
-				else
-					throw new SyntaxError("Cannot use braces to index a non-dict: " + outerDict);
+				}
 				break;
 			case DOT:
 				primary.evaluate(values).setDereference(dotReference, value);
+				break;
 			default:
 				throw new UnsupportedOperationException("Fancy stuff doesn't work yet.");
 		}
 	}
 	
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		if (primary == null) {
 			return baseReference;
 		}
@@ -138,11 +113,9 @@ public class ExpressionReference extends Expression
 		
 		return createExpressionReferenceHelper(outerRef, stream);
 	}
-	private static ExpressionReference createExpressionReferenceHelper(ExpressionReference outerRef, TokenStream stream)
-	{
+	private static ExpressionReference createExpressionReferenceHelper(ExpressionReference outerRef, TokenStream stream) {
 		Token next = stream.getFirst();
-		while (next != Token.NEWLINE && (next.toString().equals("[") || next.toString().equals("{") || next.toString().equals(".")))
-		{
+		while (next != Token.NEWLINE && (next.toString().equals("[") || next.toString().equals("{") || next.toString().equals("."))) {
 			// If the references continue
 			// This reads in the next thing (e.g. "[fancy expression stuff]")
 			// and creates a new ExpressionReference
@@ -152,15 +125,13 @@ public class ExpressionReference extends Expression
 		return outerRef;
 	}
 
-	private static enum ReferenceType
-	{
-		NONE("", ""), DOT(".", ""), BRACKET("[", "]"), BRACE("{", "}");
+	private static enum ReferenceType {
+		NONE("", ""), DOT(".", ""), BRACKET("[", "]");
 		
 		String open;
 		String close;
 		
-		ReferenceType(String o, String c)
-		{
+		ReferenceType(String o, String c) {
 			open = o;
 			close = c;
 		}

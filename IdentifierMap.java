@@ -66,7 +66,7 @@ public class IdentifierMap
 	{
 		IdentifierMap containingScope = getContainingScope(name, this);
 		if (containingScope == null) {
-			throw new VariableNotFoundError(name);
+			throw new VariableNotFoundException(name);
 		}
 		return containingScope.map.get(name);
 	}
