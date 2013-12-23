@@ -16,7 +16,7 @@ public class ListValue extends ObjectValue {
 	
 	public Value get(Value index) {
 		if (index instanceof IntValue) {
-			int ind = ((IntValue) index).getValue();
+			int ind = (int) ((IntValue) index).getValue();
 			if (ind > -1 && ind < list.length)
 				return list[ind];
 			else
@@ -26,7 +26,7 @@ public class ListValue extends ObjectValue {
 	}
 	public void set(Value index, Value value) {
 		if (index instanceof IntValue) {
-			int ind = ((IntValue) index).getValue();
+			int ind = (int) ((IntValue) index).getValue();
 			list[ind] = value;
 		} else
 			throw new SyntaxError("Expected int for list index");
@@ -40,12 +40,12 @@ public class ListValue extends ObjectValue {
 		{
 			case ".[]":
 				if (first instanceof IntValue)
-					return list[((IntValue) first).getValue()];
+					return list[(int) ((IntValue) first).getValue()];
 				throw new FunctionNotFoundException("list's indexing expects an int");
 			case "[]=":
 				if (first instanceof IntValue)
 				{
-					list[((IntValue) first).getValue()] = otherValues.get(1);
+					list[(int) ((IntValue) first).getValue()] = otherValues.get(1);
 					return NullValue.NULL;
 				}
 				throw new FunctionNotFoundException("list's indexing expects an int");

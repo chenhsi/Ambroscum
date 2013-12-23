@@ -3,22 +3,23 @@ package ambroscum.values;
 import java.util.*;
 import ambroscum.*;
 import ambroscum.errors.FunctionNotFoundException;
+import ambroscum.errors.InvalidArgumentException;
 
 public class IntValue extends ObjectValue
 {
-	private final int value;
+	private final long value;
 	
-	private IntValue(int num)
+	private IntValue(long num)
 	{
 		value = num;
 	}
 	
-	public static IntValue fromInt(int n)
+	public static IntValue fromInt(long n)
 	{
 		return new IntValue(n);
 	}
 	
-	public int getValue()
+	public long getValue()
 	{
 		return value;
 	}
@@ -82,6 +83,34 @@ public class IntValue extends ObjectValue
 				if (other instanceof IntValue)
 					return BooleanValue.fromBoolean(value != ((IntValue) other).getValue());
 				throw new FunctionNotFoundException("int's '!=' operator not defined with value " + other);
+			case "<<":
+				if (other instanceof IntValue)
+					return IntValue.fromInt(value << ((IntValue) other).getValue());
+				throw new FunctionNotFoundException("int's '<<' operator not defined with value " + other);
+			case ">>":	// arithmetic right shift
+				if (other instanceof IntValue)
+					return IntValue.fromInt(value >> ((IntValue) other).getValue());
+				throw new FunctionNotFoundException("int's '>>' operator not defined with value " + other);
+			case "**":
+				if (other instanceof IntValue)
+				{
+					long exp = ((IntValue) other).getValue();
+					if (exp < 0)
+						throw new InvalidArgumentException("int's '**' operator not defined with negative exponents");
+					if (exp == 0)
+						return IntValue.fromInt(1);
+					long prod = value;
+					while (exp > 1)
+					{
+						if (exp % 2 == 0)
+							prod *= prod;
+						else
+							prod *= prod * value;
+						exp /= 2;
+					}
+					return IntValue.fromInt(prod);
+				}
+				throw new FunctionNotFoundException("int's '**operator not defined with value " + other);
 		}
 		return super.applyOperator(op, otherValues);
 	}
@@ -92,8 +121,9 @@ public class IntValue extends ObjectValue
 		return (o instanceof IntValue) && value == ((IntValue) o).value;
 	}
 	@Override
-	public int hashCode() {
-		return value;
+	public int hashCode()
+	{
+		return Long.valueOf(value).hashCode();
 	}
 	
 	@Override

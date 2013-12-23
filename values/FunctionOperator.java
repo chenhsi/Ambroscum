@@ -66,10 +66,11 @@ public class FunctionOperator extends Function
 		POST_INCREMENT("++_", 1, 0), POST_DECREMENT("--_", 1, 0),
 		NOT("not", 1, 1), PRE_INCREMENT("++_", 1, 1), PRE_DECREMENT("--_", 1, 1),
 		MUL("*", 2, 2), DIV("/", 2, 2), MOD("%", 2, 2),
-		ADD("+", 2, 3), SUB("-", 2, 3),
-		GREATER_THAN(">", 2, 4), LESS_THAN("<", 2, 4), GREATER_THAN_EQUAL(">=", 2, 4), LESS_THAN_EQUAL("<=", 2, 4),
-		IS_EQUAL("=", 2, 5), NOT_EQUAL("!=", 2, 5),
-		AND("and", 2, 6), OR("or", 2, 7),
+		ADD("+", 2, 3), SUB("-", 2, 3), POW("**", 2, 3),
+		LEFTSHIFT("<<", 2, 4), RIGHTSHIFT(">>", 2, 4),
+		GREATER_THAN(">", 2, 5), LESS_THAN("<", 2, 5), GREATER_THAN_EQUAL(">=", 2, 5), LESS_THAN_EQUAL("<=", 2, 5),
+		IS_EQUAL("=", 2, 6), NOT_EQUAL("!=", 2, 6),
+		AND("and", 2, 7), OR("or", 2, 8),
 		GET(".[]", 1, -1), SET("[]=", 2, -1);
 		
 		private String name;
