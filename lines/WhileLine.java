@@ -10,7 +10,7 @@ public class WhileLine extends Line
 {
 	private Expression condition;
 	private Block block;
-	private Block alsoBlock;
+	private Block thenBlock;
 	
 	public WhileLine(Line parent, TokenStream stream, int indentationLevel)
 	{
@@ -22,15 +22,15 @@ public class WhileLine extends Line
 		if (temp != Token.NEWLINE)
 			throw new SyntaxError("Unexpected token after while statement: " + temp);
 		block = new Block(this, stream, indentationLevel + 1);
-		if (stream.hasNext() && stream.getFirst().toString().equals("also"))
+		if (stream.hasNext() && stream.getFirst().toString().equals("then"))
 		{
 			stream.removeFirst();
 			if (stream.removeFirst() != Token.COLON)
-				throw new SyntaxError("Expected colon after also statement");
+				throw new SyntaxError("Expected colon after then statement");
 			temp = stream.removeFirst();
 			if (temp != Token.NEWLINE)
-				throw new SyntaxError("Unexpected token after also statement: " + temp);
-			alsoBlock = new Block(this, stream, indentationLevel + 1);
+				throw new SyntaxError("Unexpected token after then statement: " + temp);
+			thenBlock = new Block(this, stream, indentationLevel + 1);
 		}
 	}
 	
@@ -46,8 +46,6 @@ public class WhileLine extends Line
 				if (conditionValue == BooleanValue.TRUE)
 				{
 					Block.ExitStatus status = block.evaluate(values);
-					if (status == Block.ExitStatus.CONTINUE)
-						continue;
 					if (status == Block.ExitStatus.BREAK)
 					{
 						normalTermination = false;
@@ -65,11 +63,11 @@ public class WhileLine extends Line
 			else
 				throw new SyntaxError("Expected a boolean for while statement condition: " + condition);
 		}
-		if (normalTermination && alsoBlock != null)
+		if (normalTermination && thenBlock != null)
 		{
-			Block.ExitStatus status = alsoBlock.evaluate(values);
+			Block.ExitStatus status = thenBlock.evaluate(values);
 			if (status == Block.ExitStatus.RETURN)
-				setReturnValue(alsoBlock.getReturnValue());
+				setReturnValue(thenBlock.getReturnValue());
 			return status;
 		}
 		return Block.ExitStatus.NORMAL;
@@ -80,8 +78,8 @@ public class WhileLine extends Line
 	{
 		StringBuilder sb = new StringBuilder("(while ");
 		sb.append(condition).append(" (").append(block).append(")");
-		if (alsoBlock != null)
-			sb.append(" ").append(alsoBlock);
+		if (thenBlock != null)
+			sb.append(" ").append(thenBlock);
 		return sb.append(")").toString();
 	}
 }

@@ -19,7 +19,7 @@ while i < 15:
 		break
 	end
 	println i
-also:
+then:
 	println "nope"
 end
 
@@ -29,7 +29,23 @@ while i < 15:
 		break
 	end
 	i = i + 1
-also:
+then:
 	println "here"
 end
 
+lst = [15, 17 - 1, 18]
+for i in lst:
+	println i
+	lst[2] = i + 1
+end
+println lst[2]
+
+lst = [19, 20, 21]
+for i in lst:
+	if i > 20:
+		break
+	end
+	println i
+then:
+	println "nope"
+end

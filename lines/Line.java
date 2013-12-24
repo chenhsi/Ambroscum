@@ -42,7 +42,7 @@ public abstract class Line
 				if (i == indentation - 1)
 				{
 					String notTab = tab.toString();
-					if (notTab.equals("else") || notTab.equals("elif") || notTab.equals("also"))
+					if (notTab.equals("else") || notTab.equals("elif") || notTab.equals("then"))
 						return new EndLine(parent);
 					else if (notTab.equals("end"))
 					{
@@ -76,6 +76,8 @@ public abstract class Line
 			return new IfLine(parent, stream, indentation);
 		if (token.toString().equals("while"))
 			return new WhileLine(parent, stream, indentation);
+		if (token.toString().equals("for"))
+			return new ForLine(parent, stream, indentation);
 		if (token.toString().equals("def"))
 			return new DefLine(parent, stream, indentation);
 		if (token.toString().equals("else") || token.toString().equals("elif"))
