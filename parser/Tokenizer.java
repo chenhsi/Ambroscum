@@ -120,7 +120,7 @@ public class Tokenizer
 				return i + 2;
 			case ':':
 				stream.offer(Token.COLON);
-				return i + 1;
+				return i + (str.charAt(i + 1) == ' ' ? 2 : 1);
 			case ' ':
 				if (str.charAt(i + 1) == '\n')
 					throw new SyntaxError("Trailing space at end of line");
