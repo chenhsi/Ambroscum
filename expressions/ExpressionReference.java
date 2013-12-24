@@ -113,9 +113,30 @@ public class ExpressionReference extends Expression {
 		
 		return createExpressionReferenceHelper(outerRef, stream);
 	}
+	/**
+	 * Creates an ExpressionReference that cannot have complex references (i.e. must be of the form variable_name).
+	 *
+	 * @param stream The TokenStream, with the first token being "variable_name"
+	 */
+	public static ExpressionReference createSimpleExpressionReference(TokenStream stream) {
+		Token next = stream.removeFirst();
+		if (!next.toString().matches("[A-Za-z0-9_]+")) {
+			throw new SyntaxError("Invalid variable name: " + next.toString());
+		}
+		ExpressionReference ref = new ExpressionReference();
+		ref.baseReference = next.toString();
+		ref.type = ReferenceType.NONE;
+		if (stream.hasNext()) {
+			next = stream.getFirst();
+			if (next != Token.NEWLINE && (next.toString().equals("[") || next.toString().equals("."))) {
+				throw new SyntaxError("Unexpected reference after variable declaration");
+			}
+		}
+		return ref;
+	}
 	private static ExpressionReference createExpressionReferenceHelper(ExpressionReference outerRef, TokenStream stream) {
 		Token next = stream.getFirst();
-		while (next != Token.NEWLINE && (next.toString().equals("[") || next.toString().equals("{") || next.toString().equals("."))) {
+		while (next != Token.NEWLINE && (next.toString().equals("[") || next.toString().equals("."))) {
 			// If the references continue
 			// This reads in the next thing (e.g. "[fancy expression stuff]")
 			// and creates a new ExpressionReference
