@@ -43,6 +43,9 @@ public class IdentifierMap
 		map = new HashMap<String, Value>();
 	}
 
+	/**
+	 * 
+	 */
 	public void add(String name, Value value)
 	{
 		if (!isValidIdentifier(name))

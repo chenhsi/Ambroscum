@@ -55,14 +55,14 @@ public class ListValue extends ObjectValue {
 	
 	@Override
 	public Value dereference(String ref) {
-		if ("length".equals(ref)) {
+		if ("size".equals(ref)) {
 			return IntValue.fromInt(list.length);
 		}
 		throw new VariableNotFoundException(ref);
 	}
 	@Override
 	public void setDereference(String ref, Value val) {
-		if ("length".equals(ref)) {
+		if ("size".equals(ref)) {
 			throw new NonassignableException(this + "." + ref + " is not assignable");
 		}
 		throw new VariableNotFoundException(ref);

@@ -40,14 +40,14 @@ public class DictValue extends ObjectValue {
 
 	@Override
 	public Value dereference(String ref) {
-		if ("length".equals(ref)) {
+		if ("size".equals(ref)) {
 			return IntValue.fromInt(map.size());
 		}
 		throw new VariableNotFoundException(ref);
 	}
 	@Override
 	public void setDereference(String ref, Value val) {
-		if ("length".equals(ref)) {
+		if ("size".equals(ref)) {
 			throw new NonassignableException(this + "." + ref + " is not assignable");
 		}
 		throw new VariableNotFoundException(ref);
@@ -59,6 +59,25 @@ public class DictValue extends ObjectValue {
 	}
 	
 	public String toString() {
-		return map.toString();
+		Set<Value> keys = map.keySet();
+		StringBuilder builder = new StringBuilder();
+		builder.append('{');
+		
+		Iterator<Value> iter = keys.iterator();
+		if (iter.hasNext()) {
+			Value key = iter.next();
+			builder.append(key.repr() + ": " + map.get(key));
+			
+			while (iter.hasNext()) {
+				key = iter.next();
+				builder.append(", ");
+				builder.append(key.repr());
+				builder.append(": ");
+				builder.append(map.get(key));
+			}
+		}
+		
+		builder.append('}');
+		return builder.toString();
 	}
 }

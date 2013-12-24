@@ -58,10 +58,18 @@ public class StringValue extends ObjectValue
 		}
 		return false;
 	}
+	@Override
+	public int hashCode() {
+		return value.hashCode();
+	}
 	
 	@Override
 	public String toString()
 	{
 		return value;
+	}
+	@Override
+	public String repr() {
+		return '\"' + value + '\"';
 	}
 }

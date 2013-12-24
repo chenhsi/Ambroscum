@@ -9,17 +9,8 @@ package ambroscum;
 
 import java.io.*;
 
-public class Ambroscum
-{
-	public static void main(String[] args) throws IOException
-	{
-/*		try {
-			if (args.length == 1)
-				Interpreter.interpret(args[0]);
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}*/
+public class Ambroscum {
+	public static void main(String[] args) throws IOException {
 		Interpreter.interpret();
-//		Interpreter.interpret(new File("tests/tests.ambr"));
 	}
 }
