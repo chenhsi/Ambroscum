@@ -53,7 +53,7 @@ public class ForLine extends Line
 			throw new InvalidArgumentException(evalIter + " does not evaluate to a list value"); // is this a good exception?
 		ListValue asList = (ListValue) evalIter;
 		boolean normalTermination = true;
-		for (int i = 0; i < ((IntValue) asList.dereference("length")).getValue(); i++)
+		for (int i = 0; i < ((IntValue) asList.dereference("size")).getValue(); i++)
 		{
 			variable.setValue(asList.get(IntValue.fromInt(i)), values);
 			Block.ExitStatus status = block.evaluate(values);

@@ -11,12 +11,12 @@ import ambroscum.Parameter;
 import ambroscum.expressions.Expression;
 import ambroscum.lines.Block;
 import ambroscum.values.Value;
-import ambroscum.values.Function;
+import ambroscum.values.FunctionDeclaration;
 import ambroscum.values.IntValue;
 import ambroscum.errors.FunctionNotFoundException;
 import ambroscum.errors.InvalidArgumentException;
 
-public class FunctionOperator extends Function
+public class FunctionOperator extends FunctionDeclaration
 {
 	private static Map<String, FunctionOperator> map = new HashMap<> ();
 	private Operator op;

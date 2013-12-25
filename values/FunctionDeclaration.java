@@ -7,12 +7,12 @@ import ambroscum.IdentifierMap;
 import ambroscum.errors.InvalidArgumentException;
 import ambroscum.errors.SyntaxError;
 
-public class Function extends Value
+public class FunctionDeclaration extends Value
 {
 	private List<Parameter> params;
 	private Block code;
 	
-	public Function(List<Parameter> p, Block c)
+	public FunctionDeclaration(List<Parameter> p, Block c)
 	{
 		params = p;
 		code = c;
@@ -41,6 +41,6 @@ public class Function extends Value
 	@Override
 	public String toString()
 	{
-		return "(func " + params + " " + code + ")";
+		return "(funcdecl " + params + " " + code + ")";
 	}
 }
