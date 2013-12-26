@@ -42,7 +42,6 @@ public class TokenStream
 	{
 		System.out.print(">>> ");
 		tokens.addAll(Tokenizer.tokenize(interactiveInput.nextLine() + "\n"));
-		System.out.println(tokens);
 	}
 	
 	public void makeInteractive()

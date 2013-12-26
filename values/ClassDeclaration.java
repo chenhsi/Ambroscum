@@ -16,9 +16,20 @@ public class ClassDeclaration extends Value
 		code = c;
 	}
 	
-	public Value evaluate(List<Value> arguments, IdentifierMap values)
+	public Value evaluate(IdentifierMap values)
 	{
-		throw new UnsupportedOperationException();
+		IdentifierMap ownScope = new IdentifierMap(values);
+		switch (code.evaluate(ownScope))
+		{
+			case CONTINUE:
+				throw new SyntaxError("continues should not be terminating class declarations");
+			case BREAK:
+				throw new SyntaxError("breaks should not be terminating class declarations");
+			case RETURN:
+				throw new SyntaxError("returns should not be terminating class declarations");
+			default:
+				return NullValue.NULL;
+		}
 	}
 	
 	@Override

@@ -44,6 +44,16 @@ public class PrintLine extends Line
 		}
 	}
 	
+	public List<Expression> getPrintExpressions()
+	{
+		return toPrint;
+	}
+	
+	public boolean isPrintNewline()
+	{
+		return newline;
+	}
+	
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
