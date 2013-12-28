@@ -63,14 +63,14 @@ public class Compiler
 	
 	private static void compile(Expression expr)
 	{
-		switch (line.getClass().getSimpleName())
+		switch (expr.getClass().getSimpleName())
 		{
 			case "ExpressionLiteral":
 				Value v = ((ExpressionLiteral) expr).getValue();
 				switch (v.getClass().getSimpleName())
 				{
 					case "NullValue":
-						System.out.print(null);
+						System.out.print("null");
 						break;
 					case "BooleanValue":
 						System.out.print(((BooleanValue) v).getValue());
@@ -85,25 +85,18 @@ public class Compiler
 				break;
 			case "ExpressionReference":
 				throw new UnsupportedOperationException();
-				break;
 			case "ExpressionList":
 				throw new UnsupportedOperationException();
-				break;
 			case "ExpressionDict":
 				throw new UnsupportedOperationException();
-				break;
 			case "ExpressionCall":
 				throw new UnsupportedOperationException();
-				break;
 			case "ExpressionOperator":
 				throw new UnsupportedOperationException();
-				break;
 			case "ExpressionIncrement":
 				throw new UnsupportedOperationException();
-				break;
 			case "ExpressionTernary":
 				throw new UnsupportedOperationException();
-				break;
 			
 		}
 	}

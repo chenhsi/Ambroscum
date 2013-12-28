@@ -20,7 +20,7 @@ public class ForLine extends Line
 		Token variableName = stream.removeFirst();
 		if (!IdentifierMap.isValidIdentifier(variableName.toString()))
 			throw new SyntaxError("Invalid variable name in for statement: " + variableName);
-		variable = ExpressionReference.createExpressionReference(variableName, stream);
+		variable = ExpressionReference.createExpressionReference(variableName);
 		Token temp = stream.removeFirst();
 		if (!temp.toString().equals("in"))
 			throw new SyntaxError("Unexpected token in reading for statement: " + temp);

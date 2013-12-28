@@ -16,7 +16,7 @@ public abstract class Expression
 //	do we not support ((3)) yet?
 	public static Expression interpret(TokenStream stream)
 	{
-		Expression result = greedy(stream);
+		Expression result = extend(singleExpression(stream), stream);
 		Stack<Expression> expressions = new Stack<Expression> ();
 		Stack<ExpressionOperator> operators = new Stack<ExpressionOperator> ();
 		expressions.push(result);
@@ -28,7 +28,7 @@ public abstract class Expression
 				result = new ExpressionCall(operators.pop(), expressions.pop(), result);
 			expressions.push(result);
 			operators.push(op);
-			expressions.push(greedy(stream));
+			expressions.push(extend(singleExpression(stream), stream));
 		}
 		result = expressions.pop();
 		while (expressions.size() > 0)
@@ -36,16 +36,33 @@ public abstract class Expression
 		if (stream.getFirst().toString().equals("?")) // nested ternary operators (without using parens) not supported
 		{
 			stream.removeFirst();
-			Expression expr1 = greedy(stream);
+			Expression expr1 = extend(singleExpression(stream), stream);
 			if (stream.removeFirst() != Token.COLON)
 				throw new SyntaxError("Expected colon for ternary operator");
-			Expression expr2 = greedy(stream);
+			Expression expr2 = extend(singleExpression(stream), stream);
 			result = new ExpressionTernary(result, expr1, expr2);
 		}
 		return result;
 	}
 	
-	private static Expression greedy(TokenStream stream)
+	public static Expression extend(Expression expr, TokenStream stream)
+	{
+		String nextToken = stream.getFirst().toString();
+		while (nextToken.equals(".") || nextToken.equals("(") || nextToken.equals("["))
+		{
+			if (nextToken.equals("("))
+			{
+				stream.removeFirst();
+				expr = new ExpressionCall(expr, stream);
+			}
+			else
+				expr = ExpressionReference.createExpressionReference(expr, stream);
+			nextToken = stream.getFirst().toString();
+		}
+		return expr;
+	}
+	
+	public static Expression singleExpression(TokenStream stream)
 	{
 		Token token = stream.removeFirst();
 		Expression result = null;
@@ -59,42 +76,34 @@ public abstract class Expression
 			result = parseNum(token.toString());
 		else if (isString(token.toString()))
 			result = parseString(token.toString());
-		else if (IdentifierMap.isValidIdentifier(token.toString())) // is a reference
+		else if (isOperator(token))
 		{
-			result = ExpressionReference.createExpressionReference(token, stream);
-			if (stream.getFirst().toString().equals("("))
-			{
-				stream.removeFirst();
-				result = new ExpressionCall(result, stream);
-			}
-			else if (stream.getFirst().toString().equals("++") || stream.getFirst().toString().equals("--"))
-			{
-				result = new ExpressionIncrement(result, stream.getFirst().toString().charAt(0) == '+', false);
-				stream.removeFirst();
-			}
+			ExpressionOperator op = new ExpressionOperator(token.toString());
+			if (op.toString().equals("-") || op.getNumOperands() == 1)
+				result = new ExpressionCall(op, extend(singleExpression(stream), stream));
+			else
+				throw new SyntaxError(op + " cannot take only 1 operand");
 		}
-		else if (token.toString().equals("["))
-		{
-			result = new ExpressionList(token, stream);
-			result = ExpressionReference.createExpressionReference(result, stream);
-		} else if (token.toString().equals("{")) {
-			result = new ExpressionDict(token, stream);
-			result = ExpressionReference.createExpressionReference(result, stream);
-		} else if (token.toString().equals("("))
+		else if (token.toString().equals("++") || token.toString().equals("--"))
+			// should this call to singleExpression be wrapped by extend?
+			result = new ExpressionIncrement(singleExpression(stream), token.toString().charAt(0) == '+', true);
+		else if (IdentifierMap.isValidIdentifier(token.toString())) // is a reference
+			result = ExpressionReference.createExpressionReference(token);
+		else if (token.toString().equals("("))
 		{
 			result = Expression.interpret(stream);
 			if (!")".equals(stream.removeFirst().toString()))
 				throw new SyntaxError("Missing close parenthesis after expression");
 		}
-		else if (token.toString().equals("++") || token.toString().equals("--"))
-			result = new ExpressionIncrement(greedy(stream), token.toString().charAt(0) == '+', true);
-		else if (isOperator(token))
+		else if (token.toString().equals("["))
 		{
-			ExpressionOperator op = new ExpressionOperator(token.toString());
-			if (op.toString().equals("-") || op.getNumOperands() == 1)
-				result = new ExpressionCall(op, greedy(stream));
-			else
-				throw new SyntaxError(op + " cannot take only 1 operand");
+			result = new ExpressionList(token, stream);
+			result = ExpressionReference.createExpressionReference(result, stream);
+		}
+		else if (token.toString().equals("{"))
+		{
+			result = new ExpressionDict(token, stream);
+			result = ExpressionReference.createExpressionReference(result, stream);
 		}
 		else
 			throw new SyntaxError("not recognized token: " + token);

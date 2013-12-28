@@ -98,7 +98,33 @@ public class ExpressionReference extends Expression {
 		return sb.toString();
 	}
 	
-	public static ExpressionReference createExpressionReference(Token start, TokenStream stream) {
+	public static ExpressionReference createExpressionReference(Token token)
+	{
+		if (!IdentifierMap.isValidIdentifier(token.toString()))
+			throw new SyntaxError("Invalid identifier: " + token);
+		ExpressionReference expr = new ExpressionReference();
+		expr.baseReference = token.toString();
+		expr.type = ReferenceType.NONE;
+		return expr;
+	}
+	
+	public static ExpressionReference createExpressionReference(Expression base, TokenStream stream)
+	{
+		ExpressionReference expr = new ExpressionReference();
+		ReferenceType type = stream.removeFirst().toString().equals(".") ? ReferenceType.DOT : ReferenceType.BRACKET;
+		Expression secondary = Expression.singleExpression(stream);
+		if (true)
+			throw new UnsupportedOperationException("I don't get the fields in this class :(");
+		if (type == ReferenceType.BRACKET)
+		{
+			Token nextToken = stream.removeFirst();
+			if (!nextToken.toString().equals("]"))
+				throw new SyntaxError("Expecting close brace , found " + nextToken);
+		}
+		return expr;
+	}
+	
+	public static ExpressionReference createExpressionReference2(Token start, TokenStream stream) {
 		ExpressionReference outerRef = new ExpressionReference();
 		String baseReference = start.toString();
 		outerRef.baseReference = baseReference;
@@ -106,7 +132,7 @@ public class ExpressionReference extends Expression {
 		
 		return createExpressionReferenceHelper(outerRef, stream);
 	}
-	public static ExpressionReference createExpressionReference(Expression base, TokenStream stream) {
+	public static ExpressionReference createExpressionReference2(Expression base, TokenStream stream) {
 		ExpressionReference outerRef = new ExpressionReference();
 		outerRef.primary = base;
 		outerRef.type = ReferenceType.NONE;

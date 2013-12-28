@@ -39,16 +39,17 @@ public class AssignmentLine extends Line
 	 *						stream should be the same stream as the rest of the
 	 *						input.
 	 */
+
 	AssignmentLine(Line parent, TokenStream idStream, TokenStream valueStream)
 	{
 		super(parent);
 		assignIDs = new LinkedList<ExpressionReference>();
-		assignIDs.add(ExpressionReference.createExpressionReference(idStream.removeFirst(), idStream));
+		assignIDs.add((ExpressionReference) Expression.extend(ExpressionReference.createExpressionReference(idStream.removeFirst()), idStream));
 		while (!idStream.getFirst().toString().endsWith("="))
 		{
 			if (idStream.removeFirst() != Token.COMMA)
 				throw new SyntaxError("Expected a comma delimiter in assignment");
-			assignIDs.add(ExpressionReference.createExpressionReference(idStream.removeFirst(), idStream));
+			assignIDs.add((ExpressionReference) Expression.extend(ExpressionReference.createExpressionReference(idStream.removeFirst()), idStream));
 		}
 		String assignOp = idStream.getFirst().toString();
 		if (assignOp.length() > 1)
