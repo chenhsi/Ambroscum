@@ -56,7 +56,7 @@ public abstract class Expression
 				expr = new ExpressionCall(expr, stream);
 			}
 			else
-				expr = ExpressionReference.createExpressionReference(expr, stream);
+				expr = new ExpressionReference(expr, stream);
 			nextToken = stream.getFirst().toString();
 		}
 		return expr;
@@ -88,7 +88,7 @@ public abstract class Expression
 			// should this call to singleExpression be wrapped by extend?
 			result = new ExpressionIncrement(singleExpression(stream), token.toString().charAt(0) == '+', true);
 		else if (IdentifierMap.isValidIdentifier(token.toString())) // is a reference
-			result = ExpressionReference.createExpressionReference(token);
+			result = new ExpressionReference(token);
 		else if (token.toString().equals("("))
 		{
 			result = Expression.interpret(stream);
@@ -98,12 +98,12 @@ public abstract class Expression
 		else if (token.toString().equals("["))
 		{
 			result = new ExpressionList(token, stream);
-			result = ExpressionReference.createExpressionReference(result, stream);
+			result = new ExpressionReference(result, stream);
 		}
 		else if (token.toString().equals("{"))
 		{
 			result = new ExpressionDict(token, stream);
-			result = ExpressionReference.createExpressionReference(result, stream);
+			result = new ExpressionReference(result, stream);
 		}
 		else
 			throw new SyntaxError("not recognized token: " + token);

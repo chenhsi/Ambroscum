@@ -20,23 +20,26 @@ public class ExpressionReference extends Expression {
 	// If set, then secondary = null
 	private String dotReference;
 
-	private ExpressionReference() {}
-	private ExpressionReference(ExpressionReference p, TokenStream stream) {
-		primary = p;
-		String peekStr = stream.getFirst().toString();
-		if ("[".equals(peekStr)) {
-			stream.removeFirst();
-			type = ReferenceType.BRACKET;
-			secondary = Expression.interpret(stream);
-			Token close = stream.removeFirst();
-			if (!close.toString().equals("]"))
-				throw new SyntaxError("Missing close bracket");
-		} else if (".".equals(peekStr)) {
-			stream.removeFirst();
-			type = ReferenceType.DOT;
-			dotReference = stream.removeFirst().toString();
-		} else
-			type = ReferenceType.NONE;
+	public ExpressionReference(Token token)
+	{
+		if (!IdentifierMap.isValidIdentifier(token.toString()))
+			throw new SyntaxError("Invalid identifier: " + token);
+		baseReference = token.toString();
+		type = ReferenceType.NONE;
+	}
+	
+	public ExpressionReference(Expression base, TokenStream stream)
+	{
+		ReferenceType type = stream.removeFirst().toString().equals(".") ? ReferenceType.DOT : ReferenceType.BRACKET;
+		Expression secondary = Expression.singleExpression(stream);
+		if (true)
+			throw new UnsupportedOperationException("I don't get the fields in this class :(");
+		if (type == ReferenceType.BRACKET)
+		{
+			Token nextToken = stream.removeFirst();
+			if (!nextToken.toString().equals("]"))
+				throw new SyntaxError("Expecting close brace, found " + nextToken);
+		}
 	}
 
 	@Override
@@ -98,80 +101,6 @@ public class ExpressionReference extends Expression {
 		return sb.toString();
 	}
 	
-	public static ExpressionReference createExpressionReference(Token token)
-	{
-		if (!IdentifierMap.isValidIdentifier(token.toString()))
-			throw new SyntaxError("Invalid identifier: " + token);
-		ExpressionReference expr = new ExpressionReference();
-		expr.baseReference = token.toString();
-		expr.type = ReferenceType.NONE;
-		return expr;
-	}
-	
-	public static ExpressionReference createExpressionReference(Expression base, TokenStream stream)
-	{
-		ExpressionReference expr = new ExpressionReference();
-		ReferenceType type = stream.removeFirst().toString().equals(".") ? ReferenceType.DOT : ReferenceType.BRACKET;
-		Expression secondary = Expression.singleExpression(stream);
-		if (true)
-			throw new UnsupportedOperationException("I don't get the fields in this class :(");
-		if (type == ReferenceType.BRACKET)
-		{
-			Token nextToken = stream.removeFirst();
-			if (!nextToken.toString().equals("]"))
-				throw new SyntaxError("Expecting close brace , found " + nextToken);
-		}
-		return expr;
-	}
-	
-	public static ExpressionReference createExpressionReference2(Token start, TokenStream stream) {
-		ExpressionReference outerRef = new ExpressionReference();
-		String baseReference = start.toString();
-		outerRef.baseReference = baseReference;
-		outerRef.type = ReferenceType.NONE;
-		
-		return createExpressionReferenceHelper(outerRef, stream);
-	}
-	public static ExpressionReference createExpressionReference2(Expression base, TokenStream stream) {
-		ExpressionReference outerRef = new ExpressionReference();
-		outerRef.primary = base;
-		outerRef.type = ReferenceType.NONE;
-		
-		return createExpressionReferenceHelper(outerRef, stream);
-	}
-	/**
-	 * Creates an ExpressionReference that cannot have complex references (i.e. must be of the form variable_name).
-	 *
-	 * @param stream The TokenStream, with the first token being "variable_name"
-	 */
-	public static ExpressionReference createSimpleExpressionReference(TokenStream stream) {
-		Token next = stream.removeFirst();
-		if (!next.toString().matches("[A-Za-z0-9_]+")) {
-			throw new SyntaxError("Invalid variable name: " + next.toString());
-		}
-		ExpressionReference ref = new ExpressionReference();
-		ref.baseReference = next.toString();
-		ref.type = ReferenceType.NONE;
-		if (stream.hasNext()) {
-			next = stream.getFirst();
-			if (next != Token.NEWLINE && (next.toString().equals("[") || next.toString().equals("."))) {
-				throw new SyntaxError("Unexpected reference after variable declaration");
-			}
-		}
-		return ref;
-	}
-	private static ExpressionReference createExpressionReferenceHelper(ExpressionReference outerRef, TokenStream stream) {
-		Token next = stream.getFirst();
-		while (next != Token.NEWLINE && (next.toString().equals("[") || next.toString().equals("."))) {
-			// If the references continue
-			// This reads in the next thing (e.g. "[fancy expression stuff]")
-			// and creates a new ExpressionReference
-			outerRef = new ExpressionReference(outerRef, stream);
-			next = stream.getFirst();
-		}
-		return outerRef;
-	}
-
 	private static enum ReferenceType {
 		NONE("", ""), DOT(".", ""), BRACKET("[", "]");
 		
