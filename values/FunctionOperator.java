@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import ambroscum.IdentifierMap;
 import ambroscum.Parameter;
+import ambroscum.parser.Token;
 import ambroscum.expressions.Expression;
 import ambroscum.lines.Block;
 import ambroscum.values.Value;
@@ -53,6 +54,11 @@ public class FunctionOperator extends FunctionDeclaration
 		return op.getNumOperands();
 	}
 	
+	public static boolean isOperator(Token t)
+	{
+		return get(t.toString()) != null && get(t.toString()).getPriority() > -1;
+	}
+	
 	@Override
 	public Value evaluate(List<Value> arguments, IdentifierMap values)
 	{
@@ -79,8 +85,7 @@ public class FunctionOperator extends FunctionDeclaration
 		
 		Operator(String name, int operands, int priority)
 		{
-			if (priority > -1)
-				FunctionOperator.map.put(name, new FunctionOperator(this));
+			FunctionOperator.map.put(name, new FunctionOperator(this));
 			numOperands = operands;
 			this.name = name;
 			this.priority = priority; // lower is grouped first (e.g. "*".priority < "+".priority)

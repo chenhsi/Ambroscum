@@ -72,6 +72,6 @@ public class ExpressionCall extends Expression
 	@Override
 	public String toString()
 	{
-		return "(" + func + " " + operands.toString() + ")";
+		return "(" + func + " " + operands + ")";
 	}
 }

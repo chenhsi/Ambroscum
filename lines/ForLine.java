@@ -5,11 +5,11 @@ import ambroscum.errors.*;
 import ambroscum.parser.*;
 import ambroscum.values.*;
 import ambroscum.expressions.Expression;
-import ambroscum.expressions.ExpressionReference;
+import ambroscum.expressions.ExpressionIdentifier;
 
 public class ForLine extends Line
 {
-	private ExpressionReference variable;
+	private ExpressionIdentifier variable;
 	private Expression iterable;
 	private Block block;
 	private Block thenBlock;
@@ -20,7 +20,7 @@ public class ForLine extends Line
 		Token variableName = stream.removeFirst();
 		if (!IdentifierMap.isValidIdentifier(variableName.toString()))
 			throw new SyntaxError("Invalid variable name in for statement: " + variableName);
-		variable = new ExpressionReference(variableName);
+		variable = new ExpressionIdentifier(variableName);
 		Token temp = stream.removeFirst();
 		if (!temp.toString().equals("in"))
 			throw new SyntaxError("Unexpected token in reading for statement: " + temp);

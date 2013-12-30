@@ -17,13 +17,14 @@ import ambroscum.errors.*;
 import ambroscum.values.*;
 import ambroscum.parser.*;
 import ambroscum.expressions.Expression;
+import ambroscum.expressions.ExpressionIdentifier;
 import ambroscum.expressions.ExpressionReference;
 import ambroscum.expressions.ExpressionOperator;
 import ambroscum.expressions.ExpressionCall;
 
 public class AssignmentLine extends Line
 {
-	private List<ExpressionReference> assignIDs;
+	private List<Expression> assignIDs;
 	private List<Expression> exprs;
 	private ExpressionOperator operator;
 
@@ -43,13 +44,13 @@ public class AssignmentLine extends Line
 	AssignmentLine(Line parent, TokenStream idStream, TokenStream valueStream)
 	{
 		super(parent);
-		assignIDs = new LinkedList<ExpressionReference>();
-		assignIDs.add((ExpressionReference) Expression.extend(new ExpressionReference(idStream.removeFirst()), idStream));
+		assignIDs = new LinkedList<Expression>();
+		assignIDs.add(Expression.extend(new ExpressionIdentifier(idStream.removeFirst()), idStream, "[]="));
 		while (!idStream.getFirst().toString().endsWith("="))
 		{
 			if (idStream.removeFirst() != Token.COMMA)
 				throw new SyntaxError("Expected a comma delimiter in assignment");
-			assignIDs.add((ExpressionReference) Expression.extend(new ExpressionReference(idStream.removeFirst()), idStream));
+			assignIDs.add(Expression.extend(new ExpressionIdentifier(idStream.removeFirst()), idStream, "[]="));
 		}
 		String assignOp = idStream.getFirst().toString();
 		if (assignOp.length() > 1)
@@ -90,7 +91,13 @@ public class AssignmentLine extends Line
 			targetVals.add(expr.evaluate(values));
 		}
 		for (int i = 0; i < exprs.size(); i++)
-			assignIDs.get(i).setValue(targetVals.get(i), values);
+		{
+			Expression target = assignIDs.get(i);
+			if (target instanceof ExpressionIdentifier)
+				((ExpressionIdentifier) target).setValue(targetVals.get(i), values);
+			else if (target instanceof ExpressionReference)
+				((ExpressionReference) target).setValue(targetVals.get(i), values);
+		}
 		return Block.ExitStatus.NORMAL;
 	}
 	
