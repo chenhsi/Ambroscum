@@ -18,7 +18,7 @@ public abstract class Value
 	
 	public boolean equals(Object other)
 	{
-		return other instanceof Value && true; // needs working on
+		return other instanceof Value && this == other; // needs working on
 	}
 	
 	/**

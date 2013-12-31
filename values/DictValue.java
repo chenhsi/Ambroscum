@@ -20,7 +20,23 @@ public class DictValue extends ObjectValue {
 		throw new ambroscum.errors.NoSuchElementException(this + " has no element " + key);
 	}
 	public void set(Value key, Value value) {
-		map.put(key, value);
+		map.put(clone(key, new HashSet<Value>()), value);
+	}
+	// Deep-clones v. Has to deal with nonsense like circular references. Sigh.
+	private static Value clone(Value v, Set<Value> alreadyCloned) {
+		// If already cloned, then get the clone
+		if (alreadyCloned.contains(v)) {
+			Iterator<Value> iter = alreadyCloned.iterator();
+			while (iter.hasNext()) {
+				Value next = iter.next();
+				if (v.equals(next)) {
+					return next;
+				}
+			}
+		}
+		// Create an empty copy of v; add it to the set of already cloned objects
+		// Recursivly copy the fields of v
+		return null;
 	}
 	
 	@Override
