@@ -45,12 +45,12 @@ public class AssignmentLine extends Line
 	{
 		super(parent);
 		assignIDs = new LinkedList<Expression>();
-		assignIDs.add(Expression.extend(new ExpressionIdentifier(idStream.removeFirst()), idStream, "[]="));
+		assignIDs.add(Expression.extend(new ExpressionIdentifier(idStream.removeFirst()), idStream));
 		while (!idStream.getFirst().toString().endsWith("="))
 		{
 			if (idStream.removeFirst() != Token.COMMA)
 				throw new SyntaxError("Expected a comma delimiter in assignment");
-			assignIDs.add(Expression.extend(new ExpressionIdentifier(idStream.removeFirst()), idStream, "[]="));
+			assignIDs.add(Expression.extend(new ExpressionIdentifier(idStream.removeFirst()), idStream));
 		}
 		String assignOp = idStream.getFirst().toString();
 		if (assignOp.length() > 1)
@@ -97,6 +97,8 @@ public class AssignmentLine extends Line
 				((ExpressionIdentifier) target).setValue(targetVals.get(i), values);
 			else if (target instanceof ExpressionReference)
 				((ExpressionReference) target).setValue(targetVals.get(i), values);
+			else
+				throw new NonassignableException(target + " cannot be assigned to");
 		}
 		return Block.ExitStatus.NORMAL;
 	}

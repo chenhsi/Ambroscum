@@ -16,7 +16,7 @@ public abstract class Expression
 //	do we not support ((3)) yet?
 	public static Expression interpret(TokenStream stream)
 	{
-		Expression result = extend(singleExpression(stream), stream, ".[]");
+		Expression result = extend(singleExpression(stream), stream);
 		Stack<Expression> expressions = new Stack<Expression> ();
 		Stack<ExpressionOperator> operators = new Stack<ExpressionOperator> ();
 		expressions.push(result);
@@ -28,7 +28,7 @@ public abstract class Expression
 				result = new ExpressionCall(operators.pop(), expressions.pop(), result);
 			expressions.push(result);
 			operators.push(op);
-			expressions.push(extend(singleExpression(stream), stream, ".[]"));
+			expressions.push(extend(singleExpression(stream), stream));
 		}
 		result = expressions.pop();
 		while (expressions.size() > 0)
@@ -36,16 +36,16 @@ public abstract class Expression
 		if (stream.getFirst().toString().equals("?")) // nested ternary operators (without using parens) not supported
 		{
 			stream.removeFirst();
-			Expression expr1 = extend(singleExpression(stream), stream, ".[]");
+			Expression expr1 = extend(singleExpression(stream), stream);
 			if (stream.removeFirst() != Token.COLON)
 				throw new SyntaxError("Expected colon for ternary operator");
-			Expression expr2 = extend(singleExpression(stream), stream, ".[]");
+			Expression expr2 = extend(singleExpression(stream), stream);
 			result = new ExpressionTernary(result, expr1, expr2);
 		}
 		return result;
 	}
 	
-	public static Expression extend(Expression expr, TokenStream stream, String referenceOperator)
+	public static Expression extend(Expression expr, TokenStream stream)
 	{
 		String nextToken = stream.getFirst().toString();
 		while (nextToken.equals(".") || nextToken.equals("(") || nextToken.equals("["))
@@ -53,7 +53,7 @@ public abstract class Expression
 			if (nextToken.equals("."))
 			{
 				stream.removeFirst();
-				expr = new ExpressionReference(expr, stream);
+				expr = new ExpressionIdentifier(expr, stream.removeFirst());
 			}
 			else if (nextToken.equals("("))
 			{
@@ -63,7 +63,7 @@ public abstract class Expression
 			else if (nextToken.equals("["))
 			{
 				stream.removeFirst();
-				expr = new ExpressionCall(new ExpressionOperator(referenceOperator), expr, Expression.interpret(stream));
+				expr = new ExpressionReference(expr, Expression.interpret(stream));
 				Token temp = stream.removeFirst();
 				if (!temp.toString().equals("]"))
 					throw new SyntaxError("Expecting close bracket, found " + temp);
@@ -91,7 +91,7 @@ public abstract class Expression
 		{
 			ExpressionOperator op = new ExpressionOperator(token.toString());
 			if (op.toString().equals("-") || op.getNumOperands() == 1)
-				result = new ExpressionCall(op, extend(singleExpression(stream), stream, ".[]"));
+				result = new ExpressionCall(op, extend(singleExpression(stream), stream));
 			else
 				throw new SyntaxError(op + " cannot take only 1 operand");
 		}

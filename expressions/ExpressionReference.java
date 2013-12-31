@@ -6,6 +6,8 @@ import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
 import ambroscum.errors.NotDereferenceableException;
 import ambroscum.values.Value;
+import ambroscum.values.ListValue;
+import ambroscum.values.DictValue;
 import ambroscum.values.FunctionDeclaration;
 
 import java.util.*;
@@ -15,12 +17,10 @@ public class ExpressionReference extends Expression
 	private Expression primary;
 	private Expression secondary;
 
-	public ExpressionReference(Expression base, TokenStream stream)
+	public ExpressionReference(Expression base, Expression reference)
 	{
 		primary = base;
-		//secondary = Expression.singleExpression(stream);
-		if (true)
-			throw new UnsupportedOperationException("I don't get the fields in this class :(");
+		secondary = reference;
 	}
 
 	@Override
@@ -29,7 +29,13 @@ public class ExpressionReference extends Expression
 		Value first = primary.evaluate(values);
 		if (first instanceof FunctionDeclaration)
 			throw new NotDereferenceableException("Cannot dot reference a function");
-		return first.dereference(secondary.toString());
+		else if (first instanceof ListValue)
+			return ((ListValue) first).get(secondary.evaluate(values));
+		else if (first instanceof DictValue)
+			return ((DictValue) first).get(secondary.evaluate(values));
+		else
+			throw new UnsupportedOperationException("this should prob be converted to an operator of some sort");
+		
 	}
 
 	public void setValue(Value value, IdentifierMap values)
@@ -37,7 +43,12 @@ public class ExpressionReference extends Expression
 		Value first = primary.evaluate(values);
 		if (first instanceof FunctionDeclaration)
 			throw new NotDereferenceableException("Cannot dot reference a function");
-		first.setDereference(secondary.toString(), value);
+		else if (first instanceof ListValue)
+			((ListValue) first).set(secondary.evaluate(values), value);
+		else if (first instanceof DictValue)
+			((DictValue) first).set(secondary.evaluate(values), value);
+		else
+			throw new UnsupportedOperationException("this should prob be converted to an operator of some sort");
 	}
 	
 	@Override

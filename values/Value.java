@@ -16,19 +16,6 @@ public abstract class Value
 		
 	}
 	
-	/**
-	 * @return this.ref
-	 */
-	public Value dereference(String ref) {
-		throw new AmbroscumError("Cannot dereference " + getClass());
-	}
-	/**
-	 * Attempts to set the value of this.ref
-	 */
-	public void setDereference(String ref, Value val) {
-		throw new AmbroscumError("Cannot dereference " + getClass());
-	}
-	
 	public boolean equals(Object other)
 	{
 		return other instanceof Value && true; // needs working on

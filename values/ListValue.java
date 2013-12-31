@@ -14,21 +14,31 @@ public class ListValue extends ObjectValue {
 		list = vals;
 	}
 	
-	public Value get(Value index) {
-		if (index instanceof IntValue) {
+	public Value get(Value index)
+	{
+		if (index instanceof IntValue)
+		{
 			int ind = (int) ((IntValue) index).getValue();
 			if (ind > -1 && ind < list.length)
 				return list[ind];
 			else
 				throw new ambroscum.errors.NoSuchElementException("List index out of bounds: " + this + " has no element #"+  index);
 		}
-		throw new SyntaxError("Expected int for list index");
+		else
+			throw new SyntaxError("Expected int for list index");
 	}
-	public void set(Value index, Value value) {
-		if (index instanceof IntValue) {
+	
+	public void set(Value index, Value value)
+	{
+		if (index instanceof IntValue)
+		{
 			int ind = (int) ((IntValue) index).getValue();
-			list[ind] = value;
-		} else
+			if (ind > -1 && ind < list.length)
+				list[ind] = value;
+			else
+				throw new ambroscum.errors.NoSuchElementException("List index out of bounds: " + this + " has no element #"+  index);
+		}
+		else
 			throw new SyntaxError("Expected int for list index");
 	}
 	
@@ -40,12 +50,20 @@ public class ListValue extends ObjectValue {
 		{
 			case ".[]":
 				if (first instanceof IntValue)
-					return list[(int) ((IntValue) first).getValue()];
+				{
+					int index = (int) ((IntValue) first).getValue();
+					if (index < 0 || index >= list.length)
+						throw new ambroscum.errors.NoSuchElementException("List index out of bounds: " + this + " has no element #" + index);
+					return list[index];
+				}
 				throw new FunctionNotFoundException("list's indexing expects an int");
 			case "[]=":
 				if (first instanceof IntValue)
 				{
-					list[(int) ((IntValue) first).getValue()] = otherValues.get(1);
+					int index = (int) ((IntValue) first).getValue();
+					if (index < 0 || index >= list.length)
+						throw new ambroscum.errors.NoSuchElementException("List index out of bounds: " + this + " has no element #" + index);
+					list[index] = otherValues.get(1);
 					return NullValue.NULL;
 				}
 				throw new FunctionNotFoundException("list's indexing expects an int");
@@ -58,14 +76,14 @@ public class ListValue extends ObjectValue {
 		if ("size".equals(ref)) {
 			return IntValue.fromInt(list.length);
 		}
-		throw new VariableNotFoundException(ref);
+		return super.dereference(ref);
 	}
 	@Override
 	public void setDereference(String ref, Value val) {
 		if ("size".equals(ref)) {
-			throw new NonassignableException(this + "." + ref + " is not assignable");
+			throw new NonassignableException(this + ".size is not assignable");
 		}
-		throw new VariableNotFoundException(ref);
+		super.setDereference(ref, val);
 	}
 
 	
@@ -86,7 +104,8 @@ public class ListValue extends ObjectValue {
 		return false;
 	}
 	
-	public String toString() 	{
+	public String toString()
+	{
 		return Arrays.toString(list);
 	}
 }
