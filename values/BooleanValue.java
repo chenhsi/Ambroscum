@@ -47,7 +47,7 @@ public class BooleanValue extends ObjectValue
 				if (other instanceof BooleanValue)
 					return BooleanValue.fromBoolean(value || ((BooleanValue) other).value);
 				throw new FunctionNotFoundException("bool's 'or' operator not defined with value " + other);
-			case "=":
+			case "==":
 				if (other instanceof BooleanValue)
 					return BooleanValue.fromBoolean(value == ((BooleanValue) other).value);
 				throw new FunctionNotFoundException("bool's '=' operator not defined with value " + other);

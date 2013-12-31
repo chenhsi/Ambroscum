@@ -11,6 +11,7 @@ public class NullValue extends ObjectValue
 	@Override
 	public Value applyOperator(FunctionOperator op, List<Value> otherValues)
 	{
+		// should this support equality and nonequality?
 		throw new NullReferenceException("No operations can be performed on a null value");
 	}
 	

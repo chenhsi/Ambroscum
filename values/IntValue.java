@@ -27,7 +27,6 @@ public class IntValue extends ObjectValue
 	@Override
 	public Value applyOperator(FunctionOperator op, List<Value> otherValues)
 	{
-//		System.err.println(op + " " + otherValues);
 		if (otherValues.size() == 0)
 		{
 			if (op.toString().equals("-"))
@@ -75,7 +74,7 @@ public class IntValue extends ObjectValue
 				if (other instanceof IntValue)
 					return BooleanValue.fromBoolean(value >= ((IntValue) other).getValue());
 				throw new FunctionNotFoundException("int's '>=' operator not defined with value " + other);
-			case "=":
+			case "==":
 				if (other instanceof IntValue)
 					return BooleanValue.fromBoolean(value == ((IntValue) other).getValue());
 				throw new FunctionNotFoundException("int's '=' operator not defined with value " + other);

@@ -43,7 +43,7 @@ public class StringValue extends ObjectValue
 				if (other instanceof StringValue)
 					return BooleanValue.fromBoolean(value.compareTo(((StringValue) other).toString()) >= 0);
 				throw new FunctionNotFoundException("string's '>=' operator not defined with value " + other);
-			case "=":
+			case "==":
 				if (other instanceof StringValue)
 					return BooleanValue.fromBoolean(value.compareTo(((StringValue) other).toString()) == 0);
 				throw new FunctionNotFoundException("string's '=' operator not defined with value " + other);

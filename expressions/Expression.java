@@ -16,7 +16,7 @@ public abstract class Expression
 //	do we not support ((3)) yet?
 	public static Expression interpret(TokenStream stream)
 	{
-		Expression result = extend(singleExpression(stream), stream);
+		Expression result = helperGetToken(stream);
 		Stack<Expression> expressions = new Stack<Expression> ();
 		Stack<ExpressionOperator> operators = new Stack<ExpressionOperator> ();
 		expressions.push(result);
@@ -28,7 +28,7 @@ public abstract class Expression
 				result = new ExpressionCall(operators.pop(), expressions.pop(), result);
 			expressions.push(result);
 			operators.push(op);
-			expressions.push(extend(singleExpression(stream), stream));
+			expressions.push(helperGetToken(stream));
 		}
 		result = expressions.pop();
 		while (expressions.size() > 0)
@@ -43,6 +43,18 @@ public abstract class Expression
 			result = new ExpressionTernary(result, expr1, expr2);
 		}
 		return result;
+	}
+	
+	private static Expression helperGetToken(TokenStream stream)
+	{
+		Expression expr = extend(singleExpression(stream), stream);
+		Token token = stream.getFirst();
+		if (token.toString().equals("++") || token.toString().equals("--"))
+		{
+			expr = new ExpressionIncrement(expr, token.toString().charAt(0) == '+', false);
+			stream.removeFirst();
+		}
+		return expr;
 	}
 	
 	public static Expression extend(Expression expr, TokenStream stream)
@@ -96,8 +108,10 @@ public abstract class Expression
 				throw new SyntaxError(op + " cannot take only 1 operand");
 		}
 		else if (token.toString().equals("++") || token.toString().equals("--"))
-			// should this call to singleExpression be wrapped by extend?
-			result = new ExpressionIncrement(singleExpression(stream), token.toString().charAt(0) == '+', true);
+		{
+			Expression operand = extend(singleExpression(stream), stream);
+			result = new ExpressionIncrement(operand, token.toString().charAt(0) == '+', true);
+		}
 		else if (IdentifierMap.isValidIdentifier(token.toString())) // is a reference
 			result = new ExpressionIdentifier(token);
 		else if (token.toString().equals("("))
@@ -129,7 +143,7 @@ public abstract class Expression
 		{
 			text = text.substring(2);
 			for (char c : text.toCharArray())
-				if (!(Character.isDigit(c) || c == 'a' || c == 'b' || c == 'c' || c == 'd' || c == 'e' || c == 'f'))
+				if (!(Character.isDigit(c) || (c >= 'a' && c <= 'f')))
 					return false;
 		}
 		else
