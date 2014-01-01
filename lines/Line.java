@@ -124,7 +124,7 @@ public abstract class Line
 		
 		public static Enclosure getEnclosure(String str) {
 			for (Enclosure e : Enclosure.values()) {
-				if (e.start.equals(str)) {
+				if (e.start.equals(str) || e.end.equals(str)) {
 					return e;
 				}
 			}
