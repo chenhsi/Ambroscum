@@ -6,25 +6,38 @@ import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
+import ambroscum.errors.ObjectInstantiationException;
 import ambroscum.expressions.ExpressionReference;
 import ambroscum.expressions.Expression;
 import ambroscum.values.Value;
+import ambroscum.values.FunctionDeclaration;
 import ambroscum.values.ClassDeclaration;
 
 public class ClassLine extends Line
 {
 	private final String name;
+	private Expression parentObj;
 	private Block block;
 	
-	ClassLine(Line parent, TokenStream stream, int indentationLevel)
+	ClassLine(Line parentLine, TokenStream stream, int indentationLevel)
 	{
-		super(parent);
+		super(parentLine);
 		name = stream.removeFirst().toString();
 		if (!IdentifierMap.isValidIdentifier(name))
 			throw new SyntaxError("Not a valid function name: " + name);
-		if (stream.removeFirst() != Token.COLON)
-			throw new SyntaxError("Missing colon in class definition");
 		Token temp = stream.removeFirst();
+		if (temp != Token.COLON)
+		{
+			if (!temp.equals("from"))
+				throw new SyntaxError("Expecting \"from\" in class definition, found " + temp);
+			parentObj = Expression.interpret(stream);
+			temp = stream.removeFirst();
+		}
+		else
+			parentObj = null;
+		if (temp != Token.COLON)
+			throw new SyntaxError("Expecting colon in class definition, found " + temp);
+		temp = stream.removeFirst();
 		if (temp != Token.NEWLINE)
 			throw new SyntaxError("Unexpected token at end of function definition: " + temp);
 		block = new Block(this, stream, indentationLevel + 1);
@@ -33,13 +46,21 @@ public class ClassLine extends Line
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
-		values.add(name, new ClassDeclaration(block));
+		Value parentValue = parentObj.evaluate(values); // needs to deal with default objects
+		if (parentValue instanceof FunctionDeclaration)
+			throw new ObjectInstantiationException("New objects cannot be cloned from functions");
+		Value prototype = null; // this line should be modified once cloning is implemented
+		values.add(name, prototype);
 		return Block.ExitStatus.NORMAL;
 	}
 	
 	@Override
 	public String toString()
 	{
-		return "(class " + name + " " + block + ")";
+		StringBuilder sb = new StringBuilder("(class ");
+		sb.append(name);
+		if (parentObj != null)
+			sb.append(" ").append(parentObj);
+		return sb.append(" ").append(block).append(")").toString();
 	}
 }
