@@ -84,14 +84,51 @@ public abstract class Line
 			throw new SyntaxError("Unexpected " + token + " line");
 		List<Token> newStream = new LinkedList<Token>();
 		newStream.add(token);
+		Stack<Enclosure> enclosures = new Stack<Enclosure>();
 		while (true)
 		{
 			Token next = stream.removeFirst();
 			newStream.add(next);
-			if (next.toString().endsWith("="))
+			if (next.toString().endsWith("=") && enclosures.size() == 0)
 				return new AssignmentLine(parent, TokenStream.readAsStream(newStream), stream);
 			if (next == Token.NEWLINE)
 				return new CallLine(parent, TokenStream.readAsStream(newStream));
+			// Hacky way of avoiding equals equality vs. equals assignment
+			Enclosure e = Enclosure.getEnclosure(next.toString());
+			if (e != null) {
+				if (enclosures.size() != 0 && e == enclosures.peek()) {
+					enclosures.pop();
+				} else {
+					enclosures.add(e);
+				}
+			}
+		}
+	}
+	
+	public enum Enclosure {
+		PARENTHESES("(", ")"),
+		QUOTATION("\"", "\""),
+		BRACKETS("[", "]"),
+		BRACES("{", "}");
+		
+		private String start, end;
+		
+		Enclosure(String s, String e) {
+			start = s;
+			end = e;
+		}
+		
+		public String getEnd() {
+			return end;
+		}
+		
+		public static Enclosure getEnclosure(String str) {
+			for (Enclosure e : Enclosure.values()) {
+				if (e.start.equals(str)) {
+					return e;
+				}
+			}
+			return null;
 		}
 	}
 }

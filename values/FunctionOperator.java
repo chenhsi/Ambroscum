@@ -75,7 +75,7 @@ public class FunctionOperator extends FunctionDeclaration
 		ADD("+", 2, 3), SUB("-", 2, 3), POW("**", 2, 3),
 		LEFTSHIFT("<<", 2, 4), RIGHTSHIFT(">>", 2, 4),
 		GREATER_THAN(">", 2, 5), LESS_THAN("<", 2, 5), GREATER_THAN_EQUAL(">=", 2, 5), LESS_THAN_EQUAL("<=", 2, 5),
-		IS_EQUAL("==", 2, 6), NOT_EQUAL("!=", 2, 6),
+		IS_EQUAL("=", 2, 6), NOT_EQUAL("!=", 2, 6),
 		AND("and", 2, 7), OR("or", 2, 8),
 		GET(".[]", 1, -1), SET("[]=", 2, -1);
 		
