@@ -103,7 +103,12 @@ public class ListValue extends ObjectValue {
 		}
 		return false;
 	}
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(list);
+	}
 	
+	@Override
 	public String toString()
 	{
 		return Arrays.toString(list);

@@ -9,8 +9,7 @@ package ambroscum.values;
 
 import java.util.*;
 import ambroscum.errors.AmbroscumError;
-public abstract class Value
-{
+public abstract class Value {
 	public Value()
 	{
 		
