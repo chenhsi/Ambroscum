@@ -51,4 +51,12 @@ public class ExpressionDict extends Expression {
 	public String toString() {
 		return null;
 	}
+	
+	@Override
+	public Expression localOptimize()
+	{
+		for (int i = 0; i < valueList.size(); i++)
+			valueList.set(i, valueList.get(i).localOptimize());
+		return this;
+	}
 }

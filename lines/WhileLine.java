@@ -5,6 +5,7 @@ import ambroscum.errors.*;
 import ambroscum.parser.*;
 import ambroscum.values.*;
 import ambroscum.expressions.Expression;
+import ambroscum.expressions.ExpressionLiteral;
 
 public class WhileLine extends Line
 {
@@ -45,6 +46,8 @@ public class WhileLine extends Line
 			{
 				if (conditionValue == BooleanValue.TRUE)
 				{
+					if (block == null)
+						throw new InfiniteLoopException("Empty non-false while loop");
 					Block.ExitStatus status = block.evaluate(values);
 					if (status == Block.ExitStatus.BREAK)
 					{
@@ -81,5 +84,29 @@ public class WhileLine extends Line
 		if (thenBlock != null)
 			sb.append(" ").append(thenBlock);
 		return sb.append(")").toString();
+	}
+	
+	@Override
+	public Line localOptimize()
+	{
+		condition = condition.localOptimize();
+		if (thenBlock != null)
+			thenBlock = (Block) thenBlock.localOptimize();
+		if (condition instanceof ExpressionLiteral)
+		{
+			Value conditionValue = ((ExpressionLiteral) condition).getValue();
+			if (conditionValue instanceof BooleanValue)
+			{
+				if (conditionValue == BooleanValue.FALSE)
+					return thenBlock;
+				block = (Block) block.localOptimize();
+				return this;
+			}
+			else
+				throw new OptimizedException(new SyntaxError("Expected a boolean for while statement condition: " + conditionValue));
+		}
+		if (block == null)
+			block = (Block) block.localOptimize();
+		return this;
 	}
 }

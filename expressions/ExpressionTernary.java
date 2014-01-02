@@ -53,6 +53,7 @@ public class ExpressionTernary extends Expression
 		return expr2;
 	}
 	
+	@Override
 	public Expression localOptimize()
 	{
 		cond = cond.localOptimize();
@@ -61,7 +62,7 @@ public class ExpressionTernary extends Expression
 			Value condValue = ((ExpressionLiteral) cond).getValue();
 			if (condValue instanceof BooleanValue)
 			{
-				Expression always = ((BooleanValue) condValue).getValue() ? expr1 : expr2;
+				Expression always = ((BooleanValue) condValue == BooleanValue.TRUE) ? expr1 : expr2;
 				always = always.localOptimize();
 				return always;
 			}

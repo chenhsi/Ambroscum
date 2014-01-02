@@ -132,4 +132,12 @@ public class AssignmentLine extends Line
 	{
 		return operator;
 	}
+	
+	@Override
+	public Line localOptimize()
+	{
+		for (int i = 0; i < exprs.size(); i++)
+			exprs.set(i, exprs.get(i).localOptimize());
+		return this;
+	}
 }

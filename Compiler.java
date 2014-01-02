@@ -33,6 +33,7 @@ public class Compiler
 		while (stream.hasNext())
 		{
 			Line line = Line.interpret(null, stream, 0);
+			line.localOptimize();
 			process(line, 2);
 			compile(line, 2);
 		}

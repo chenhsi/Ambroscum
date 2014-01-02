@@ -52,4 +52,12 @@ public class ExpressionList extends Expression {
 	{
 		return expressions;
 	}
+	
+	@Override
+	public Expression localOptimize()
+	{
+		for (int i = 0; i < expressions.length; i++)
+			expressions[i] = expressions[i].localOptimize();
+		return this;
+	}
 }

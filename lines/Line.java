@@ -30,6 +30,11 @@ public abstract class Line
 		parent.setReturnValue(v);
 	}
 	
+	public Line localOptimize()
+	{
+		return this;
+	}
+	
 	public abstract Block.ExitStatus evaluate(IdentifierMap values);
 
 	public static Line interpret(Line parent, TokenStream stream, int indentation)

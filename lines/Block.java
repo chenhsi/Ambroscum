@@ -69,6 +69,25 @@ public class Block extends Line
 		returnValue = value;
 	}
 	
+	public Line localOptimize()
+	{
+		for (int i = 0; i < lines.size();)
+		{
+			Line optimizedLine = lines.get(i).localOptimize();
+			if (optimizedLine == null)
+			{
+				lines.remove(i);
+				continue;
+			}
+			if (optimizedLine != lines.get(i))
+				lines.set(i, optimizedLine);
+			i++;
+		}
+		if (lines.size() == 0)
+			return null;
+		return this;
+	}
+	
 	/**
 	 * Returns a representation of the list of statements in the block, in the
 	 * form <code>[line, line, etc...]</code>.

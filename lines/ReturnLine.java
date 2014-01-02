@@ -41,4 +41,11 @@ public class ReturnLine extends Line
 			sb.append(expr);
 		return sb.append(")").toString();
 	}
+	
+	@Override
+	public Line localOptimize()
+	{
+		expr = expr.localOptimize();
+		return this;
+	}
 }

@@ -7,6 +7,7 @@ import ambroscum.errors.*;
 import ambroscum.parser.*;
 import ambroscum.values.*;
 import ambroscum.expressions.Expression;
+import ambroscum.expressions.ExpressionLiteral;
 
 public class IfLine extends Line
 {
@@ -61,6 +62,8 @@ public class IfLine extends Line
 			{
 				if (conditionValue == BooleanValue.TRUE)
 				{
+					if (blocks.get(i) == null)
+						return Block.ExitStatus.NORMAL;
 					Block.ExitStatus evaled = blocks.get(i).evaluate(values);
 					if (evaled == Block.ExitStatus.RETURN)
 						setReturnValue(blocks.get(i).getReturnValue());
@@ -69,7 +72,7 @@ public class IfLine extends Line
 			}
 			else
 				// should this really be a syntax error?
-				throw new SyntaxError("Expected a boolean for if statement condition: " + conditions.get(i));
+				throw new SyntaxError("Expected a boolean for if statement condition: " + conditionValue);
 		}
 		if (elseBlock != null)
 		{
@@ -90,5 +93,39 @@ public class IfLine extends Line
 		if (elseBlock != null)
 			sb.append(" ").append(elseBlock);
 		return sb.append(")").toString();
+	}
+	
+	@Override
+	public Line localOptimize()
+	{
+		for (int i = 0; i < conditions.size();)
+		{
+			conditions.set(i, conditions.get(i).localOptimize());
+			if (conditions.get(i) instanceof ExpressionLiteral)
+			{
+				Value conditionValue = ((ExpressionLiteral) conditions.get(i)).getValue();
+				if (conditionValue instanceof BooleanValue)
+				{
+					if (conditionValue == BooleanValue.TRUE)
+						return blocks.get(i).localOptimize();
+					else
+					{
+						conditions.remove(i);
+						blocks.remove(i);
+						continue;
+					}
+				}
+				else
+					throw new OptimizedException(new SyntaxError("Expected a boolean for if statement condition: " + conditionValue));
+			}
+			if (blocks.get(i) != null)
+				blocks.set(i, (Block) blocks.get(i).localOptimize());
+			i++;
+		}
+		if (elseBlock != null)
+			elseBlock = (Block) elseBlock.localOptimize();
+		if (conditions.size() == 0)
+			return elseBlock;
+		return this;
 	}
 }

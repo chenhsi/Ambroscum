@@ -65,4 +65,11 @@ public class ExpressionReference extends Expression
 	{
 		return primary.toString() + "[" + secondary.toString() + "]";
 	}
+	
+	@Override
+	public Expression localOptimize()
+	{
+		primary = primary.localOptimize();
+		secondary = secondary.localOptimize();
+	}
 }

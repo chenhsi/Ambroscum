@@ -9,7 +9,7 @@ import ambroscum.expressions.ExpressionCall;
 
 public class CallLine extends Line
 {
-	private final Expression expr;
+	private Expression expr;
 	
 	CallLine(Line parent, TokenStream stream)
 	{
@@ -33,5 +33,12 @@ public class CallLine extends Line
 	public String toString()
 	{
 		return "(call " + expr + ")";
+	}
+	
+	@Override
+	public Line localOptimize()
+	{
+		expr = expr.localOptimize();
+		return this;
 	}
 }
