@@ -29,6 +29,12 @@ public class ExpressionLiteral extends Expression
 	{
 		return fixed.toString();
 	}
+
+	@Override
+	public boolean hasSideEffects()
+	{
+		return false;
+	}
 	
 	@Override
 	public void setDeclarations(Map<String, Expression> declarations) {}

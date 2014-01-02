@@ -26,6 +26,11 @@ public abstract class Expression
 		return expressionID;
 	}
 	
+	public boolean hasSideEffects()
+	{
+		return true;
+	}
+	
 	public Expression localOptimize()
 	{
 		return this;

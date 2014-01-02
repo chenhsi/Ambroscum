@@ -43,5 +43,11 @@ public class ExpressionOperator extends Expression
 	}
 	
 	@Override
+	public boolean hasSideEffects()
+	{
+		return false;
+	}
+	
+	@Override
 	public void setDeclarations(Map<String, Expression> declarations) {}
 }

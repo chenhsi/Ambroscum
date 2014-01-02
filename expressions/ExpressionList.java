@@ -54,6 +54,15 @@ public class ExpressionList extends Expression {
 	}
 	
 	@Override
+	public boolean hasSideEffects()
+	{
+		for (Expression expr : expressions)
+			if (expr.hasSideEffects())
+				return true;
+		return false;
+	}
+	
+	@Override
 	public Expression localOptimize()
 	{
 		for (int i = 0; i < expressions.length; i++)

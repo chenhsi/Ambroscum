@@ -136,8 +136,10 @@ public class IfLine extends Line
 		for (int i = 0; i < conditions.size(); i++)
 		{
 			conditions.get(i).setDeclarations(declarations);
-			blocks.get(i).setDeclarations(declarations, false);
+			if (blocks.get(i) != null)
+				blocks.get(i).setDeclarations(declarations, false);
 		}
-		elseBlock.setDeclarations(declarations, false);
+		if (elseBlock != null)
+			elseBlock.setDeclarations(declarations, false);
 	}
 }

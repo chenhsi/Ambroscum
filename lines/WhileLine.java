@@ -114,8 +114,10 @@ public class WhileLine extends Line
 	@Override
 	public void setDeclarations(Map<String, Expression> declarations, boolean certainty)
 	{
-		block.setDeclarations(declarations, false);
+		if (block != null)
+			block.setDeclarations(declarations, false);
 		condition.setDeclarations(declarations);
-		thenBlock.setDeclarations(declarations, false);
+		if (thenBlock != null)
+			thenBlock.setDeclarations(declarations, false);
 	}
 }

@@ -80,10 +80,19 @@ public class ExpressionIdentifier extends Expression
 	private	Expression source;
 	
 	@Override
+	public boolean hasSideEffects()
+	{
+		return false;
+	}
+	
+	@Override
 	public Expression localOptimize()
 	{
-		if (source instanceof ExpressionLiteral)
-			return source;
+		Expression sourceTrace = source;
+		while (sourceTrace instanceof ExpressionIdentifier)
+			sourceTrace = ((ExpressionIdentifier) sourceTrace).source;
+		if (sourceTrace instanceof ExpressionLiteral)
+			return sourceTrace;
 		return this;
 	}
 	

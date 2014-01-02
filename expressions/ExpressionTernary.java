@@ -54,6 +54,12 @@ public class ExpressionTernary extends Expression
 	}
 	
 	@Override
+	public boolean hasSideEffects()
+	{
+		return cond.hasSideEffects() || expr1.hasSideEffects() || expr2.hasSideEffects();
+	}
+	
+	@Override
 	public Expression localOptimize()
 	{
 		cond = cond.localOptimize();
