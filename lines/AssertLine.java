@@ -8,6 +8,7 @@
 
 package ambroscum.lines;
 
+import java.util.Map;
 import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
@@ -92,5 +93,12 @@ public class AssertLine extends Line
 	public Expression getErrorMessage()
 	{
 		return errorMessage;
+	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations, boolean certainty)
+	{
+		test.setDeclarations(declarations);
+		errorMessage.setDeclarations(declarations);
 	}
 }

@@ -73,4 +73,12 @@ public class ExpressionTernary extends Expression
 		expr2 = expr2.localOptimize();
 		return this;
 	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations)
+	{
+		cond.setDeclarations(declarations);
+		expr1.setDeclarations(declarations);
+		expr2.setDeclarations(declarations);
+	}
 }

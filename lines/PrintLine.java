@@ -70,10 +70,24 @@ public class PrintLine extends Line
 		return Block.ExitStatus.NORMAL;
 	}
 	
-	
 	@Override
 	public String toString()
 	{
 		return "(" + (newline ? "println " : "print ") + toPrint + ")";
+	}
+	
+	@Override
+	public Line localOptimize()
+	{
+		for (int i = 0; i < toPrint.size(); i++)
+			toPrint.set(i, toPrint.get(i).localOptimize());
+		return this;
+	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations, boolean certainty)
+	{
+		for (Expression expr : toPrint)
+			expr.setDeclarations(declarations);
 	}
 }

@@ -60,4 +60,11 @@ public class ExpressionList extends Expression {
 			expressions[i] = expressions[i].localOptimize();
 		return this;
 	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations)
+	{
+		for (Expression expr : expressions)
+			expr.setDeclarations(declarations);
+	}
 }

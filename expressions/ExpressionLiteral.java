@@ -29,4 +29,7 @@ public class ExpressionLiteral extends Expression
 	{
 		return fixed.toString();
 	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations) {}
 }

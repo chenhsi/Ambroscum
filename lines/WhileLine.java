@@ -1,5 +1,6 @@
 package ambroscum.lines;
 
+import java.util.Map;
 import ambroscum.*;
 import ambroscum.errors.*;
 import ambroscum.parser.*;
@@ -108,5 +109,13 @@ public class WhileLine extends Line
 		if (block == null)
 			block = (Block) block.localOptimize();
 		return this;
+	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations, boolean certainty)
+	{
+		block.setDeclarations(declarations, false);
+		condition.setDeclarations(declarations);
+		thenBlock.setDeclarations(declarations, false);
 	}
 }

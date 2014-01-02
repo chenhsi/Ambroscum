@@ -59,4 +59,13 @@ public class ExpressionDict extends Expression {
 			valueList.set(i, valueList.get(i).localOptimize());
 		return this;
 	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations)
+	{
+		for (Expression expr : keyList)
+			expr.setDeclarations(declarations);
+		for (Expression expr : valueList)
+			expr.setDeclarations(declarations);
+	}
 }

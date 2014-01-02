@@ -76,4 +76,23 @@ public class ExpressionIdentifier extends Expression
 		else
 			return parent.toString() + "." + identifier;
 	}
+
+	private	Expression source;
+	
+	@Override
+	public Expression localOptimize()
+	{
+		if (source instanceof ExpressionLiteral)
+			return source;
+		return this;
+	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations)
+	{
+		if (parent != null)
+			throw new UnsupportedOperationException("Complicated references don't support value propogation yet");
+		if (declarations.containsKey(identifier) && declarations.get(identifier) != null)
+			source = declarations.get(identifier);
+	}
 }

@@ -2,11 +2,13 @@ package ambroscum.expressions;
 
 import java.util.Arrays;
 import java.util.Stack;
+import java.util.Map;
 import ambroscum.IdentifierMap;
 import ambroscum.values.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
+import ambroscum.lines.Line;
 import ambroscum.expressions.ExpressionOperator;
 
 public abstract class Expression
@@ -27,6 +29,12 @@ public abstract class Expression
 	public Expression localOptimize()
 	{
 		return this;
+	}
+	
+	// ultimately, this should be overwritten by every subclass, and thus be abstract
+	public void setDeclarations(Map<String, Expression> declarations)
+	{
+		throw new UnsupportedOperationException();
 	}
 	
 	public abstract Value evaluate(IdentifierMap values);

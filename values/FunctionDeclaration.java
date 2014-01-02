@@ -9,18 +9,20 @@ import ambroscum.errors.SyntaxError;
 
 public class FunctionDeclaration extends Value
 {
+	private IdentifierMap declaringScope;
 	private List<Parameter> params;
 	private Block code;
 	
-	public FunctionDeclaration(List<Parameter> p, Block c)
+	public FunctionDeclaration(List<Parameter> p, Block c, IdentifierMap s)
 	{
 		params = p;
 		code = c;
+		declaringScope = s;
 	}
 	
-	public Value evaluate(List<Value> arguments, IdentifierMap values)
+	public Value evaluate(List<Value> arguments)
 	{
-		IdentifierMap ownScope = new IdentifierMap(values);
+		IdentifierMap ownScope = new IdentifierMap(declaringScope);
 		if (params.size() != arguments.size())
 			throw new InvalidArgumentException("wrong number of arguments");
 		for (int i = 0; i < params.size(); i++)

@@ -12,9 +12,9 @@ import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
+import ambroscum.expressions.Expression;
 import ambroscum.expressions.ExpressionOperator;
 import ambroscum.values.Value;
-import java.util.Iterator;
 
 public abstract class Line
 {
@@ -33,6 +33,12 @@ public abstract class Line
 	public Line localOptimize()
 	{
 		return this;
+	}
+
+	// ultimately, this should be overwritten by every subclass, and thus be abstract
+	public void setDeclarations(Map<String, Expression> declarations, boolean certainty)
+	{
+		throw new UnsupportedOperationException();
 	}
 	
 	public abstract Block.ExitStatus evaluate(IdentifierMap values);

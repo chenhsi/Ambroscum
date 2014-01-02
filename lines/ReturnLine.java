@@ -1,5 +1,6 @@
 package ambroscum.lines;
 
+import java.util.Map;
 import ambroscum.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
@@ -47,5 +48,11 @@ public class ReturnLine extends Line
 	{
 		expr = expr.localOptimize();
 		return this;
+	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations, boolean certainty)
+	{
+		expr.setDeclarations(declarations);
 	}
 }

@@ -71,5 +71,13 @@ public class ExpressionReference extends Expression
 	{
 		primary = primary.localOptimize();
 		secondary = secondary.localOptimize();
+		return this;
+	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations)
+	{
+		primary.setDeclarations(declarations);
+		secondary.setDeclarations(declarations);
 	}
 }

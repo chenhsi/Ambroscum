@@ -13,6 +13,7 @@ import ambroscum.errors.*;
 import ambroscum.lines.*;
 import ambroscum.parser.*;
 import ambroscum.values.Value;
+import ambroscum.expressions.Expression;
 import java.util.*;
 
 public class Block extends Line
@@ -86,6 +87,13 @@ public class Block extends Line
 		if (lines.size() == 0)
 			return null;
 		return this;
+	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations, boolean certainty)
+	{
+		for (Line line : lines)
+			line.setDeclarations(declarations, certainty);
 	}
 	
 	/**

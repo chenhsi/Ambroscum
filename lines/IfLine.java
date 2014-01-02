@@ -2,6 +2,7 @@ package ambroscum.lines;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import ambroscum.*;
 import ambroscum.errors.*;
 import ambroscum.parser.*;
@@ -127,5 +128,16 @@ public class IfLine extends Line
 		if (conditions.size() == 0)
 			return elseBlock;
 		return this;
+	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations, boolean certainty)
+	{
+		for (int i = 0; i < conditions.size(); i++)
+		{
+			conditions.get(i).setDeclarations(declarations);
+			blocks.get(i).setDeclarations(declarations, false);
+		}
+		elseBlock.setDeclarations(declarations, false);
 	}
 }

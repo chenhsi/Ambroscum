@@ -17,28 +17,53 @@ import ambroscum.values.*;
 
 public class Compiler
 {
+	private static final boolean optimizeLocally = true; // should currently be a safe optimization
+	private static final boolean propogateConstants = true; // causes errors when there are multiple scopes
+	
+	private static PrintWriter out;
+	
 	/**
 	 * Reads data from an Ambroscum file, and compiles it into a Java file.
 	 *
 	 * @param	file			the Ambroscum file to read from and compile
 	 */
-	public static void compile(File file) throws FileNotFoundException
+	public static void compile(File input, PrintWriter output) throws FileNotFoundException
 	{
-		TokenStream stream = TokenStream.readFile(file);
+		TokenStream stream = TokenStream.readFile(input);
+		out = output;
 
-		System.out.println("import java.util.*;");
-		System.out.println();
-		System.out.println("public class Main {");
-		System.out.println("\tpublic static void main(String[] args) {");
+		List<Line> list = new LinkedList<Line> ();
 		while (stream.hasNext())
 		{
 			Line line = Line.interpret(null, stream, 0);
-			line.localOptimize();
+			if (optimizeLocally)
+				line.localOptimize();
+			list.add(line);
+		}
+		if (propogateConstants)
+		{
+			// finding declarations
+			Map<String, Expression> lastDeclarations = new HashMap<String, Expression> ();
+			for (Line line : list)
+				line.setDeclarations(lastDeclarations, true);
+			if (optimizeLocally)
+				for (Line line : list)
+					line.localOptimize();
+		}
+
+		out.println("import java.util.*;");
+		out.println();
+		out.println("public class Main {");
+		out.println("\tpublic static void main(String[] args) {");
+		for (Line line : list)
+		{
 			process(line, 2);
 			compile(line, 2);
 		}
-		System.out.println("\t}");
-		System.out.println("}");
+		out.println("\t}");
+		out.println("}");
+		out.flush();
+		out.close();
 	}
 	
 	private static void process(Line line, int indentation)
@@ -72,51 +97,58 @@ public class Compiler
 			case "AssertLine":
 				AssertLine asAssert = (AssertLine) line;
 				printIndentation(indentation);
-				System.out.print("assert ");
+				out.print("assert ");
 				compile(asAssert.getTest());
 				if (asAssert.getErrorMessage() != null)
 				{
-					System.out.print(" : ");
+					out.print(" : ");
 					compile(asAssert.getErrorMessage());
 				}
-				System.out.print(";\n");
+				out.print(";\n");
 				break;
 			case "AssignmentLine":
 				AssignmentLine assign = (AssignmentLine) line;
-				for (int i = 0; i < assign.getAssignValues().size(); i++)
+				int lastIndex = assign.getAssignTargets().size() - 1;
+				for (int i = 0; i < lastIndex; i++)
 				{
 					printIndentation(indentation);
-					System.out.print("Object _" + assign.getAssignTargets().get(i).getID() + " = ");
+					out.print("Object _" + assign.getAssignTargets().get(i).getID() + " = ");
 					compile(assign.getAssignValues().get(i));
-					System.out.print(";\n");
+					out.print(";\n");
 				}
-				for (int i = 0; i < assign.getAssignTargets().size(); i++)
+				printIndentation(indentation);
+				compile(assign.getAssignTargets().get(lastIndex));
+				out.print(" = ");
+				compile(assign.getAssignValues().get(lastIndex));
+				out.print(";\n");
+				for (int i = 0; i < lastIndex; i++)
 				{
 					printIndentation(indentation);
 					compile(assign.getAssignTargets().get(i));
-					System.out.print(" = " + assign.getAssignTargets().get(i).getID());
-					System.out.print(";\n");
+					out.print(" = _" + assign.getAssignTargets().get(i).getID());
+					out.print(";\n");
 				}
-				
-					
 				// not currently dealing with assignments with operators
 				break;
 			case "PrintLine":
 				PrintLine print = (PrintLine) line;
-				printIndentation(indentation);
-				System.out.print("System.out.print");
-				if (print.isPrintNewline())
-					System.out.print("ln");
-				System.out.print("(");
 				boolean first = true;
 				for (Expression expr : print.getPrintExpressions())
 				{
+					printIndentation(indentation);
+					out.print("System.out.print");
+					out.print("(");
 					if (!first)
-						System.out.print(" + ");
+						out.print("\" \" + ");
 					first = false;
 					compile(expr);
+					out.print(");\n");
 				}
-				System.out.print(");\n");
+				if (print.isPrintNewline())
+				{
+					printIndentation(indentation);
+					out.print("System.out.println();\n");
+				}
 				break;
 		}
 	}
@@ -141,13 +173,13 @@ public class Compiler
 				printIndentation(indentation);
 				for (Expression subexpr : ((ExpressionList) expr).getExpressions())
 					process(subexpr, indentation);
-				System.out.print("List<Object> _" + expr.getID() + " = new ArrayList<Object> ());\n");
+				out.print("List<Object> _" + expr.getID() + " = new ArrayList<Object> ();\n");
 				for (Expression subexpr : ((ExpressionList) expr).getExpressions())
 				{
 					printIndentation(indentation);
-					System.out.print("_" + expr.getID() + ".add(");
+					out.print("_" + expr.getID() + ".add(");
 					compile(subexpr);
-					System.out.print(");\n");
+					out.print(");\n");
 				}
 				break;
 			case "ExpressionDict":
@@ -180,16 +212,16 @@ public class Compiler
 				switch (v.getClass().getSimpleName())
 				{
 					case "NullValue":
-						System.out.print("null");
+						out.print("null");
 						break;
 					case "BooleanValue":
-						System.out.print(((BooleanValue) v).getValue());
+						out.print(((BooleanValue) v).getValue());
 						break;
 					case "IntValue":
-						System.out.print(((IntValue) v).getValue());
+						out.print(((IntValue) v).getValue());
 						break;
 					case "StringValue":
-						System.out.print(v.repr());
+						out.print(v.repr());
 						break;
 				}
 				break;
@@ -198,19 +230,19 @@ public class Compiler
 				if (possParent != null)
 				{
 					compile(possParent);
-					System.out.print(".");
+					out.print(".");
 				}
-				System.out.print(((ExpressionIdentifier) expr).getReference());
+				out.print(((ExpressionIdentifier) expr).getReference());
 				break;
 			case "ExpressionReference":
 				ExpressionReference cast = (ExpressionReference) expr;
 				compile(cast.getPrimary());
-				System.out.print(".get(");
+				out.print(".get(");
 				compile(cast.getSecondary());
-				System.out.print(")");
+				out.print(")");
 				break;
 			case "ExpressionList":
-				System.out.print("_" + expr.getID());
+				out.print("_" + expr.getID());
 				break;
 			case "ExpressionDict":
 				throw new UnsupportedOperationException();
@@ -218,36 +250,36 @@ public class Compiler
 				ExpressionCall call = (ExpressionCall) expr;
 				if (call.getFunction() instanceof ExpressionOperator)
 				{
-					System.out.print("(");
+					out.print("(");
 					if (call.getOperands().size() == 1)
 					{
 						compile(call.getFunction());
-						System.out.print(" ");
+						out.print(" ");
 						compile(call.getOperands().get(0));
 					}
 					else
 					{
 						compile(call.getOperands().get(0));
-						System.out.print(" ");
+						out.print(" ");
 						compile(call.getFunction());
-						System.out.print(" ");
+						out.print(" ");
 						compile(call.getOperands().get(1));
 					}
-					System.out.print(")");
+					out.print(")");
 				}
 				else
 				{
 					compile(call.getFunction());
-					System.out.print("(");
+					out.print("(");
 					boolean first = true;
 					for (Expression operand : call.getOperands())
 					{
 						if (!first)
-							System.out.print(", ");
+							out.print(", ");
 						first = false;
 						compile(operand);
 					}
-					System.out.print(")");
+					out.print(")");
 				}
 				break;
 			case "ExpressionOperator":
@@ -260,16 +292,16 @@ public class Compiler
 					asStr = "!";
 				else if (asStr.equals("="))
 					asStr = "==";
-				System.out.print(asStr);
+				out.print(asStr);
 				break;
 			case "ExpressionIncrement":
 				throw new UnsupportedOperationException();
 			case "ExpressionTernary":
 				ExpressionTernary ternary = (ExpressionTernary) expr;
 				compile(ternary.getCond());
-				System.out.print(" ? ");
+				out.print(" ? ");
 				compile(ternary.getTrueCase());
-				System.out.print(" : ");
+				out.print(" : ");
 				compile(ternary.getFalseCase());
 				break;
 			
@@ -279,6 +311,6 @@ public class Compiler
 	private static void printIndentation(int indentation)
 	{
 		for (int i = 0; i < indentation; i++)
-			System.out.print("\t");
+			out.print("\t");
 	}
 }

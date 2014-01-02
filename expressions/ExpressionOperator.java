@@ -25,6 +25,11 @@ public class ExpressionOperator extends Expression
 		return op.getNumOperands();
 	}
 	
+	public FunctionOperator getValue()
+	{
+		return op;
+	}
+	
 	@Override
 	public Value evaluate(IdentifierMap values)
 	{
@@ -36,4 +41,7 @@ public class ExpressionOperator extends Expression
 	{
 		return op.toString();
 	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations) {}
 }

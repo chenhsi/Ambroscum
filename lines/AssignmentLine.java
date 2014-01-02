@@ -140,4 +140,19 @@ public class AssignmentLine extends Line
 			exprs.set(i, exprs.get(i).localOptimize());
 		return this;
 	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations, boolean certainty)
+	{
+		for (Expression expr : exprs)
+			expr.setDeclarations(declarations);
+		for (int i = 0; i < assignIDs.size(); i++)
+		{
+			Expression expr = assignIDs.get(i);
+			if (expr instanceof ExpressionReference || ((ExpressionIdentifier) expr).getParent() != null)
+				throw new UnsupportedOperationException("can't deal with complicated declarations yet");
+			String name = ((ExpressionIdentifier) expr).getReference();
+			declarations.put(name, certainty ? exprs.get(i) : null);
+		}
+	}
 }

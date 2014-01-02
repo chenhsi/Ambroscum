@@ -1,5 +1,3 @@
-// consider moving a lot of this code to ExpressionOperators
-
 package ambroscum.values;
 
 import java.util.List;
@@ -29,7 +27,7 @@ public class FunctionOperator extends FunctionDeclaration
 	
 	private FunctionOperator(Operator op)
 	{
-		super(null, null);
+		super(null, null, null);
 		this.op = op;
 	}
 	
@@ -60,7 +58,7 @@ public class FunctionOperator extends FunctionDeclaration
 	}
 	
 	@Override
-	public Value evaluate(List<Value> arguments, IdentifierMap values)
+	public Value evaluate(List<Value> arguments)
 	{
 		if (!(arguments.get(0) instanceof ObjectValue))
 			throw new InvalidArgumentException("Can not invoke an operator on a function");

@@ -6,8 +6,10 @@ import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.FunctionNotFoundException;
 import ambroscum.errors.SyntaxError;
+import ambroscum.errors.OptimizedException;
 import ambroscum.values.Value;
 import ambroscum.values.FunctionDeclaration;
+import ambroscum.values.FunctionOperator;
 
 public class ExpressionCall extends Expression
 {
@@ -65,7 +67,7 @@ public class ExpressionCall extends Expression
 		Value f = func.evaluate(values);
 		if (!(f instanceof FunctionDeclaration))
 			throw new FunctionNotFoundException(func + " does not evaluate to a function");
-		Value v = ((FunctionDeclaration) f).evaluate(eval, values);
+		Value v = ((FunctionDeclaration) f).evaluate(eval);
 		return v;
 	}
 	
@@ -83,5 +85,38 @@ public class ExpressionCall extends Expression
 	public List<Expression> getOperands()
 	{
 		return operands;
+	}
+	
+	@Override
+	public Expression localOptimize()
+	{
+		func = func.localOptimize();
+		for (int i = 0; i < operands.size(); i++)
+		{
+			Expression optimized = operands.get(i).localOptimize();
+			operands.set(i, optimized);
+		}
+		if (func instanceof ExpressionOperator)
+		{
+			List<Value> eval = new LinkedList<Value> ();
+			for (Expression expr : operands)
+				if (expr instanceof ExpressionLiteral)
+					eval.add(((ExpressionLiteral) expr).getValue());
+				else
+					return this;
+			Value optimized = ((ExpressionOperator) func).getValue().evaluate(eval);
+			return new ExpressionLiteral(optimized);
+		}
+		if (func instanceof ExpressionLiteral)
+			throw new OptimizedException(new FunctionNotFoundException(func + " does not evaluate to a function"));
+		return this;
+	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations)
+	{
+		func.setDeclarations(declarations);
+		for (Expression expr : operands)
+			expr.setDeclarations(declarations);
 	}
 }

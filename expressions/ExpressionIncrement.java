@@ -2,6 +2,7 @@
 
 package ambroscum.expressions;
 
+import java.util.Map;
 import ambroscum.IdentifierMap;
 import ambroscum.values.Value;
 import ambroscum.values.IntValue;
@@ -39,5 +40,11 @@ public class ExpressionIncrement extends ExpressionCall
 	public String toString()
 	{
 		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations)
+	{
+		baseExpr.setDeclarations(declarations);
 	}
 }
