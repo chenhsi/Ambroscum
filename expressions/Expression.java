@@ -11,6 +11,24 @@ import ambroscum.expressions.ExpressionOperator;
 
 public abstract class Expression
 {
+	private static int expressionCounter = 0;
+	private final int expressionID;
+	
+	protected Expression()
+	{
+		expressionID = ++expressionCounter;
+	}
+	
+	public int getID()
+	{
+		return expressionID;
+	}
+	
+	public Expression localOptimize()
+	{
+		return this;
+	}
+	
 	public abstract Value evaluate(IdentifierMap values);
 
 //	do we not support ((3)) yet?

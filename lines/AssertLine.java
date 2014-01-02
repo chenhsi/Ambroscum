@@ -84,4 +84,13 @@ public class AssertLine extends Line
 			sb.append(" : ").append(errorMessage.toString());
 		return sb.append(")").toString();
 	}
+	
+	public Expression getTest()
+	{
+		return test;
+	}
+	public Expression getErrorMessage()
+	{
+		return errorMessage;
+	}
 }

@@ -11,6 +11,7 @@ import java.io.*;
 
 public class Ambroscum {
 	public static void main(String[] args) throws IOException {
-		Interpreter.interpret();
+//		Interpreter.interpret();
+		Compiler.compile(new File("tests/01 printlns.ambr"));
 	}
 }

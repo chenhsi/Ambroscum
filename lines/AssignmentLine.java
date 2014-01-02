@@ -105,7 +105,7 @@ public class AssignmentLine extends Line
 	
 	/**
 	 * Returns a string either in the form "(assign [references] [values])" for
-	 * normal ssignments or "(assign [references] operator [values])" for
+	 * normal assignments or "(assign [references] operator [values])" for
 	 * compound assignments.
 	 *
 	 * @return	a string representation of the line
@@ -118,5 +118,18 @@ public class AssignmentLine extends Line
 		if (operator != null)
 			sb.append(operator).append(" ");
 		return sb.append(exprs).append(")").toString();
+	}
+	
+	public List<Expression> getAssignTargets()
+	{
+		return assignIDs;
+	}
+	public List<Expression> getAssignValues()
+	{
+		return exprs;
+	}
+	public ExpressionOperator getAssignType()
+	{
+		return operator;
 	}
 }

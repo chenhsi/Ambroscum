@@ -59,9 +59,21 @@ public class ExpressionIdentifier extends Expression
 		
 	}
 	
+	public Expression getParent()
+	{
+		return parent;
+	}
+	public String getReference()
+	{
+		return identifier;
+	}
+	
 	@Override
 	public String toString()
 	{
-		return identifier;
+		if (parent == null)
+			return identifier;
+		else
+			return parent.toString() + "." + identifier;
 	}
 }

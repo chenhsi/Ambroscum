@@ -46,4 +46,10 @@ public class ExpressionList extends Expression {
 	public String toString() {
 		return Arrays.toString(expressions);
 	}
+
+	// unsafe, could be fixed later	
+	public Expression[] getExpressions()
+	{
+		return expressions;
+	}
 }

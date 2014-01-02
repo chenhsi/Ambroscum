@@ -68,6 +68,7 @@ public class IfLine extends Line
 				}
 			}
 			else
+				// should this really be a syntax error?
 				throw new SyntaxError("Expected a boolean for if statement condition: " + conditions.get(i));
 		}
 		if (elseBlock != null)

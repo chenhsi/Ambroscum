@@ -51,9 +51,18 @@ public class ExpressionReference extends Expression
 			throw new UnsupportedOperationException("this should prob be converted to an operator of some sort");
 	}
 	
+	public Expression getPrimary()
+	{
+		return primary;
+	}
+	public Expression getSecondary()
+	{
+		return secondary;
+	}
+	
 	@Override
 	public String toString()
 	{
-		return primary.toString() + "." + secondary.toString();
+		return primary.toString() + "[" + secondary.toString() + "]";
 	}
 }

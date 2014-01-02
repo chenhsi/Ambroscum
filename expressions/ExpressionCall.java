@@ -74,4 +74,14 @@ public class ExpressionCall extends Expression
 	{
 		return "(" + func + " " + operands + ")";
 	}
+	
+	public Expression getFunction()
+	{
+		return func;
+	}
+	
+	public List<Expression> getOperands()
+	{
+		return operands;
+	}
 }
