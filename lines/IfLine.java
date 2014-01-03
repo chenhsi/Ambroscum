@@ -96,6 +96,17 @@ public class IfLine extends Line
 		return sb.append(")").toString();
 	}
 	
+	public List<Expression> getConditions()
+	{
+		return conditions;
+	}
+	public List<Block> getClauses()
+	{
+		List<Block> clauses = new ArrayList<Block> (blocks);
+		clauses.add(elseBlock);
+		return clauses;
+	}
+	
 	@Override
 	public Line localOptimize()
 	{

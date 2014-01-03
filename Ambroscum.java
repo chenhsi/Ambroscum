@@ -9,15 +9,11 @@ package ambroscum;
 
 import java.io.*;
 
-public class Ambroscum {
-	private static int f(int x)
+public class Ambroscum
+{
+	public static void main(String[] args) throws IOException
 	{
-		System.out.println(x);
-		return x;
-	}
-	
-	public static void main(String[] args) throws IOException {
 //		Interpreter.interpret();
-		Compiler.compile(new File("tests/03 if.ambr"), new PrintWriter(new BufferedWriter(new FileWriter("temp/Main.java"))));
+		Compiler.compile(new File("tests/01 printlns.ambr"), new PrintWriter(new BufferedWriter(new FileWriter("temp/Main.java"))));
 	}
 }

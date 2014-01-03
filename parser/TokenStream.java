@@ -62,6 +62,7 @@ public class TokenStream
 		while (in.hasNextLine())
 			sb.append(in.nextLine()).append("\n");
 		stream.tokens.addAll(Tokenizer.tokenize(sb.toString()));
+		stream.tokens.add(Token.EOF);
 		return stream;
 	}
 	

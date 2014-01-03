@@ -38,7 +38,7 @@ public abstract class Line
 	// ultimately, this should be overwritten by every subclass, and thus be abstract
 	public void setDeclarations(Map<String, Expression> declarations, boolean certainty)
 	{
-		throw new UnsupportedOperationException();
+//		throw new UnsupportedOperationException();
 	}
 	
 	public abstract Block.ExitStatus evaluate(IdentifierMap values);
@@ -50,7 +50,14 @@ public abstract class Line
 			Token tab = stream.getFirst();
 			if (tab != Token.TAB)
 			{
-				if (i == indentation - 1)
+				if (tab == Token.NEWLINE)
+				{
+					// if this is an blank line (other than tabs), reset loop counter and continue on next line
+					stream.removeFirst();
+					i = -1;
+					continue;
+				}
+				else if (i == indentation - 1)
 				{
 					String notTab = tab.toString();
 					if (notTab.equals("else") || notTab.equals("elif") || notTab.equals("then"))
@@ -70,6 +77,8 @@ public abstract class Line
 			}
 			stream.removeFirst();
 		}
+		if (stream.getFirst() == Token.EOF)
+			return new EndLine(parent);
 		Token token = stream.removeFirst();
 		if (token == Token.NEWLINE)
 			return Line.interpret(parent, stream, indentation);

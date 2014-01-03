@@ -7,6 +7,7 @@ public class Token
 	public static final Token COMMA = new Token(",");
 	public static final Token DOT = new Token(".");
 	public static final Token COLON = new Token(":");
+	public static final Token EOF = new Token("");
 	
 	private String str;
 
@@ -34,6 +35,8 @@ public class Token
 	{
 		if (str.equals("\n"))
 			return "\\n";
+		if (str.equals(""))
+			return "end-of-file";
 		return str;
 	}
 }

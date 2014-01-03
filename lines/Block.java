@@ -70,6 +70,11 @@ public class Block extends Line
 		returnValue = value;
 	}
 	
+	public List<Line> getLines()
+	{
+		return lines;
+	}
+	
 	public Line localOptimize()
 	{
 		for (int i = 0; i < lines.size();)
@@ -82,6 +87,17 @@ public class Block extends Line
 			}
 			if (optimizedLine != lines.get(i))
 				lines.set(i, optimizedLine);
+			if (optimizedLine instanceof Block)
+			{
+				lines.remove(i);
+				lines.addAll(i, ((Block) optimizedLine).lines);
+			}
+			if (optimizedLine instanceof BreakLine || optimizedLine instanceof ContinueLine || optimizedLine instanceof ReturnLine)
+			{
+				while (lines.size() > i + 1)
+					lines.remove(lines.size() - 1);
+				return this;
+			}
 			i++;
 		}
 		if (lines.size() == 0)

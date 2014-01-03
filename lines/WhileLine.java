@@ -87,6 +87,19 @@ public class WhileLine extends Line
 		return sb.append(")").toString();
 	}
 	
+	public Expression getCondition()
+	{
+		return condition;
+	}
+	public Block getBlock()
+	{
+		return block;
+	}
+	public Block getThenBlock()
+	{
+		return thenBlock;
+	}
+	
 	@Override
 	public Line localOptimize()
 	{

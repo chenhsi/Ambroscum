@@ -15,12 +15,21 @@ public class EndLine extends Line
 	}
 	
 	@Override
-	public void setDeclarations(Map<String, Expression> declarations, boolean certainty) {}
+	public Line localOptimize()
+	{
+		throw new AssertionError("End lines should not be stored, and optimizations should thus never be attempted");
+	}
+	
+	@Override
+	public void setDeclarations(Map<String, Expression> declarations, boolean certainty)
+	{
+		throw new AssertionError("End lines should not be stored, and optimizations should thus never be attempted");
+	}
 	
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
-		return Block.ExitStatus.NORMAL;
+		throw new AssertionError("End lines should not be stored, and should thus never be evaluated");
 	}
 	
 	@Override

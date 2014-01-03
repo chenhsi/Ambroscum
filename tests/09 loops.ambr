@@ -16,6 +16,7 @@ end
 while i < 15:
 	i = i + 1
 	if i = 11:
+		
 		break
 	end
 	println i
@@ -27,6 +28,7 @@ while i < 15:
 	println i
 	if i = 16:
 		break
+		
 	end
 	i = i + 1
 then:
@@ -44,6 +46,7 @@ lst = [19, 20, 21]
 for i in lst:
 	if i > 20:
 		break
+	
 	end
 	println i
 then:

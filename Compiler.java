@@ -17,8 +17,9 @@ import ambroscum.values.*;
 
 public class Compiler
 {
-	private static final boolean optimizeLocally = true; // should currently be a safe optimization
+	private static final boolean optimizeLocally = true; // should be a safe optimization, i.e. does not introduce errors or change behavior
 	private static final boolean propogateConstants = true; // causes errors when there are multiple scopes
+	private static final boolean variableLiveness = false; // causes errors when there are multiple scopes
 	
 	private static PrintWriter out;
 	
@@ -32,30 +33,28 @@ public class Compiler
 		TokenStream stream = TokenStream.readFile(input);
 		out = output;
 
-		List<Line> list = new LinkedList<Line> ();
-		while (stream.hasNext())
-		{
-			Line line = Line.interpret(null, stream, 0);
-			if (optimizeLocally)
-				line.localOptimize();
-			list.add(line);
-		}
+		Block block = new Block(null, stream, 0);
+		if (optimizeLocally)
+			block = (Block) block.localOptimize();
 		if (propogateConstants)
 		{
 			// finding declarations
 			Map<String, Expression> lastDeclarations = new HashMap<String, Expression> ();
-			for (Line line : list)
-				line.setDeclarations(lastDeclarations, true);
+			block.setDeclarations(lastDeclarations, true);
 			if (optimizeLocally)
-				for (Line line : list)
-					line.localOptimize();
+				block = (Block) block.localOptimize();
+		}
+		if (variableLiveness)
+		{
+			// probably not going to implement this until after basic blocks are created
+			// doing this with SSA form seems much easier
 		}
 
 		out.println("import java.util.*;");
 		out.println();
 		out.println("public class Main {");
 		out.println("\tpublic static void main(String[] args) {");
-		for (Line line : list)
+		for (Line line : block.getLines())
 		{
 			process(line, 2);
 			compile(line, 2);
@@ -70,6 +69,10 @@ public class Compiler
 	{
 		switch (line.getClass().getSimpleName())
 		{
+			case "Block":
+				for (Line subLine : ((Block) line).getLines())
+					process(subLine, indentation);
+				break;
 			case "AssertLine":
 				AssertLine asAssert = (AssertLine) line;
 				process(asAssert.getTest(), indentation);
@@ -79,13 +82,31 @@ public class Compiler
 			case "AssignmentLine":
 				AssignmentLine assign = (AssignmentLine) line;
 				for (Expression expr : assign.getAssignTargets())
+				{
 					process(expr, indentation);
+					if (expr instanceof ExpressionIdentifier && ((ExpressionIdentifier) expr).getParent() == null && !declare(((ExpressionIdentifier) expr).getReference()))
+					{
+						printIndentation(indentation);
+						out.print("Object " + ((ExpressionIdentifier) expr).getReference() + ";\n");
+					}
+				}
 				for (Expression expr : assign.getAssignValues())
 					process(expr, indentation);
 				break;
 			case "PrintLine":
 				for (Expression expr : ((PrintLine) line).getPrintExpressions())
 					process(expr, indentation);
+				break;
+			case "IfLine":
+				for (Expression expr : ((IfLine) line).getConditions())
+					process(expr, indentation);
+				for (Block block : ((IfLine) line).getClauses())
+					process(block, indentation);
+				break;
+			case "WhileLine":
+				process(((WhileLine) line).getCondition(), indentation);
+				process(((WhileLine) line).getBlock(), indentation);
+				process(((WhileLine) line).getThenBlock(), indentation);
 				break;
 		}
 	}
@@ -94,6 +115,10 @@ public class Compiler
 	{
 		switch (line.getClass().getSimpleName())
 		{
+			case "Block":
+				for (Line subLine : ((Block) line).getLines())
+					compile(subLine, indentation);
+				break;
 			case "AssertLine":
 				AssertLine asAssert = (AssertLine) line;
 				printIndentation(indentation);
@@ -150,6 +175,78 @@ public class Compiler
 					out.print("System.out.println();\n");
 				}
 				break;
+			case "IfLine":
+				List<Expression> conditions = ((IfLine) line).getConditions();
+				List<Block> clauses = ((IfLine) line).getClauses();
+				
+				printIndentation(indentation);
+				out.print("if (");
+				compile(conditions.get(0));
+				out.print(") {\n");
+				compile(clauses.get(0), indentation + 1);
+				printIndentation(indentation);
+				out.print("}\n");
+				
+				for (int i = 1; i < conditions.size(); i++)
+				{
+					printIndentation(indentation);
+					out.print("else if (");
+					compile(conditions.get(i));
+					out.print(") {\n");
+					compile(clauses.get(i), indentation + 1);
+					printIndentation(indentation);
+					out.print("}\n");
+				}
+				if (clauses.size() > conditions.size())
+				{
+					printIndentation(indentation);
+					out.print("else {");
+					compile(clauses.get(clauses.size() - 1), indentation + 1);
+					printIndentation(indentation);
+					out.print("}\n");
+				}
+				break;
+			case "WhileLine":
+				Expression condition = ((WhileLine) line).getCondition();
+				Block block = ((WhileLine) line).getBlock();
+				Block thenBlock = ((WhileLine) line).getThenBlock();
+				
+				if (thenBlock == null)
+				{
+					printIndentation(indentation);
+					out.print("while (");
+					compile(condition);
+					out.print(") {\n");
+					compile(block, indentation + 1);
+					printIndentation(indentation);
+					out.print("}\n");
+				}
+				else
+				{
+					printIndentation(indentation);
+					out.print("boolean _" + condition.getID() + ";\n");
+					printIndentation(indentation);
+					out.print("while (true) {\n");
+					printIndentation(indentation);
+					out.print("\t_" + condition.getID() + " = true;\n");
+					printIndentation(indentation);
+					out.print("\tif (");
+					compile(condition);
+					out.print(") break;");
+					printIndentation(indentation);
+					out.print("\t_" + condition.getID() + " = false;\n");
+					compile(block, indentation + 1);
+					printIndentation(indentation);
+					out.print("}\n");
+					printIndentation(indentation);
+					out.print("if (_" + condition.getID() + ") {\n");
+					compile(thenBlock, indentation + 1);
+					printIndentation(indentation);
+					out.print("}\n");
+				}
+				break;
+			default:
+				System.err.println("Unsupported line: " + line);
 		}
 	}
 	
@@ -312,5 +409,14 @@ public class Compiler
 	{
 		for (int i = 0; i < indentation; i++)
 			out.print("\t");
+	}
+	
+	private static final Set<String> declared = new HashSet<String> (); // only works without scopes
+	private static boolean declare(String str)
+	{
+		if (declared.contains(str))
+			return true;
+		declared.add(str);
+		return false;
 	}
 }

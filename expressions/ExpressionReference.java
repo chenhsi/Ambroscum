@@ -87,6 +87,8 @@ public class ExpressionReference extends Expression
 			{
 				try
 				{
+					if (!(reference instanceof IntValue))
+						throw new SyntaxError("Expected int for list index");
 					return ((ExpressionList) primary).getExpressions()[(int) ((IntValue) reference).getValue()];
 				}
 				catch (AmbroscumError e)
