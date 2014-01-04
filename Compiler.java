@@ -71,6 +71,8 @@ public class Compiler
 	
 	private static void functionDeclarations(Line line)
 	{
+		if (line == null)
+			return;
 		switch (line.getClass().getSimpleName())
 		{
 			case "Block":
@@ -94,12 +96,16 @@ public class Compiler
 				out.println("\t}");
 				out.println("\tprotected Object call(VariableMap map) {");
 				Block block = ((DefLine) line).getBlock();
+				boolean lastReturn = false;
 				if (block != null)
 					for (Line subLine : block.getLines())
 					{
 						process(subLine, 2);
 						compile(subLine, 2);
+						lastReturn = subLine instanceof ReturnLine;
 					}
+				if (!lastReturn)
+					out.println("\treturn null;");
 				out.println("\t}");
 				out.println("}");
 				if (block != null)
@@ -111,6 +117,8 @@ public class Compiler
 	
 	private static void process(Line line, int indentation)
 	{
+		if (line == null)
+			return;
 		switch (line.getClass().getSimpleName())
 		{
 			case "Block":
@@ -154,11 +162,16 @@ public class Compiler
 			case "ReturnLine":
 				process(((ReturnLine) line).getReturnExpr(), indentation);
 				break;
+			case "CallLine":
+				process(((CallLine) line).getCall(), indentation);
+				break;
 		}
 	}
 	
 	private static void compile(Line line, int indentation)
 	{
+		if (line == null)
+			return;
 		switch (line.getClass().getSimpleName())
 		{
 			case "Block":
@@ -308,6 +321,11 @@ public class Compiler
 					out.print("null");
 				out.print(";\n");
 				break;
+			case "CallLine":
+				printIndentation(indentation);
+				compile(((CallLine) line).getCall());
+				out.print(";\n");
+				break;
 			default:
 				System.err.println("Unsupported line: " + line);
 		}
@@ -333,7 +351,7 @@ public class Compiler
 				printIndentation(indentation);
 				for (Expression subexpr : ((ExpressionList) expr).getExpressions())
 					process(subexpr, indentation);
-				out.print("List<Object> _e" + expr.getID() + " = new ArrayList<Object> ();\n");
+				out.print("List _e" + expr.getID() + " = new ArrayList ();\n");
 				for (Expression subexpr : ((ExpressionList) expr).getExpressions())
 				{
 					printIndentation(indentation);
@@ -399,9 +417,9 @@ public class Compiler
 				break;
 			case "ExpressionReference":
 				ExpressionReference cast = (ExpressionReference) expr;
-				out.print("map.get(");
+				out.print("((List) ");
 				compile(cast.getPrimary());
-				out.print(").get(");
+				out.print(").get((int) ");
 				compile(cast.getSecondary());
 				out.print(")");
 				break;
@@ -495,8 +513,9 @@ public class Compiler
 		}
 		if (target instanceof ExpressionReference)
 		{
+			out.print("((List) ");
 			compile(((ExpressionReference) target).getPrimary());
-			out.print(".set(");
+			out.print(").set((int) ");
 			compile(((ExpressionReference) target).getSecondary());
 			out.print(", ");
 			compile(value);
@@ -516,8 +535,9 @@ public class Compiler
 		}
 		if (target instanceof ExpressionReference)
 		{
+			out.print("((List) ");
 			compile(((ExpressionReference) target).getPrimary());
-			out.print(".set(");
+			out.print(").set((int) ");
 			compile(((ExpressionReference) target).getSecondary());
 			out.print(", ");
 			out.print(value);

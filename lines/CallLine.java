@@ -41,4 +41,9 @@ public class CallLine extends Line
 		expr = expr.localOptimize();
 		return this;
 	}
+	
+	public Expression getCall()
+	{
+		return expr;
+	}
 }
