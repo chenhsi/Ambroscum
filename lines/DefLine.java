@@ -26,7 +26,7 @@ public class DefLine extends Line
 	}*/
 	
 	private final String name;
-	private final List<Parameter> list;
+	private final List<String> list;
 	private Block block;
 	
 	DefLine(Line parent, TokenStream stream, int indentationLevel)
@@ -40,7 +40,7 @@ public class DefLine extends Line
 			throw new SyntaxError("Unexpected token in function definition: " + temp);
 		boolean first = true;
 		Token token = stream.removeFirst();
-		list = new LinkedList<Parameter> ();
+		list = new LinkedList<String> ();
 		while (!token.toString().equals(")"))
 		{
 			if (token == Token.NEWLINE)
@@ -57,7 +57,7 @@ public class DefLine extends Line
 				if (token == Token.COMMA)
 					throw new SyntaxError("Unexpected delimiter in function definition");
 			}
-			list.add(new Parameter(token.toString()));
+			list.add(token.toString());
 			token = stream.removeFirst();
 		}
 		if (stream.removeFirst() != Token.COLON)
@@ -79,5 +79,25 @@ public class DefLine extends Line
 	public String toString()
 	{
 		return "(def " + name + " " + list + " " + block + ")";
+	}
+	
+	@Override
+	public Line localOptimize()
+	{
+		block = (Block) block.localOptimize();
+		return this;
+	}
+	
+	public String getName()
+	{
+		return name;
+	}
+	public List<String> getParams()
+	{
+		return list;
+	}
+	public Block getBlock()
+	{
+		return block;
 	}
 }

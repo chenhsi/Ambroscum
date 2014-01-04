@@ -18,15 +18,26 @@ import ambroscum.values.Value;
 
 public abstract class Line
 {
+	private static int lineCounter = 0;
+	private final int lineID;
+
 	protected Line parent;
 	
 	protected Line(Line p)
 	{
 		parent = p;
+		lineID = ++lineCounter;
+	}
+	
+	public int getID()
+	{
+		return lineID;
 	}
 	
 	protected void setReturnValue(Value v)
 	{
+		if (parent == null)
+			throw new SyntaxError("Cannot have a return line outside of a function declaration");
 		parent.setReturnValue(v);
 	}
 	

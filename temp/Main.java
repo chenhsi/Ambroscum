@@ -1,38 +1,52 @@
 import java.util.*;
 
+class _l35 extends Function {
+	public _l35(VariableMap parentMap) {
+		super(parentMap, "x");
+	}
+	protected Object call(VariableMap map) {
+		if ((boolean) (((int) map.get("x")) < ((int) 0))) {
+			return -1;
+		}
+		else if ((boolean) (((Object) map.get("x")) == ((Object) 0))) {
+			return 0;
+		}
+		else {
+			return 1;
+		}
+	}
+}
+
 public class Main {
 	public static void main(String[] args) {
+		VariableMap map = new VariableMap();
 		System.out.print(1);
-		System.out.println();
-		List<Object> _2 = new ArrayList<Object> ();
-		_2.add(1);
-		_2.add(2);
-		_2.add(3);
-		System.out.print(_2);
-		System.out.println();
-		List<Object> _6 = new ArrayList<Object> ();
-		System.out.print(_6);
 		System.out.println();
 		System.out.print(1);
 		System.out.println();
-		System.out.print(-10);
+		Object _e9 = 1;
+		map.put("y", 2);
+		map.put("x", _e9);
+		map.put("x", 5);
+		System.out.print(5);
+		System.out.print(" " + 2);
 		System.out.println();
-		System.out.print(23);
+		System.out.print(1000);
 		System.out.println();
-		System.out.print(1);
+		map.put("test", new _l35(map));
+		System.out.print(((Function) map.get("test")).call(-4));
 		System.out.println();
-		Object x;
-		x = 3;
-		System.out.print(3);
-		System.out.print(" " + -3);
+		System.out.print(((Function) map.get("test")).call(5));
 		System.out.println();
-		System.out.print(0);
+		System.out.print(((Function) map.get("test")).call(0));
+		System.out.println();
+		System.out.print((((int) ((Function) map.get("test")).call(((Function) map.get("test")).call(1))) + ((int) ((Function) map.get("test")).call(((Function) map.get("test")).call(-1)))));
+		System.out.println();
+		System.out.print(5);
+		System.out.println();
+		System.out.print(2);
 		System.out.println();
 		System.out.print(true);
-		System.out.println();
-		System.out.print(true);
-		System.out.println();
-		System.out.print(false);
 		System.out.println();
 	}
 }

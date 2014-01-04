@@ -10,10 +10,10 @@ import ambroscum.errors.SyntaxError;
 public class FunctionDeclaration extends Value
 {
 	private IdentifierMap declaringScope;
-	private List<Parameter> params;
+	private List<String> params;
 	private Block code;
 	
-	public FunctionDeclaration(List<Parameter> p, Block c, IdentifierMap s)
+	public FunctionDeclaration(List<String> p, Block c, IdentifierMap s)
 	{
 		params = p;
 		code = c;
@@ -26,7 +26,7 @@ public class FunctionDeclaration extends Value
 		if (params.size() != arguments.size())
 			throw new InvalidArgumentException("wrong number of arguments");
 		for (int i = 0; i < params.size(); i++)
-			ownScope.add(params.get(i).toString(), arguments.get(i));
+			ownScope.add(params.get(i), arguments.get(i));
 		switch (code.evaluate(ownScope))
 		{
 			case CONTINUE:

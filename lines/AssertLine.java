@@ -96,6 +96,15 @@ public class AssertLine extends Line
 	}
 	
 	@Override
+	public Line localOptimize()
+	{
+		test = test.localOptimize();
+		if (errorMessage != null)
+			errorMessage = errorMessage.localOptimize();
+		return this;
+	}
+	
+	@Override
 	public void setDeclarations(Map<String, Expression> declarations, boolean certainty)
 	{
 		test.setDeclarations(declarations);

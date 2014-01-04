@@ -55,4 +55,9 @@ public class ReturnLine extends Line
 	{
 		expr.setDeclarations(declarations);
 	}
+	
+	public Expression getReturnExpr()
+	{
+		return expr;
+	}
 }

@@ -14,6 +14,6 @@ public class Ambroscum
 	public static void main(String[] args) throws IOException
 	{
 //		Interpreter.interpret();
-		Compiler.compile(new File("tests/01 printlns.ambr"), new PrintWriter(new BufferedWriter(new FileWriter("temp/Main.java"))));
+		Compiler.compile(new File("tests/03 if.ambr"), new PrintWriter(new BufferedWriter(new FileWriter("temp/Main.java"))));
 	}
 }
