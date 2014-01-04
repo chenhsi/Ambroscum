@@ -485,11 +485,13 @@ public class Compiler
 				throw new UnsupportedOperationException();
 			case "ExpressionTernary":
 				ExpressionTernary ternary = (ExpressionTernary) expr;
+				out.print("((boolean) ");
 				compile(ternary.getCond());
 				out.print(" ? ");
 				compile(ternary.getTrueCase());
 				out.print(" : ");
 				compile(ternary.getFalseCase());
+				out.print(")");
 				break;
 			
 		}

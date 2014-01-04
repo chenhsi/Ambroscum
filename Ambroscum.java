@@ -13,15 +13,44 @@ public class Ambroscum
 {
 	public static void main(String[] args) throws IOException, InterruptedException
 	{
-//		Interpreter.interpret();
-		compileTest("04 sort.ambr");
+		compileTest(new File("tests/03 if.ambr"), true);
 	}
 	
-	private static void compileTest(String testName) throws IOException, InterruptedException
+	/* Command line arguments
+	 *    no args		interactive session
+	 *    -i File		interpret file and exit session
+	 *    -ii File		interpret file and start interactive session
+	 *    -c File		compile file, currently to a file Main.java
+	 *    -cr File 		compile file to a file Main.java, and evoke javac/java on the output file
+	 */
+	public static void commandLineMain(String[] args) throws IOException, InterruptedException
+	{
+		if (args.length == 0)
+		{
+			Interpreter.interpret();
+			return;
+		}
+		if (args.length == 1 || args.length > 2)
+			throw new IllegalArgumentException("Not supported as arguments: " + args);
+		if (args[0].equals("-i"))
+			Interpreter.interpret(new File(args[1]), false);
+		else if (args[0].equals("-ii"))
+			Interpreter.interpret(new File(args[1]), true);
+		else if (args[0].equals("-c"))
+			compileTest(new File(args[1]), false);
+		else if (args[0].equals("-cr"))
+			compileTest(new File(args[1]), true);
+		else
+			throw new IllegalArgumentException("Not supported as arguments: " + args);
+	}
+	
+	private static void compileTest(File file, boolean execute) throws IOException, InterruptedException
 	{
 		try
 		{
-			Compiler.compile(new File("tests/" + testName), new PrintWriter(new BufferedWriter(new FileWriter("temp/Main.java"))));
+			Compiler.compile(file, new PrintWriter(new BufferedWriter(new FileWriter("temp/Main.java"))));
+			if (!execute)
+				return;
 		}
 		catch (IOException ex)
 		{
@@ -45,12 +74,17 @@ public class Ambroscum
 			stdInput = new BufferedReader(new InputStreamReader(compiler.getInputStream()));
 			s = null;
 			while ((s = stdInput.readLine()) != null)
-				System.out.println(s);
+			{
+				if (s.startsWith("Note: "))
+					continue;
+				else
+					throw new RuntimeException(s);
+			}
 			compiler.waitFor();
 		}
 		catch (Exception ex)
 		{
-			System.err.println("Error when compiling .java file");
+			System.err.println("Error when compiling .java file:");
 			throw ex;
 		}
 		
