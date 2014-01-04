@@ -11,4 +11,6 @@ print c * a
 println
 
 println "strings also get to be tested"
+println "strings " + "support addition " + "even with " + "numbers like " + 3
+println 1 + 2 + " printlns involving strings"
 println true

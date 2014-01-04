@@ -3,4 +3,6 @@
 1529
 6222
 strings also get to be tested
+strings support addition even with numbers like 3
+3 printlns involving strings
 true

@@ -85,7 +85,9 @@ public class FunctionOperator extends FunctionDeclaration
 		private String name;
 		private int numOperands;
 		private int priority;
-		private String type;
+		private String type;	// this completely goes against the idea of operator overloading
+								// creates difference between interpreter and compiler
+								// however, not sure how to resolve type issue
 		
 		Operator(String name, int operands, int priority, String type)
 		{

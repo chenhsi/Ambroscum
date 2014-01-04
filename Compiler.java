@@ -85,6 +85,11 @@ public class Compiler
 				break;
 			case "WhileLine":
 				functionDeclarations(((WhileLine) line).getBlock());
+				functionDeclarations(((WhileLine) line).getThenBlock());
+				break;
+			case "ForLine":
+				functionDeclarations(((ForLine) line).getLoopBlock());
+				functionDeclarations(((ForLine) line).getThenBlock());
 				break;
 			case "DefLine":
 				out.println("class _l" + line.getID() + " extends Function {");
@@ -122,8 +127,6 @@ public class Compiler
 		switch (line.getClass().getSimpleName())
 		{
 			case "Block":
-				for (Line subLine : ((Block) line).getLines())
-					process(subLine, indentation);
 				break;
 			case "AssertLine":
 				AssertLine asAssert = (AssertLine) line;
@@ -145,13 +148,12 @@ public class Compiler
 			case "IfLine":
 				for (Expression expr : ((IfLine) line).getConditions())
 					process(expr, indentation);
-				for (Block block : ((IfLine) line).getClauses())
-					process(block, indentation);
 				break;
 			case "WhileLine":
 				process(((WhileLine) line).getCondition(), indentation);
-				process(((WhileLine) line).getBlock(), indentation);
-				process(((WhileLine) line).getThenBlock(), indentation);
+				break;
+			case "ForLine":
+				process(((ForLine) line).getIterable(), indentation);
 				break;
 			case "DefLine":
 				break;
@@ -172,11 +174,15 @@ public class Compiler
 	{
 		if (line == null)
 			return;
+		Block block, thenBlock;
 		switch (line.getClass().getSimpleName())
 		{
 			case "Block":
 				for (Line subLine : ((Block) line).getLines())
+				{
+					process(subLine, indentation);
 					compile(subLine, indentation);
+				}
 				break;
 			case "AssertLine":
 				AssertLine asAssert = (AssertLine) line;
@@ -262,8 +268,8 @@ public class Compiler
 				break;
 			case "WhileLine":
 				Expression condition = ((WhileLine) line).getCondition();
-				Block block = ((WhileLine) line).getBlock();
-				Block thenBlock = ((WhileLine) line).getThenBlock();
+				block = ((WhileLine) line).getBlock();
+				thenBlock = ((WhileLine) line).getThenBlock();
 				
 				if (thenBlock == null)
 				{
@@ -281,19 +287,65 @@ public class Compiler
 					out.println("boolean _l" + line.getID() + ";");
 					printIndentation(indentation);
 					out.println("while (true) {");
-					printIndentation(indentation);
-					out.println("\t_l" + line.getID() + " = true;");
-					printIndentation(indentation);
-					out.print("\tif ((boolean) ");
+					printIndentation(indentation + 1);
+					out.println("_l" + line.getID() + " = true;");
+					printIndentation(indentation + 1);
+					out.print("if (!((boolean) ");
 					compile(condition);
-					out.print(") break;\n");
-					printIndentation(indentation);
-					out.println("\t_l" + line.getID() + " = false;");
+					out.print(")) break;\n");
+					printIndentation(indentation + 1);
+					out.println("_l" + line.getID() + " = false;");
 					compile(block, indentation + 1);
 					printIndentation(indentation);
 					out.println("}");
 					printIndentation(indentation);
 					out.println("if (_l" + line.getID() + ") {");
+					compile(thenBlock, indentation + 1);
+					printIndentation(indentation);
+					out.println("}");
+				}
+				break;
+			case "ForLine":
+				ExpressionIdentifier var = ((ForLine) line).getIterVariable();
+				Expression iterable = ((ForLine) line).getIterable();
+				block = ((ForLine) line).getLoopBlock();
+				thenBlock = ((ForLine) line).getThenBlock();
+				
+				if (thenBlock == null)
+				{
+					printIndentation(indentation);
+					out.print("for (Object _l" + line.getID() + " : (List) ");
+					compile(iterable);
+					out.print(") {\n");
+					printIndentation(indentation + 1);
+					out.println("map.put(\"" + var.getReference() + "\", _l" + line.getID() + ");");
+					compile(block, indentation + 1);
+					printIndentation(indentation);
+					out.println("}");
+				}
+				else
+				{
+					printIndentation(indentation);
+					out.println("boolean _la" + line.getID() + ";");
+					printIndentation(indentation);
+					out.print("Iterator _lb" + line.getID() + " = ((List) ");
+					compile(iterable);
+					out.print(").iterator();\n");
+					printIndentation(indentation);
+					out.println("while (true) {");
+					printIndentation(indentation + 1);
+					out.println("_la" + line.getID() + " = true;");
+					printIndentation(indentation + 1);
+					out.println("if (!_lb" + line.getID() + ".hasNext()) break;");
+					printIndentation(indentation + 1);
+					out.println("_la" + line.getID() + " = false;");
+					printIndentation(indentation + 1);
+					out.println("map.put(\"" + var.getReference() + "\", _lb" + line.getID() + ".next());");
+					compile(block, indentation + 1);
+					printIndentation(indentation);
+					out.println("}");
+					printIndentation(indentation);
+					out.println("if (_la" + line.getID() + ") {");
 					compile(thenBlock, indentation + 1);
 					printIndentation(indentation);
 					out.println("}");

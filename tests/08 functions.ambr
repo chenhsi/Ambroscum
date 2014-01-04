@@ -29,3 +29,14 @@ def f(a):
 end
 
 println f(12)
+
+def f(a):
+	while true:
+		if a > 4:
+			return
+		end
+		a++
+	end
+end
+
+f(0)

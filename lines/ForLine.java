@@ -87,4 +87,21 @@ public class ForLine extends Line
 			sb.append(" ").append(thenBlock);
 		return sb.append(")").toString();
 	}
+
+	public ExpressionIdentifier getIterVariable()
+	{
+		return variable;
+	}
+	public Expression getIterable()
+	{
+		return iterable;
+	}
+	public Block getLoopBlock()
+	{
+		return block;
+	}
+	public Block getThenBlock()
+	{
+		return thenBlock;
+	}
 }
