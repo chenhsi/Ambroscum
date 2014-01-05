@@ -24,7 +24,7 @@ public class Interpreter
 	 */
 	public static void interpret()
 	{
-		interactive(TokenStream.interactiveInput(), new IdentifierMap(null));
+		interactive(TokenStream.interactiveInput(), new IdentifierMap());
 	}
 	
 	private static void interactive(TokenStream stream, IdentifierMap identifiers)
@@ -53,9 +53,8 @@ public class Interpreter
 	public static void interpret(File file, boolean thenInteract) throws FileNotFoundException
 	{
 		TokenStream stream = TokenStream.readFile(file);
-		IdentifierMap identifiers = new IdentifierMap(null);
-		while (stream.hasNext())
-			Line.interpret(null, stream, 0).evaluate(identifiers);
+		IdentifierMap identifiers = new IdentifierMap();
+		new Block(null, stream, 0).evaluate(identifiers);
 		if (thenInteract)
 		{
 			stream.makeInteractive();

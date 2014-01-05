@@ -11,7 +11,7 @@ import ambroscum.errors.SyntaxError;
 import ambroscum.expressions.ExpressionReference;
 import ambroscum.expressions.Expression;
 import ambroscum.values.Value;
-import ambroscum.values.FunctionDeclaration;
+import ambroscum.values.FunctionValue;
 
 public class DefLine extends Line
 {
@@ -71,7 +71,7 @@ public class DefLine extends Line
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
-		values.add(name, new FunctionDeclaration(list, block, values));
+		values.add(name, new FunctionValue(list, block, values));
 		return Block.ExitStatus.NORMAL;
 	}
 	

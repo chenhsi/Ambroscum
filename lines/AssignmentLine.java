@@ -96,7 +96,12 @@ public class AssignmentLine extends Line
 			if (target instanceof ExpressionIdentifier)
 				((ExpressionIdentifier) target).setValue(targetVals.get(i), values);
 			else if (target instanceof ExpressionReference)
-				((ExpressionReference) target).setValue(targetVals.get(i), values);
+			{
+				if (((ExpressionReference) target).getSecondaryRight() == null)
+					((ExpressionReference) target).setValue(targetVals.get(i), values);
+				else
+					throw new UnsupportedOperationException("assigning to list slice not supported");
+			}
 			else
 				throw new NonassignableException(target + " cannot be assigned to");
 		}

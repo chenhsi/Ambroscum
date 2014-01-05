@@ -8,7 +8,7 @@ import ambroscum.errors.FunctionNotFoundException;
 import ambroscum.errors.SyntaxError;
 import ambroscum.errors.OptimizedException;
 import ambroscum.values.Value;
-import ambroscum.values.FunctionDeclaration;
+import ambroscum.values.FunctionValue;
 import ambroscum.values.FunctionOperator;
 
 public class ExpressionCall extends Expression
@@ -65,9 +65,9 @@ public class ExpressionCall extends Expression
 		for (Expression expr : operands)
 			eval.add(expr.evaluate(values));
 		Value f = func.evaluate(values);
-		if (!(f instanceof FunctionDeclaration))
+		if (!(f instanceof FunctionValue))
 			throw new FunctionNotFoundException(func + " does not evaluate to a function");
-		Value v = ((FunctionDeclaration) f).evaluate(eval);
+		Value v = ((FunctionValue) f).evaluate(eval);
 		return v;
 	}
 	

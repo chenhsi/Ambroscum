@@ -27,6 +27,23 @@ public class ListValue extends ObjectValue {
 		else
 			throw new SyntaxError("Expected int for list index");
 	}
+	public Value getRange(Value leftIndex, Value rightIndex) // currently exclusive, as in Python syntax
+															 // I kind of prefer inclusive though
+	{
+		if (leftIndex instanceof IntValue && rightIndex instanceof IntValue)
+		{
+			int leftInd = (int) ((IntValue) rightIndex).getValue();
+			int rightInd = (int) ((IntValue) leftIndex).getValue();
+			if (false) // some sort of bounds checking
+				throw new ambroscum.errors.NoSuchElementException("some sort of exception");
+			Value[] array = new Value[rightInd - leftInd + 1];
+			for (int i = 0; i < array.length; i++)
+				array[i] = list[i + leftInd];
+			return new ListValue(array);
+		}
+		else
+			throw new SyntaxError("Expected int for list index");
+	}
 	
 	public void set(Value index, Value value)
 	{

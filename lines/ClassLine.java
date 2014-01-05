@@ -2,7 +2,7 @@ package ambroscum.lines;
 
 import java.util.List;
 import java.util.LinkedList;
-import ambroscum.*;
+import ambroscum.IdentifierMap;
 import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
@@ -10,8 +10,8 @@ import ambroscum.errors.ObjectInstantiationException;
 import ambroscum.expressions.ExpressionReference;
 import ambroscum.expressions.Expression;
 import ambroscum.values.Value;
-import ambroscum.values.FunctionDeclaration;
-import ambroscum.values.ClassDeclaration;
+import ambroscum.values.FunctionValue;
+import ambroscum.values.ObjectValue;
 
 public class ClassLine extends Line
 {
@@ -47,11 +47,15 @@ public class ClassLine extends Line
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
 		Value parentValue = parentObj.evaluate(values); // needs to deal with default objects
-		if (parentValue instanceof FunctionDeclaration)
+		if (parentValue instanceof FunctionValue)
 			throw new ObjectInstantiationException("New objects cannot be cloned from functions");
-		Value prototype = null; // this line should be modified once cloning is implemented
+		ObjectValue prototype = null; // this line should be modified once cloning is implemented
 		values.add(name, prototype);
 		return Block.ExitStatus.NORMAL;
+		
+//		IdentifierMap scope = new IdentifierMap(values);
+//		block.evaluate(scope);
+//		values.add(name, new ObjectValue(scope));
 	}
 	
 	@Override

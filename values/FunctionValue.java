@@ -2,18 +2,17 @@ package ambroscum.values;
 
 import java.util.List;
 import ambroscum.lines.Block;
-import ambroscum.Parameter;
 import ambroscum.IdentifierMap;
 import ambroscum.errors.InvalidArgumentException;
 import ambroscum.errors.SyntaxError;
 
-public class FunctionDeclaration extends Value
+public class FunctionValue extends Value
 {
 	private IdentifierMap declaringScope;
 	private List<String> params;
 	private Block code;
 	
-	public FunctionDeclaration(List<String> p, Block c, IdentifierMap s)
+	public FunctionValue(List<String> p, Block c, IdentifierMap s)
 	{
 		params = p;
 		code = c;

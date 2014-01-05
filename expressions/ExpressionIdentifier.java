@@ -7,7 +7,7 @@ import ambroscum.errors.SyntaxError;
 import ambroscum.errors.NotDereferenceableException;
 import ambroscum.values.Value;
 import ambroscum.values.ObjectValue;
-import ambroscum.values.FunctionDeclaration;
+import ambroscum.values.FunctionValue;
 
 import java.util.*;
 
@@ -37,7 +37,7 @@ public class ExpressionIdentifier extends Expression
 		else
 		{
 			Value parentValue = parent.evaluate(values);
-			if (parentValue instanceof FunctionDeclaration)
+			if (parentValue instanceof FunctionValue)
 				throw new NotDereferenceableException(parent + " is not a dereferenceable object");
 			else
 				return ((ObjectValue) parentValue).dereference(identifier);
@@ -51,7 +51,7 @@ public class ExpressionIdentifier extends Expression
 		else
 		{
 			Value parentValue = parent.evaluate(values);
-			if (parentValue instanceof FunctionDeclaration)
+			if (parentValue instanceof FunctionValue)
 				throw new NotDereferenceableException(parent + " is not a dereferenceable object");
 			else
 				((ObjectValue) parentValue).setDereference(identifier, value);

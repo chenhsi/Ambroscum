@@ -29,7 +29,8 @@ public class IdentifierMap
 		illegal.add("end");
 		illegalIdentifiers = Collections.unmodifiableSet(illegal);
 	}
-	private IdentifierMap previousblock; // represents link to previous block of code, might be null
+	private IdentifierMap[] parents; // represents link to surrounding scopes,
+									 // in preference order of left to right
 	private HashMap<String, Value> map;
 
 	/**
@@ -37,9 +38,9 @@ public class IdentifierMap
 	 *
 	 * @param	prev	the IdentifierMap associated with the parent scope
 	 */
-	public IdentifierMap(IdentifierMap prev)
+	public IdentifierMap(IdentifierMap... prev)
 	{
-		previousblock = prev;
+		parents = prev;
 		map = new HashMap<String, Value>();
 	}
 
@@ -58,7 +59,7 @@ public class IdentifierMap
 	{
 		if (!isValidIdentifier(name))
 			throw new SyntaxError("\"" + name + "\" is not a valid identifier.");
-		IdentifierMap containingScope = getContainingScope(name, this);
+		IdentifierMap containingScope = getContainingScope(name);
 		if (containingScope == null || containingScope == this)
 			map.put(name, value);
 		else
@@ -67,7 +68,7 @@ public class IdentifierMap
 
 	public Value get(String name)
 	{
-		IdentifierMap containingScope = getContainingScope(name, this);
+		IdentifierMap containingScope = getContainingScope(name);
 		if (containingScope == null) {
 			throw new VariableNotFoundException(name);
 		}
@@ -87,11 +88,15 @@ public class IdentifierMap
 
 	// Returns the smallest IdentifierMap that contains the identifier
 	// Returns null if no such Map exists
-	private static IdentifierMap getContainingScope(String identifier, IdentifierMap lowest) {
-		while (lowest != null) {
-			if (lowest.map.containsKey(identifier))
-				return lowest;
-			lowest = lowest.previousblock;
+	private IdentifierMap getContainingScope(String identifier)
+	{
+		if (map.containsKey(identifier))
+			return this;
+		for (IdentifierMap parent : parents)
+		{
+			IdentifierMap parentScope = parent.getContainingScope(identifier);
+			if (parentScope != null)
+				return parentScope;
 		}
 		return null;
 	}

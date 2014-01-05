@@ -47,7 +47,7 @@ public abstract class Expression
 //	do we not support ((3)) yet?
 	public static Expression interpret(TokenStream stream)
 	{
-		Expression result = helperGetToken(stream);
+		Expression result = helperGetExpr(stream);
 		Stack<Expression> expressions = new Stack<Expression> ();
 		Stack<ExpressionOperator> operators = new Stack<ExpressionOperator> ();
 		expressions.push(result);
@@ -59,7 +59,7 @@ public abstract class Expression
 				result = new ExpressionCall(operators.pop(), expressions.pop(), result);
 			expressions.push(result);
 			operators.push(op);
-			expressions.push(helperGetToken(stream));
+			expressions.push(helperGetExpr(stream));
 		}
 		result = expressions.pop();
 		while (expressions.size() > 0)
@@ -76,7 +76,7 @@ public abstract class Expression
 		return result;
 	}
 	
-	private static Expression helperGetToken(TokenStream stream)
+	private static Expression helperGetExpr(TokenStream stream)
 	{
 		Expression expr = extend(singleExpression(stream), stream);
 		Token token = stream.getFirst();
@@ -106,8 +106,16 @@ public abstract class Expression
 			else if (nextToken.equals("["))
 			{
 				stream.removeFirst();
-				expr = new ExpressionReference(expr, Expression.interpret(stream));
+				Expression reference = Expression.interpret(stream);
 				Token temp = stream.removeFirst();
+				if (temp == Token.COLON)
+				{
+					Expression sliceRight = Expression.interpret(stream);
+					expr = new ExpressionReference(expr, reference, sliceRight);
+					temp = stream.removeFirst();
+				}
+				else
+					expr = new ExpressionReference(expr, reference);
 				if (!temp.toString().equals("]"))
 					throw new SyntaxError("Expecting close bracket, found " + temp);
 			}

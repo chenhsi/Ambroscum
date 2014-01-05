@@ -53,7 +53,7 @@ public class Compiler
 		out.println("import java.util.*;");
 		out.println();
 		for (Line line : block.getLines())
-			functionDeclarations(line);
+			FunctionValues(line);
 		out.println();
 		out.println("public class Main {");
 		out.println("\tpublic static void main(String[] args) {");
@@ -69,7 +69,7 @@ public class Compiler
 		out.close();
 	}
 	
-	private static void functionDeclarations(Line line)
+	private static void FunctionValues(Line line)
 	{
 		if (line == null)
 			return;
@@ -77,19 +77,19 @@ public class Compiler
 		{
 			case "Block":
 				for (Line subLine : ((Block) line).getLines())
-					functionDeclarations(subLine);
+					FunctionValues(subLine);
 				break;
 			case "IfLine":
 				for (Block block : ((IfLine) line).getClauses())
-					functionDeclarations(block);
+					FunctionValues(block);
 				break;
 			case "WhileLine":
-				functionDeclarations(((WhileLine) line).getBlock());
-				functionDeclarations(((WhileLine) line).getThenBlock());
+				FunctionValues(((WhileLine) line).getBlock());
+				FunctionValues(((WhileLine) line).getThenBlock());
 				break;
 			case "ForLine":
-				functionDeclarations(((ForLine) line).getLoopBlock());
-				functionDeclarations(((ForLine) line).getThenBlock());
+				FunctionValues(((ForLine) line).getLoopBlock());
+				FunctionValues(((ForLine) line).getThenBlock());
 				break;
 			case "DefLine":
 				out.println("class _l" + line.getID() + " extends Function {");
@@ -115,7 +115,7 @@ public class Compiler
 				out.println("}");
 				if (block != null)
 					for (Line subLine : block.getLines())
-						functionDeclarations(subLine);
+						FunctionValues(subLine);
 				break;
 		}
 	}
