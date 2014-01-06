@@ -5,19 +5,29 @@ import ambroscum.*;
 import ambroscum.errors.FunctionNotFoundException;
 import ambroscum.errors.VariableNotFoundException;
 
-public class ObjectValue extends Value
+public class CustomValue extends ObjectValue
 {
-	// these should just be made abstract	
+	private IdentifierMap scope;
+	
+	public CustomValue(IdentifierMap map)
+	{
+		scope = map;
+	}
+	
+	@Override
 	public Value applyOperator(FunctionOperator op, List<Value> otherValues)
 	{
 		throw new FunctionNotFoundException(op + " is not defined");
 	}
+	
+	@Override
 	public Value dereference(String ref)
 	{
-		throw new VariableNotFoundException(ref);
+		return scope.get(ref);
 	}
+	@Override
 	public void setDereference(String ref, Value val)
 	{
-		throw new VariableNotFoundException(ref);
+		scope.add(ref, val);
 	}
 }

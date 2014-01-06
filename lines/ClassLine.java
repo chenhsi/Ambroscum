@@ -12,6 +12,7 @@ import ambroscum.expressions.Expression;
 import ambroscum.values.Value;
 import ambroscum.values.FunctionValue;
 import ambroscum.values.ObjectValue;
+import ambroscum.values.CustomValue;
 
 public class ClassLine extends Line
 {
@@ -46,16 +47,17 @@ public class ClassLine extends Line
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
-		Value parentValue = parentObj.evaluate(values); // needs to deal with default objects
-		if (parentValue instanceof FunctionValue)
-			throw new ObjectInstantiationException("New objects cannot be cloned from functions");
-		ObjectValue prototype = null; // this line should be modified once cloning is implemented
-		values.add(name, prototype);
-		return Block.ExitStatus.NORMAL;
+//		Value parentValue = parentObj.evaluate(values); // needs to deal with default objects
+//		if (parentValue instanceof FunctionValue)
+//			throw new ObjectInstantiationException("New objects cannot be cloned from functions");
+//		CustomValue prototype = null; // this line should be modified once cloning is implemented
+//		values.add(name, prototype);
 		
-//		IdentifierMap scope = new IdentifierMap(values);
-//		block.evaluate(scope);
-//		values.add(name, new ObjectValue(scope));
+		IdentifierMap scope = new IdentifierMap(values);
+		block.evaluate(scope);
+		values.add(name, new CustomValue(scope));
+
+		return Block.ExitStatus.NORMAL;
 	}
 	
 	@Override

@@ -19,7 +19,7 @@ public class Compiler
 {
 	private static final boolean optimizeLocally = true; // should be a safe optimization, i.e. does not introduce errors or change behavior
 	private static final boolean propogateConstants = true; // causes errors when there are multiple scopes
-	private static final boolean variableLiveness = false; // causes errors when there are multiple scopes
+	private static final boolean variableLiveness = false; // doesn't currently do anything
 	
 	private static PrintWriter out;
 	
@@ -53,7 +53,7 @@ public class Compiler
 		out.println("import java.util.*;");
 		out.println();
 		for (Line line : block.getLines())
-			FunctionValues(line);
+			functionDeclaration(line);
 		out.println();
 		out.println("public class Main {");
 		out.println("\tpublic static void main(String[] args) {");
@@ -69,7 +69,7 @@ public class Compiler
 		out.close();
 	}
 	
-	private static void FunctionValues(Line line)
+	private static void functionDeclaration(Line line)
 	{
 		if (line == null)
 			return;
@@ -77,19 +77,19 @@ public class Compiler
 		{
 			case "Block":
 				for (Line subLine : ((Block) line).getLines())
-					FunctionValues(subLine);
+					functionDeclaration(subLine);
 				break;
 			case "IfLine":
 				for (Block block : ((IfLine) line).getClauses())
-					FunctionValues(block);
+					functionDeclaration(block);
 				break;
 			case "WhileLine":
-				FunctionValues(((WhileLine) line).getBlock());
-				FunctionValues(((WhileLine) line).getThenBlock());
+				functionDeclaration(((WhileLine) line).getBlock());
+				functionDeclaration(((WhileLine) line).getThenBlock());
 				break;
 			case "ForLine":
-				FunctionValues(((ForLine) line).getLoopBlock());
-				FunctionValues(((ForLine) line).getThenBlock());
+				functionDeclaration(((ForLine) line).getLoopBlock());
+				functionDeclaration(((ForLine) line).getThenBlock());
 				break;
 			case "DefLine":
 				out.println("class _l" + line.getID() + " extends Function {");
@@ -115,7 +115,7 @@ public class Compiler
 				out.println("}");
 				if (block != null)
 					for (Line subLine : block.getLines())
-						FunctionValues(subLine);
+						functionDeclaration(subLine);
 				break;
 		}
 	}
