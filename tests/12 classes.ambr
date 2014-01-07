@@ -1,0 +1,23 @@
+class Test1:
+	i = 12345
+	def get():
+		return i
+	end
+	def set(n):
+		i = n
+	end
+end
+
+a = Test1.new()
+print a.get()
+a.set(3)
+print a.get()
+
+b = a.get
+print b()
+
+class Test2 from Test1
+	i = 10
+end
+
+print Test2.new().get()

@@ -13,6 +13,12 @@ public class StringValue extends ObjectValue
 		value = val;
 	}
 	
+	// technically redundant with toString, but is more consistent with other Value classes
+	public String getValue()
+	{
+		return value;
+	}
+	
 	@Override
 	public Value applyOperator(FunctionOperator op, List<Value> otherValues)
 	{

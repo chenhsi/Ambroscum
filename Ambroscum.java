@@ -8,12 +8,13 @@
 package ambroscum;
 
 import java.io.*;
+import ambroscum.compiler.*;
 
 public class Ambroscum
 {
 	public static void main(String[] args) throws IOException, InterruptedException
 	{
-		compileTest(new File("tests/09 loops.ambr"), true);
+		compileTest(new File("tests/08 functions.ambr"), true);
 	}
 	
 	/* Command line arguments
@@ -48,7 +49,8 @@ public class Ambroscum
 	{
 		try
 		{
-			Compiler.compile(file, new PrintWriter(new BufferedWriter(new FileWriter("temp/Main.java"))));
+			ILCompiler.compile(file);
+//			JavaCompiler.compile(file, new PrintWriter(new BufferedWriter(new FileWriter("temp/Main.java"))));
 			if (!execute)
 				return;
 		}

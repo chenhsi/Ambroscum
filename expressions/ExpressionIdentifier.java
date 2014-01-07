@@ -39,8 +39,7 @@ public class ExpressionIdentifier extends Expression
 			Value parentValue = parent.evaluate(values);
 			if (parentValue instanceof FunctionValue)
 				throw new NotDereferenceableException(parent + " is not a dereferenceable object");
-			else
-				return ((ObjectValue) parentValue).dereference(identifier);
+			return ((ObjectValue) parentValue).dereference(identifier);
 		}
 	}
 

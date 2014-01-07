@@ -6,7 +6,7 @@
  * @version 1.0
  */
 
-package ambroscum;
+package ambroscum.compiler;
 
 import java.io.*;
 import java.util.*;
@@ -15,7 +15,7 @@ import ambroscum.lines.*;
 import ambroscum.parser.TokenStream;
 import ambroscum.values.*;
 
-public class Compiler
+public class JavaCompiler
 {
 	private static final boolean optimizeLocally = true; // should be a safe optimization, i.e. does not introduce errors or change behavior
 	private static final boolean propogateConstants = true; // causes errors when there are multiple scopes
