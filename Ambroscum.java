@@ -14,7 +14,7 @@ public class Ambroscum
 {
 	public static void main(String[] args) throws IOException, InterruptedException
 	{
-		compileTest(new File("tests/08 functions.ambr"), true);
+		compileILTest(new File("tests/08 functions.ambr"));
 	}
 	
 	/* Command line arguments
@@ -38,19 +38,36 @@ public class Ambroscum
 		else if (args[0].equals("-ii"))
 			Interpreter.interpret(new File(args[1]), true);
 		else if (args[0].equals("-c"))
-			compileTest(new File(args[1]), false);
+			compileJavaTest(new File(args[1]), false);
 		else if (args[0].equals("-cr"))
-			compileTest(new File(args[1]), true);
+			compileJavaTest(new File(args[1]), true);
 		else
 			throw new IllegalArgumentException("Not supported as arguments: " + args);
 	}
 	
-	private static void compileTest(File file, boolean execute) throws IOException, InterruptedException
+	private static void compileILTest(File file) throws IOException
 	{
 		try
 		{
 			ILCompiler.compile(file);
-//			JavaCompiler.compile(file, new PrintWriter(new BufferedWriter(new FileWriter("temp/Main.java"))));
+		}
+		catch (IOException ex)
+		{
+			System.err.println("Failed in IO");
+			throw ex;
+		}
+		catch (Exception ex)
+		{
+			System.err.println("Failed when compiling .ambr file");
+			throw ex;
+		}
+	}
+	
+	private static void compileJavaTest(File file, boolean execute) throws IOException, InterruptedException
+	{
+		try
+		{
+			JavaCompiler.compile(file, new PrintWriter(new BufferedWriter(new FileWriter("temp/Main.java"))));
 			if (!execute)
 				return;
 		}
