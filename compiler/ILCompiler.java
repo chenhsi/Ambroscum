@@ -9,7 +9,7 @@ import ambroscum.values.*;
 
 public class ILCompiler
 {
-	private static PrintWriter output;
+	private static List<String> instructions;
 	
 	public static void compile(File input) throws IOException
 	{
@@ -17,18 +17,14 @@ public class ILCompiler
 
 		Block block = (Block) new Block(null, stream, 0);
 
-		PipedInputStream in = new PipedInputStream();
-		PipedOutputStream out = new PipedOutputStream();
-		in.connect(out);
-		output = new PrintWriter(out);
-		
+		instructions = new LinkedList<> ();
 
 		for (Line line : block.getLines())
-			compile(line);
-		for (Line line : block.getLines())
-			functionDeclarations(line);
-		
-		ControlFlowGraph.analyze(in);
+			compile(line, null, null);
+//		for (Line line : block.getLines())
+//			functionDeclarations(line);
+
+		ControlFlowGraph.analyze(instructions);
 	}
 	
 	private static void functionDeclarations(Line line)
@@ -70,19 +66,19 @@ public class ILCompiler
 			case "DefLine":
 				Block block = ((DefLine) line).getBlock();
 				functionDeclarations(block);
-				output.println("label _tl" + line.getID());
+				instructions.add("label _tl" + line.getID());
 				List<String> params = ((DefLine) line).getParams();
 				for (int i = params.size() - 1; i >= 0; i--)
-					output.println("getparam " + params.get(i));
+					instructions.add(params.get(i) + " = getparam");
 				for (Line subline : block.getLines())
-					compile(subline);
-				output.println("return null");
+					compile(subline, null, null);
+				instructions.add("return null");
 			case "ClassLine":
 				throw new UnsupportedOperationException();
 		}
 	}
 	
-	private static void compile(Line line)
+	private static void compile(Line line, String breakTarget, String continueTarget)
 	{
 		String str;
 		if (line == null)
@@ -91,13 +87,13 @@ public class ILCompiler
 		{
 			case "Block":
 				for (Line subLine : ((Block) line).getLines())
-					compile(subLine);
+					compile(subLine, breakTarget, continueTarget);
 				break;
 			case "AssignmentLine":
 				List<Expression> assignTargets = ((AssignmentLine) line).getAssignTargets();
 				List<Expression> assignValues = ((AssignmentLine) line).getAssignValues();
 				for (int i = 0; i < assignValues.size(); i++)
-					output.println("_" + i + "tl" + line.getID() + " = " + compile(assignValues.get(i)));
+					instructions.add("_" + i + "tl" + line.getID() + " = " + compile(assignValues.get(i)));
 				for (int i = 0; i < assignValues.size(); i++)
 				{
 					Expression target = assignTargets.get(i);
@@ -107,7 +103,7 @@ public class ILCompiler
 							throw new UnsupportedOperationException();
 						else
 						{
-							output.println(((ExpressionIdentifier) target).getReference() + " = _" + i + "tl" + line.getID());
+							instructions.add(((ExpressionIdentifier) target).getReference() + " = _" + i + "tl" + line.getID());
 							continue;
 						}
 					}
@@ -119,24 +115,26 @@ public class ILCompiler
 			case "PrintLine":
 				PrintLine printLine = (PrintLine) line;
 				for (Expression expr : printLine.getPrintExpressions())
-					output.println("param " + compile(expr));
+					instructions.add("param " + compile(expr));
 				if (printLine.isPrintNewline())
 				{
-					output.println("_tl" + line.getID() + " = \"\\n\"");
-					output.println("param _1tl" + line.getID());
-					output.println("call print " + (printLine.getPrintExpressions().size() + 1));
+					instructions.add("_1tl" + line.getID() + " = \"\\\\n\"");
+					instructions.add("param _1tl" + line.getID());
+					instructions.add("call print " + (printLine.getPrintExpressions().size() + 1));
 				}
 				else
-					output.println("call print " + printLine.getPrintExpressions().size());
-				output.println("returnvalue _2tl" + line.getID());
+					instructions.add("call print " + printLine.getPrintExpressions().size());
+				instructions.add("_2tl" + line.getID() + " = returnvalue");
 				break;
 			case "BreakLine":
-				throw new UnsupportedOperationException();
+				instructions.add("jump " + breakTarget);
+				break;
 			case "ContinueLine":
-				throw new UnsupportedOperationException();
+				instructions.add("jump " + continueTarget);
+				break;
 			case "ReturnLine":
 				str = compile(((ReturnLine) line).getReturnExpr());
-				output.println("return " + str);
+				instructions.add("return " + str);
 				break;
 			case "AssertLine":
 				throw new UnsupportedOperationException();
@@ -147,34 +145,34 @@ public class ILCompiler
 				for (int i = 0; i < conditions.size(); i++)
 				{
 					str = compile(conditions.get(i));
-					output.println("jumpunless " + str + " _" + i + "tl" + line.getID());
-					compile(blocks.get(i));
-					output.println("jump _tl" + line.getID());
-					output.println("label _" + i + "tl" + line.getID());
+					instructions.add("jumpunless " + str + " _" + i + "tl" + line.getID());
+					compile(blocks.get(i), breakTarget, continueTarget);
+					instructions.add("jump _tl" + line.getID());
+					instructions.add("label _" + i + "tl" + line.getID());
 				}
 				if (blocks.size() > conditions.size())
-					compile(blocks.get(blocks.size() - 1));
-				output.println("label _tl" + line.getID());
+					compile(blocks.get(blocks.size() - 1), breakTarget, continueTarget);
+				instructions.add("label _tl" + line.getID());
 				break;
 			case "WhileLine":
 				WhileLine whileLine = (WhileLine) line;
 				Expression condition = whileLine.getCondition();
 				Block mainBlock = whileLine.getBlock();
 				Block thenBlock = whileLine.getThenBlock();
-				output.println("label _1tl" + line.getID());
+				instructions.add("label _1tl" + line.getID());
 				str = compile(condition);
-				output.println("jumpunless " + str + " _2tl" + line.getID());
-				compile(mainBlock);
-				output.println("jump _1tl" + line.getID());
-				output.println("label _2tl" + line.getID());
-				compile(thenBlock);
-				output.println("label _3tl" + line.getID());
+				instructions.add("jumpunless " + str + " _2tl" + line.getID());
+				compile(mainBlock, "_3tl" + line.getID(), "_1tl" + line.getID());
+				instructions.add("jump _1tl" + line.getID());
+				instructions.add("label _2tl" + line.getID());
+				compile(thenBlock, breakTarget, continueTarget);
+				instructions.add("label _3tl" + line.getID());
 				break;
 			case "ForLine":
 				throw new UnsupportedOperationException();
 			case "DefLine":
 				DefLine defLine = (DefLine) line;
-				output.println("function " + defLine.getName() + " " + defLine.getID());
+				instructions.add("function " + defLine.getName() + " " + defLine.getID());
 				break;
 			case "ClassLine":
 				throw new UnsupportedOperationException();
@@ -197,13 +195,13 @@ public class ILCompiler
 					case "NullValue":
 						throw new UnsupportedOperationException();
 					case "BooleanValue":
-						output.println(str + " = " + ((BooleanValue) v).getValue());
+						instructions.add(str + " = " + ((BooleanValue) v).getValue());
 						break;
 					case "IntValue":
-						output.println(str + " = " + ((IntValue) v).getValue());
+						instructions.add(str + " = " + ((IntValue) v).getValue());
 						break;
 					case "StringValue":
-						output.println(str + " = " + ((StringValue) v).getValue());
+						instructions.add(str + " = \"" + ((StringValue) v).getValue() + "\"");
 						break;
 					default:
 						throw new UnsupportedOperationException();
@@ -214,7 +212,7 @@ public class ILCompiler
 				if (var.getParent() != null)
 					throw new UnsupportedOperationException();
 				else
-					output.println("_te" + expr.getID() + " = " + var.getReference());
+					instructions.add("_te" + expr.getID() + " = " + var.getReference());
 				return "_te" + expr.getID();
 			case "ExpressionReference":
 				throw new UnsupportedOperationException();
@@ -228,9 +226,9 @@ public class ILCompiler
 				{
 					List<Expression> exprs = call.getOperands();
 					if (exprs.size() == 1)
-						output.println("_te" + expr.getID() + " = " + compile(call.getFunction()) + " " + compile(exprs.get(0)));
+						instructions.add("_te" + expr.getID() + " = " + compile(call.getFunction()) + " " + compile(exprs.get(0)));
 					else if (exprs.size() == 2)
-						output.println("_te" + expr.getID() + " = " + compile(exprs.get(0)) + " " + compile(call.getFunction()) + " " + compile(exprs.get(1)));
+						instructions.add("_te" + expr.getID() + " = " + compile(exprs.get(0)) + " " + compile(call.getFunction()) + " " + compile(exprs.get(1)));
 					else
 						throw new AssertionError();
 					return "_te" + expr.getID();
@@ -240,11 +238,11 @@ public class ILCompiler
 					for (Expression subexpr : call.getOperands())
 					{
 						str = compile(subexpr);
-						output.println("param " + str);
+						instructions.add("param " + str);
 					}
 					str = compile(call.getFunction());
-					output.println("call " + str + " " + call.getOperands().size());
-					output.println("returnvalue _te" + expr.getID());
+					instructions.add("call " + str + " " + call.getOperands().size());
+					instructions.add("_te" + expr.getID() + " = returnvalue");
 					return "_te" + expr.getID();
 				}
 			case "ExpressionOperator":
@@ -254,14 +252,14 @@ public class ILCompiler
 			case "ExpressionTernary":
 				ExpressionTernary ternary = (ExpressionTernary) expr;
 				str = compile(ternary.getCond());
-				output.println("unlessjump " + str + " _1te" + expr.getID());
+				instructions.add("jumpunless " + str + " _1te" + expr.getID());
 				str = compile(ternary.getTrueCase());
-				output.println("_te" + expr.getID() + " = " + str);
-				output.println("jump _2te" + expr.getID());
-				output.println("label _1te" + expr.getID());
+				instructions.add("_te" + expr.getID() + " = " + str);
+				instructions.add("jump _2te" + expr.getID());
+				instructions.add("label _1te" + expr.getID());
 				str = compile(ternary.getFalseCase());
-				output.println("_te" + expr.getID() + " = " + str);
-				output.println("label _2te" + expr.getID());
+				instructions.add("_te" + expr.getID() + " = " + str);
+				instructions.add("label _2te" + expr.getID());
 				return str;
 			default:
 				throw new UnsupportedOperationException();
