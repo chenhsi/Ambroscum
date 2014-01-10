@@ -4,12 +4,15 @@ import java.util.*;
 
 public class ControlFlowGraph
 {
-	public static void analyze(List<String> instructions)
+	private BasicBlock startingBlock;
+	private BasicBlock endingBlock;
+
+	private ControlFlowGraph(List<String> instructions)
 	{
 		Map<String, BasicBlock> labels = new HashMap<> ();
 		Set<BasicBlock> hasJump = new HashSet<> ();
-		BasicBlock start = new BasicBlock();
-		BasicBlock curr = start;
+		startingBlock = new BasicBlock();
+		BasicBlock curr = startingBlock;
 		for (String str : instructions)
 		{
 			if (str.startsWith("label "))
@@ -38,7 +41,7 @@ public class ControlFlowGraph
 			else
 				curr.add(str);
 		}
-		BasicBlock last = curr;
+		endingBlock = curr;
 		for (BasicBlock block : hasJump)
 			for (ListIterator<Instruction> iter = block.instructions.listIterator(); iter.hasNext();)
 			{
@@ -51,14 +54,20 @@ public class ControlFlowGraph
 						iter.remove();
 				}
 			}
-		simplifyBlockStructure(start, last);
-		propogateVariableDeclarations(start);
-		variablePropogation(start);
-		removeUnneededDeclarations(last);
-		printAll(start);
 	}
 	
-	private static void printAll(BasicBlock startingBlock)
+	public static void analyze(List<String> instructions)
+	{
+		ControlFlowGraph graph = new ControlFlowGraph(instructions);
+		graph.simplifyBlockStructure();
+		graph.propogateVariableDeclarations();
+		graph.variablePropogation();
+		graph.propogateVariableDeclarations();
+		graph.removeUnneededDeclarations();
+		graph.printAll();
+	}
+	
+	private void printAll()
 	{
 		Set<BasicBlock> explored = new HashSet<> ();
 		List<BasicBlock> frontier = new LinkedList<> ();
@@ -82,7 +91,7 @@ public class ControlFlowGraph
 		child.parents.add(parent);
 	}
 	
-	private static void simplifyBlockStructure(BasicBlock startingBlock, BasicBlock endingBlock)
+	private void simplifyBlockStructure()
 	{
 		// remove empty blocks by directly connecting their parents/children
 		Set<BasicBlock> explored = new HashSet<> ();
@@ -142,6 +151,8 @@ public class ControlFlowGraph
 					if (child == endingBlock) // can't remove ending block from graph
 					{
 						child.instructions.addAll(curr.instructions);
+						for (Instruction inst : curr.instructions)
+							inst.block = curr;
 						child.parents = curr.parents;
 						for (BasicBlock parent : curr.parents)
 						{
@@ -153,6 +164,8 @@ public class ControlFlowGraph
 					else if (child.parents.size() == 1)
 					{
 						curr.instructions.addAll(child.instructions);
+						for (Instruction inst : curr.instructions)
+							inst.block = curr;
 						curr.children = child.children;
 						for (BasicBlock newChild : child.children)
 						{
@@ -167,7 +180,7 @@ public class ControlFlowGraph
 		}
 	}
 	
-	private static void propogateVariableDeclarations(BasicBlock startingBlock)
+	private void propogateVariableDeclarations()
 	{
 		Map<BasicBlock, Map<String, Instruction>> analyzed = new HashMap<> ();
 		List<BasicBlock> toProcess = new LinkedList<> ();
@@ -198,7 +211,7 @@ public class ControlFlowGraph
 		}
 	}
 	
-	private static void removeUnneededDeclarations(BasicBlock endingBlock)
+	private void removeUnneededDeclarations()
 	{
 		Map<BasicBlock, Set<String>> analyzed = new HashMap<> ();
 		List<BasicBlock> toProcess = new LinkedList<> ();
@@ -246,10 +259,12 @@ public class ControlFlowGraph
 					if (!inst.postLiveVariables.contains(assigned) && !inst.line.endsWith("paramvalue") && !inst.line.endsWith("returnvalue"))
 						iter.remove();
 				}
+				inst.preDeclarations.keySet().retainAll(inst.preLiveVariables);
+				inst.postDeclarations.keySet().retainAll(inst.postLiveVariables);
 			}
 	}
 	
-	private static void variablePropogation(BasicBlock startingBlock)
+	private void variablePropogation()
 	{
 		Set<BasicBlock> explored = new HashSet<> ();
 		List<BasicBlock> frontier = new LinkedList<> ();
@@ -259,8 +274,7 @@ public class ControlFlowGraph
 			BasicBlock curr = frontier.remove(0);
 			if (explored.contains(curr))
 				continue;
-			for (Instruction inst : curr.instructions)
-				inst.optimize();
+			curr.variablePropogation();
 			explored.add(curr);
 			for (BasicBlock child : curr.children)
 				frontier.add(child);
@@ -305,7 +319,7 @@ public class ControlFlowGraph
 		
 		void add(String str)
 		{
-			instructions.add(new Instruction(str));
+			instructions.add(new Instruction(str, this));
 		}
 		
 		public String toString()
@@ -321,10 +335,44 @@ public class ControlFlowGraph
 				inst.print();
 			System.out.println("Children: " + children);
 		}
+		
+		void variablePropogation()
+		{
+			for (Instruction inst : instructions)
+				inst.optimize();
+			Map<String, Set<Instruction>> subExpressions = new HashMap<> ();
+			outer: for (Instruction inst : instructions)
+			{
+				int index = inst.line.indexOf(" = ");
+				if (index == -1)
+					continue;
+				String rightHalf = inst.line.substring(index + 3);
+				if (!identifier(rightHalf))
+					continue;
+				if (!subExpressions.containsKey(rightHalf))
+					subExpressions.put(rightHalf, new HashSet<Instruction> ());
+				else
+					inner: for (Instruction prev : subExpressions.get(rightHalf))
+					{
+						for (String str : inst.variablesUsed)
+							if (inst.preDeclarations.get(str) != prev.preDeclarations.get(str))
+								continue inner;
+						String newValue = prev.line.substring(0, prev.line.indexOf(" = "));
+						inst.line = inst.line.substring(0, inst.line.indexOf(" = ")) + " = " + newValue;
+						inst.variablesUsed = new LinkedList<String> ();
+						inst.variablesUsed.add(newValue);
+						continue outer;
+					}
+				subExpressions.get(rightHalf).add(inst);
+			}
+			for (Instruction inst : instructions)
+				inst.optimize();
+		}
 	}
 	
 	static class Instruction
 	{
+		BasicBlock block;
 		String line;
 		List<String> variablesUsed;
 		
@@ -333,8 +381,9 @@ public class ControlFlowGraph
 		Set<String> preLiveVariables = new HashSet<> ();
 		Set<String> postLiveVariables = new HashSet<> ();
 		
-		public Instruction(String str)
+		public Instruction(String str, BasicBlock block)
 		{
+			this.block = block;
 			line = str;
 			variablesUsed = new LinkedList<String> ();
 			int index = line.indexOf(" = ");
@@ -358,10 +407,10 @@ public class ControlFlowGraph
 		
 		void print()
 		{
-//			System.out.println("\t\tPre-Declarations: " + preDeclarations.keySet());
-			System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
+//			System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
+//			System.out.println("\t\tReferenced Variables: " + variablesUsed);
 			System.out.println("\t" + line);
-//			System.out.println("\t\tPost-Declarations: " + postDeclarations.keySet());
+			System.out.println("\t\tPost-Declarations: " + postDeclarations.keySet());
 		}
 		
 		void optimize()
@@ -372,7 +421,7 @@ public class ControlFlowGraph
 			for (String str : variablesUsed)
 			{
 				Instruction decl = preDeclarations.get(str);
-				if (decl == null)
+				if (decl == null || decl.block != this.block)
 					continue;
 				String lineStr = decl.line;
 				int index = lineStr.indexOf(" = ");
@@ -387,8 +436,23 @@ public class ControlFlowGraph
 					break;
 				}
 			}
+			if (!optimized && line.indexOf(" = ") != -1 && variablesUsed.size() == 1 && line.endsWith(" = " + variablesUsed.get(0)))
+			{
+				Instruction decl = preDeclarations.get(variablesUsed.get(0));
+				if (decl != null && decl.block == this.block && decl.line.split(" ").length == 5)
+				{
+					line = line.substring(0, line.indexOf(" = ")) + decl.line.substring(decl.line.indexOf(" = "));
+					variablesUsed.remove(0);
+					optimized = true;
+				}
+			}
 			if (optimized)
 				optimize();
+		}
+		
+		public String toString()
+		{
+			return "inst:\"" + line + "\"";
 		}
 	}
 }
