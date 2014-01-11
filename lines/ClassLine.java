@@ -29,7 +29,7 @@ public class ClassLine extends Line
 		Token temp = stream.removeFirst();
 		if (temp != Token.COLON)
 		{
-			if (!temp.equals("from"))
+			if (!temp.toString().equals("from"))
 				throw new SyntaxError("Expecting \"from\" in class definition, found " + temp);
 			parentObj = Expression.interpret(stream);
 			temp = stream.removeFirst();

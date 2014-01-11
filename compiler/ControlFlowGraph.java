@@ -61,9 +61,9 @@ public class ControlFlowGraph
 		ControlFlowGraph graph = new ControlFlowGraph(instructions);
 		graph.simplifyBlockStructure();
 		graph.propogateVariableDeclarations();
-		graph.variablePropogation();
-		graph.propogateVariableDeclarations();
-		graph.removeUnneededDeclarations();
+//		graph.variablePropogation();
+//		graph.propogateVariableDeclarations();
+//		graph.removeUnneededDeclarations();
 		graph.printAll();
 	}
 	
@@ -205,8 +205,22 @@ public class ControlFlowGraph
 					analyzed.put(child, new HashMap<> (currMap));
 					toProcess.add(child);
 				}
-				else if (merge(analyzed.get(child), currMap))
-					toProcess.add(child);
+				else
+				{
+					Map<String, Instruction> orig = analyzed.get(child);
+					boolean changed = false;
+					for (String key : currMap.keySet())
+						if (!orig.containsKey(key) || orig.get(key) != currMap.get(key) && orig.get(key) != null)
+						{
+							changed = true;
+							if (orig.containsKey(key))
+								orig.put(key, null);
+							else
+								orig.put(key, currMap.get(key));
+						}
+					if (changed)
+						toProcess.add(child);
+				}
 			}
 		}
 	}
@@ -293,21 +307,6 @@ public class ControlFlowGraph
 		return true;
 	}
 	
-	private static boolean merge(Map<String, Instruction> orig, Map<String, Instruction> toAdd)
-	{
-		boolean changed = false;
-		for (String key : toAdd.keySet())
-			if (!orig.containsKey(key) || orig.get(key) != toAdd.get(key) && orig.get(key) != null)
-			{
-				changed = true;
-				if (orig.containsKey(key))
-					orig.put(key, null);
-				else
-					orig.put(key, toAdd.get(key));
-			}
-		return changed;
-	}
-	
 	static class BasicBlock
 	{
 		List<Instruction> instructions = new LinkedList<Instruction> ();
@@ -347,7 +346,7 @@ public class ControlFlowGraph
 				if (index == -1)
 					continue;
 				String rightHalf = inst.line.substring(index + 3);
-				if (!identifier(rightHalf))
+				if (!rightHalf.contains(" "))
 					continue;
 				if (!subExpressions.containsKey(rightHalf))
 					subExpressions.put(rightHalf, new HashSet<Instruction> ());
@@ -355,7 +354,7 @@ public class ControlFlowGraph
 					inner: for (Instruction prev : subExpressions.get(rightHalf))
 					{
 						for (String str : inst.variablesUsed)
-							if (inst.preDeclarations.get(str) != prev.preDeclarations.get(str))
+							if (inst.preDeclarations.get(str) != prev.preDeclarations.get(str) || inst.preDeclarations.get(str) == null)
 								continue inner;
 						String newValue = prev.line.substring(0, prev.line.indexOf(" = "));
 						inst.line = inst.line.substring(0, inst.line.indexOf(" = ")) + " = " + newValue;
@@ -410,7 +409,7 @@ public class ControlFlowGraph
 //			System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
 //			System.out.println("\t\tReferenced Variables: " + variablesUsed);
 			System.out.println("\t" + line);
-			System.out.println("\t\tPost-Declarations: " + postDeclarations.keySet());
+//			System.out.println("\t\tPost-Declarations: " + postDeclarations.keySet());
 		}
 		
 		void optimize()
@@ -436,7 +435,8 @@ public class ControlFlowGraph
 					break;
 				}
 			}
-			if (!optimized && line.indexOf(" = ") != -1 && variablesUsed.size() == 1 && line.endsWith(" = " + variablesUsed.get(0)))
+// this "optimization" reverses other optimizations done; I don't remember why I thought it would be useful
+/*			if (!optimized && line.indexOf(" = ") != -1 && variablesUsed.size() == 1 && line.endsWith(" = " + variablesUsed.get(0)))
 			{
 				Instruction decl = preDeclarations.get(variablesUsed.get(0));
 				if (decl != null && decl.block == this.block && decl.line.split(" ").length == 5)
@@ -445,7 +445,7 @@ public class ControlFlowGraph
 					variablesUsed.remove(0);
 					optimized = true;
 				}
-			}
+			}*/
 			if (optimized)
 				optimize();
 		}

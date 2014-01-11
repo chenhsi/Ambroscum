@@ -111,6 +111,8 @@ public abstract class Line
 			return new ForLine(parent, stream, indentation);
 		if (token.toString().equals("def"))
 			return new DefLine(parent, stream, indentation);
+		if (token.toString().equals("class"))
+			return new ClassLine(parent, stream, indentation);
 		if (token.toString().equals("else") || token.toString().equals("elif"))
 			throw new SyntaxError("Unexpected " + token + " line");
 		List<Token> newStream = new LinkedList<Token>();

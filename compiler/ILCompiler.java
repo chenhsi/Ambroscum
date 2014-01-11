@@ -93,7 +93,16 @@ public class ILCompiler
 				List<Expression> assignTargets = ((AssignmentLine) line).getAssignTargets();
 				List<Expression> assignValues = ((AssignmentLine) line).getAssignValues();
 				for (int i = 0; i < assignValues.size(); i++)
-					instructions.add("_" + i + "tl" + line.getID() + " = " + compile(assignValues.get(i)));
+				{
+					ExpressionOperator op = ((AssignmentLine) line).getAssignType();
+					if (op == null)
+						instructions.add("_" + i + "tl" + line.getID() + " = " + compile(assignValues.get(i)));
+					else
+					{
+						String rightHalf = compile(assignTargets.get(i)) + " " + compile(op) + " " + compile(assignValues.get(i));
+						instructions.add("_" + i + "tl" + line.getID() + " = " + rightHalf);
+					}
+				}
 				for (int i = 0; i < assignValues.size(); i++)
 				{
 					Expression target = assignTargets.get(i);
@@ -225,13 +234,20 @@ public class ILCompiler
 				if (call.getFunction() instanceof ExpressionOperator)
 				{
 					List<Expression> exprs = call.getOperands();
+					str = "_te" + expr.getID();
 					if (exprs.size() == 1)
-						instructions.add("_te" + expr.getID() + " = " + compile(call.getFunction()) + " " + compile(exprs.get(0)));
+					{
+						String op = compile(call.getFunction());
+						if (op.equals("-"))
+							instructions.add(str + " = 0 - " + compile(exprs.get(0)));
+						else
+							instructions.add(str + " = " + op + " " + compile(exprs.get(0)));
+					}
 					else if (exprs.size() == 2)
-						instructions.add("_te" + expr.getID() + " = " + compile(exprs.get(0)) + " " + compile(call.getFunction()) + " " + compile(exprs.get(1)));
+						instructions.add(str + " = " + compile(exprs.get(0)) + " " + compile(call.getFunction()) + " " + compile(exprs.get(1)));
 					else
 						throw new AssertionError();
-					return "_te" + expr.getID();
+					return str;
 				}
 				else
 				{
@@ -248,6 +264,9 @@ public class ILCompiler
 			case "ExpressionOperator":
 				return expr.toString();
 			case "ExpressionIncrement":
+				ExpressionIncrement asIncr = (ExpressionIncrement) expr;
+				String base = compile(asIncr.getBaseExpression());
+				instructions.add(base + " = " + compile(asIncr.getIncrementExpression()));
 				throw new UnsupportedOperationException();
 			case "ExpressionTernary":
 				ExpressionTernary ternary = (ExpressionTernary) expr;

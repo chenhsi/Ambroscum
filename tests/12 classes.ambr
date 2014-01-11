@@ -9,15 +9,15 @@ class Test1:
 end
 
 a = Test1.new()
-print a.get()
+println a.get()
 a.set(3)
-print a.get()
+println a.get()
 
 b = a.get
-print b()
+println b()
 
-class Test2 from Test1
+class Test2 from Test1:
 	i = 10
 end
 
-print Test2.new().get()
+println Test2.new().get()

@@ -10,12 +10,13 @@ end
 i = 3
 while i < 7:
 	x = i
-	i = i + 1
+	x--
+	i++
 	println i
 end
 
 while i < 15:
-	i = i + 1 + (x - 6) * (x - 6)
+	i = ++i + (x - 5) * (x - 5)
 	if i = 11:
 		
 		break
@@ -31,7 +32,25 @@ while i < 15:
 		break
 		
 	end
-	i = i + 1
+	i -= -1
 then:
 	println "here"
+end
+
+lst = [15, 17 - 1, 18]
+for i in lst:
+	println i
+	lst[2] = i + 1
+end
+println lst[2]
+
+lst = [19, 20, 21]
+for i in lst:
+	if i > 20:
+		break
+	
+	end
+	println i
+then:
+	println "nope"
 end

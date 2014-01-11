@@ -47,4 +47,17 @@ public class ExpressionIncrement extends ExpressionCall
 	{
 		baseExpr.setDeclarations(declarations);
 	}
+	
+	public Expression getBaseExpression()
+	{
+		return baseExpr;
+	}
+	public Expression getIncrementExpression()
+	{
+		return opExpr;
+	}
+	public boolean isPrefix()
+	{
+		return prefix;
+	}
 }
