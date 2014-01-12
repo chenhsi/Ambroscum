@@ -64,6 +64,7 @@ public class ControlFlowGraph
 //		graph.variablePropogation();
 //		graph.propogateVariableDeclarations();
 //		graph.removeUnneededDeclarations();
+		graph.loopAnalysis();
 		graph.printAll();
 	}
 	
@@ -295,6 +296,66 @@ public class ControlFlowGraph
 		}
 	}
 	
+	private void loopAnalysis()
+	{
+		Set<BasicBlock> explored = new HashSet<> ();
+		List<BasicBlock> frontier = new LinkedList<> ();
+		frontier.add(startingBlock);
+		while (!frontier.isEmpty())
+		{
+			BasicBlock curr = frontier.remove(0);
+			if (!explored.contains(curr))
+				curr.dominators = new HashSet<BasicBlock> ();
+			Set<BasicBlock> temp = new HashSet<> (curr.dominators);
+			for (BasicBlock parent : curr.parents)
+				if (parent.dominators.size() == 0)
+					continue;
+				else if (!explored.contains(curr))
+					curr.dominators.addAll(parent.dominators);
+				else
+					curr.dominators.retainAll(parent.dominators);
+			curr.dominators.add(curr);
+			explored.add(curr);
+			if (!temp.equals(curr.dominators))
+				for (BasicBlock block : curr.children)
+					frontier.add(block);
+		}
+		Map<BasicBlock, Set<BasicBlock>> loops = new HashMap<> ();
+		for (BasicBlock block : explored)
+			for (BasicBlock child : block.children)
+				if (block.dominators.contains(child) && block != child)
+				{
+					BasicBlock header = child;
+					Set<BasicBlock> loopActual = new HashSet<> ();
+					List<BasicBlock> loopPotential = new LinkedList<> ();
+					loopPotential.add(block);
+					while (!loopPotential.isEmpty())
+					{
+						BasicBlock curr = loopPotential.remove(0);
+						if (loopActual.contains(curr) || curr == header)
+							continue;
+						loopActual.add(curr);
+						for (BasicBlock currParent : curr.parents)
+							loopPotential.add(currParent);
+					}
+					loops.put(header, loopActual);
+				}
+		System.out.println(loops);
+		for (BasicBlock header : loops.keySet())
+		{
+			BasicBlock insert = new BasicBlock();
+			for (BasicBlock loopParent : header.parents)
+				if (header.dominators.contains(loopParent))
+				{
+					loopParent.children.remove(header);
+					loopParent.children.add(insert);
+					insert.parents.add(loopParent);
+				}
+			header.parents.removeAll(insert.parents);
+			connect(insert, header);
+		}
+	}
+	
 	private static boolean identifier(String str)
 	{
 		char c = str.charAt(0);
@@ -315,6 +376,7 @@ public class ControlFlowGraph
 		
 		static int counter = 0;
 		int id = ++counter;
+		Set<BasicBlock> dominators = new HashSet<BasicBlock> ();
 		
 		void add(String str)
 		{
