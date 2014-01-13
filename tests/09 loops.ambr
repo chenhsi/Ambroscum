@@ -10,13 +10,13 @@ end
 i = 3
 while i < 7:
 	x = i
-	x--
-	i++
+	x = x - 1
+	i = i + 1
 	println i
 end
 
 while i < 15:
-	i = ++i + (x - 5) * (x - 5)
+	i = i + 1 + (x - 5) * (x - 5)
 	if i = 11:
 		
 		break

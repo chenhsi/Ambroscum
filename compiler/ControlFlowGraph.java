@@ -61,9 +61,9 @@ public class ControlFlowGraph
 		ControlFlowGraph graph = new ControlFlowGraph(instructions);
 		graph.simplifyBlockStructure();
 		graph.propogateVariableDeclarations();
-//		graph.variablePropogation();
-//		graph.propogateVariableDeclarations();
-//		graph.removeUnneededDeclarations();
+		graph.variablePropogation();
+		graph.propogateVariableDeclarations();
+		graph.removeUnneededDeclarations();
 		graph.loopAnalysis();
 		graph.printAll();
 	}
@@ -194,9 +194,8 @@ public class ControlFlowGraph
 			for (Instruction inst : curr.instructions)
 			{
 				inst.preDeclarations = new HashMap<> (currMap);
-				int index = inst.line.indexOf(" = ");
-				if (index != -1)
-					currMap.put(inst.line.substring(0, index), inst);
+				if (inst.type.isAssignment())
+					currMap.put(inst.line.substring(0, inst.line.indexOf(" = ")), inst);
 				inst.postDeclarations = new HashMap<> (currMap);
 			}
 			for (BasicBlock child : curr.children)
@@ -267,11 +266,10 @@ public class ControlFlowGraph
 			for (ListIterator<Instruction> iter = block.instructions.listIterator(); iter.hasNext();)
 			{
 				Instruction inst = iter.next();
-				int index = inst.line.indexOf(" = ");
-				if (index != -1)
+				if (inst.type == InstructionType.ASSIGNMENT || inst.type == InstructionType.CALCULATION)
 				{
-					String assigned = inst.line.substring(0, index);
-					if (!inst.postLiveVariables.contains(assigned) && !inst.line.endsWith("paramvalue") && !inst.line.endsWith("returnvalue"))
+					String assigned = inst.line.substring(0, inst.line.indexOf(" = "));
+					if (!inst.postLiveVariables.contains(assigned))
 						iter.remove();
 				}
 				inst.preDeclarations.keySet().retainAll(inst.preLiveVariables);
@@ -299,6 +297,8 @@ public class ControlFlowGraph
 	private void loopAnalysis()
 	{
 		Set<BasicBlock> explored = new HashSet<> ();
+		
+		// First, calculate dominators
 		List<BasicBlock> frontier = new LinkedList<> ();
 		frontier.add(startingBlock);
 		while (!frontier.isEmpty())
@@ -320,6 +320,8 @@ public class ControlFlowGraph
 				for (BasicBlock block : curr.children)
 					frontier.add(block);
 		}
+		
+		// Using dominators, determine all loops, as well as their header
 		Map<BasicBlock, Set<BasicBlock>> loops = new HashMap<> ();
 		for (BasicBlock block : explored)
 			for (BasicBlock child : block.children)
@@ -338,14 +340,19 @@ public class ControlFlowGraph
 						for (BasicBlock currParent : curr.parents)
 							loopPotential.add(currParent);
 					}
-					loops.put(header, loopActual);
+					if (loops.containsKey(header))
+						loops.get(header).addAll(loopActual);
+					else
+						loops.put(header, loopActual);
 				}
-		System.out.println(loops);
+		
+		// insert an empty block in front of each loop header
+		Map<BasicBlock, BasicBlock> loopPreHeaders = new HashMap<> ();
 		for (BasicBlock header : loops.keySet())
 		{
 			BasicBlock insert = new BasicBlock();
 			for (BasicBlock loopParent : header.parents)
-				if (header.dominators.contains(loopParent))
+				if (!loopParent.dominators.contains(header))
 				{
 					loopParent.children.remove(header);
 					loopParent.children.add(insert);
@@ -353,6 +360,52 @@ public class ControlFlowGraph
 				}
 			header.parents.removeAll(insert.parents);
 			connect(insert, header);
+			loopPreHeaders.put(header, insert);
+		}
+		
+		// push all loop invariant calculations into the pre-headers
+		for (BasicBlock header : loops.keySet())
+		{
+			BasicBlock preHeader = loopPreHeaders.get(header);
+			for (BasicBlock loopBlock : loops.get(header))
+				outer: for (ListIterator<Instruction> iter = loopBlock.instructions.listIterator(0); iter.hasNext();)
+				{
+					Instruction inst = iter.next();
+					if (inst.type != InstructionType.CALCULATION)
+						continue;
+					
+					// first, check to make sure that this is invariant
+					for (String str : inst.variablesUsed)
+					{
+						Instruction decl = inst.preDeclarations.get(str);
+						if (decl == null || loops.get(header).contains(decl.block))
+							continue outer;
+					}
+					
+					// now, check to make sure this is safe to pull out
+					String target = inst.line.substring(inst.line.indexOf(" = "));
+					for (BasicBlock loopBlock2 : loops.get(header))
+					{
+						for (Instruction inst2 : loopBlock2.instructions)
+						{
+							// if there is another declaration
+							if (inst2.type.isAssignment() && inst2.line.substring(inst2.line.indexOf(" = ")).equals(target) && inst2 != inst)
+								continue outer;
+							// if instruction is not guaranteed to reach all uses
+							if (inst2.variablesUsed.contains(target) && inst2.preDeclarations.get(target) != inst)
+								continue outer;
+						}
+						// if instruction does not dominate all loop exits
+						if (!loopBlock2.dominators.contains(loopBlock))
+							for (BasicBlock potentialExit : loopBlock2.children)
+								if (!loops.get(header).contains(potentialExit))
+									continue outer;
+					}
+					// invariant and safe, so go ahead and pull out
+					iter.remove();
+					preHeader.instructions.add(inst);
+					inst.block = preHeader;
+				}
 		}
 	}
 	
@@ -404,12 +457,9 @@ public class ControlFlowGraph
 			Map<String, Set<Instruction>> subExpressions = new HashMap<> ();
 			outer: for (Instruction inst : instructions)
 			{
-				int index = inst.line.indexOf(" = ");
-				if (index == -1)
+				if (inst.type != InstructionType.CALCULATION)
 					continue;
-				String rightHalf = inst.line.substring(index + 3);
-				if (!rightHalf.contains(" "))
-					continue;
+				String rightHalf = inst.line.substring(inst.line.indexOf(" = ") + 3);
 				if (!subExpressions.containsKey(rightHalf))
 					subExpressions.put(rightHalf, new HashSet<Instruction> ());
 				else
@@ -420,6 +470,7 @@ public class ControlFlowGraph
 								continue inner;
 						String newValue = prev.line.substring(0, prev.line.indexOf(" = "));
 						inst.line = inst.line.substring(0, inst.line.indexOf(" = ")) + " = " + newValue;
+						inst.type = InstructionType.ASSIGNMENT;
 						inst.variablesUsed = new LinkedList<String> ();
 						inst.variablesUsed.add(newValue);
 						continue outer;
@@ -436,6 +487,7 @@ public class ControlFlowGraph
 		BasicBlock block;
 		String line;
 		List<String> variablesUsed;
+		InstructionType type;
 		
 		Map<String, Instruction> preDeclarations = new HashMap<> ();
 		Map<String, Instruction> postDeclarations = new HashMap<> ();
@@ -450,54 +502,63 @@ public class ControlFlowGraph
 			int index = line.indexOf(" = ");
 			if (index != -1)
 			{
-				for (String substr : line.substring(index + 3).split(" "))
+				String[] substrs = line.substring(index + 3).split(" ");
+				if (substrs.length > 1)
+					type = InstructionType.CALCULATION;
+				else if (substrs[0].equals("paramvalue") || substrs[0].equals("returnvalue"))
+					type = InstructionType.SPECIALASSIGNMENT;
+				else
+					type = InstructionType.ASSIGNMENT;
+				for (String substr : substrs)
 					if (ControlFlowGraph.identifier(substr))
 						variablesUsed.add(substr);
 			}
 			else if (line.startsWith("jumpunless"))
+			{
 				variablesUsed.add(line.substring(11, line.lastIndexOf(" ")));
+				type = InstructionType.JUMP;
+			}
 			else if (line.startsWith("param"))
+			{
 				variablesUsed.add(line.substring(6));
+				type = InstructionType.FUNCTIONCALL;
+			}
 			else if (line.startsWith("call"))
 			{
 				String substr = line.substring(5, line.lastIndexOf(" "));
 				if (!substr.equals("print"))
 					variablesUsed.add(substr);
+				type = InstructionType.FUNCTIONCALL;
 			}
 		}
 		
 		void print()
 		{
+//			System.out.println("\t\tPre-Declarations: " + preDeclarations);
 //			System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
 //			System.out.println("\t\tReferenced Variables: " + variablesUsed);
 			System.out.println("\t" + line);
-//			System.out.println("\t\tPost-Declarations: " + postDeclarations.keySet());
+//			System.out.println("\t\tPost-Declarations: " + postDeclarations);
 		}
 		
 		void optimize()
 		{
-			if (!line.contains(" "))
-				return;
 			boolean optimized = false;
-			for (String str : variablesUsed)
-			{
-				Instruction decl = preDeclarations.get(str);
-				if (decl == null || decl.block != this.block)
-					continue;
-				String lineStr = decl.line;
-				int index = lineStr.indexOf(" = ");
-				if (index == -1)
-					continue;
-				String rest = lineStr.substring(index + 3);
-				if (!rest.contains(" ") && !rest.equals("paramvalue") && !rest.equals("returnvalue"))
+			if (type == InstructionType.ASSIGNMENT || type == InstructionType.CALCULATION)
+				for (String str : variablesUsed)
 				{
+					Instruction decl = preDeclarations.get(str);
+					if (decl == null || decl.block != this.block || decl.type != InstructionType.ASSIGNMENT)
+						continue;
+					String rest = decl.line.substring(decl.line.indexOf(" = ") + 3);
 					line = line.replaceAll(str, rest);
 					variablesUsed.remove(str);
+					if (identifier(rest))
+						variablesUsed.add(rest);
 					optimized = true;
 					break;
 				}
-			}
-// this "optimization" reverses other optimizations done; I don't remember why I thought it would be useful
+	// this "optimization" reverses other optimizations done; I don't remember why I thought it would be useful
 /*			if (!optimized && line.indexOf(" = ") != -1 && variablesUsed.size() == 1 && line.endsWith(" = " + variablesUsed.get(0)))
 			{
 				Instruction decl = preDeclarations.get(variablesUsed.get(0));
@@ -515,6 +576,23 @@ public class ControlFlowGraph
 		public String toString()
 		{
 			return "inst:\"" + line + "\"";
+		}
+	}
+	
+	enum InstructionType
+	{
+		CALCULATION(true), ASSIGNMENT(true), FUNCTIONCALL(false), SPECIALASSIGNMENT(true), JUMP(false);
+		
+		private boolean assignmentType;
+		
+		private InstructionType(boolean assignmentType)
+		{
+			this.assignmentType = assignmentType;
+		}
+		
+		public boolean isAssignment()
+		{
+			return assignmentType;
 		}
 	}
 }
