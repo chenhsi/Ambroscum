@@ -14,7 +14,7 @@ public class Ambroscum
 {
 	public static void main(String[] args) throws IOException, InterruptedException
 	{
-		compileILTest(new File("tests/09 loops.ambr"));
+		compileILTest(new File("tests/03 if.ambr"));
 	}
 	
 	/* Command line arguments
