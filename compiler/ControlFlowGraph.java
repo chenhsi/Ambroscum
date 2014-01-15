@@ -10,9 +10,9 @@ public class ControlFlowGraph
 	public ControlFlowGraph(List<String> mainCode, Map<String, List<String>> functions)
 	{
 		otherFunctions = new HashMap<> ();
-		mainFunction = new Function(this, mainCode);
+		mainFunction = new Function(this, mainCode, true);
 		for (String functionName : functions.keySet())
-			otherFunctions.put(functionName, new Function(this, functions.get(functionName)));
+			otherFunctions.put(functionName, new Function(this, functions.get(functionName), false));
 	}
 	
 	public void optimize()
@@ -20,7 +20,7 @@ public class ControlFlowGraph
 		mainFunction.optimize();
 		for (Function f : otherFunctions.values())
 			f.optimize();
-		mainFunction.optimize();
+//		mainFunction.optimize();
 		mainFunction.printAll();
 		for (Function f : otherFunctions.values())
 			f.printAll();

@@ -9,10 +9,10 @@ public class Instruction
 	List<String> variablesUsed;
 	InstructionType type;
 	
-	Map<String, Instruction> preDeclarations = new HashMap<> ();
-	Map<String, Instruction> postDeclarations = new HashMap<> ();
-	Set<String> preLiveVariables = new HashSet<> ();
-	Set<String> postLiveVariables = new HashSet<> ();
+	Map<String, Instruction> preDeclarations;
+	Map<String, Instruction> postDeclarations;
+	Set<String> preLiveVariables;
+	Set<String> postLiveVariables;
 	
 	public Instruction(String str, BasicBlock block)
 	{

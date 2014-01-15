@@ -12,9 +12,12 @@ public class Function
 	private Set<String> nonlocalVariablesUsed;
 	private Set<String> variablesModified;
 
-	public Function(ControlFlowGraph graph, List<String> code)
+	private boolean isMain;
+
+	public Function(ControlFlowGraph graph, List<String> code, boolean isMain)
 	{
 		this.graph = graph;
+		this.isMain = isMain;
 		Map<String, BasicBlock> labels = new HashMap<> ();
 		Set<BasicBlock> hasJump = new HashSet<> ();
 		startingBlock = new BasicBlock();
@@ -81,9 +84,14 @@ public class Function
 	
 	public void printAll()
 	{
-		System.out.println("Function:");
-		System.out.println("\tNonlocal variables used: " + nonlocalVariablesUsed);
-		System.out.println("\tVariables modified used: " + variablesModified);
+		if (isMain)
+			System.out.println("Main:");
+		else
+		{
+			System.out.println("Function:");
+			System.out.println("\tNonlocal variables used: " + nonlocalVariablesUsed);
+			System.out.println("\tVariables modified used: " + variablesModified);
+		}
 		System.out.println();
 		Set<BasicBlock> explored = new HashSet<> ();
 		List<BasicBlock> frontier = new LinkedList<> ();
@@ -199,6 +207,7 @@ public class Function
 	
 	private void propogateVariableDeclarations()
 	{
+		Set<BasicBlock> exploredAtAll = new HashSet<BasicBlock> ();
 		variablesModified = new HashSet<String> ();
 		Map<BasicBlock, Map<String, Instruction>> analyzed = new HashMap<> ();
 		List<BasicBlock> toProcess = new LinkedList<> ();
@@ -207,6 +216,14 @@ public class Function
 		while (!toProcess.isEmpty())
 		{
 			BasicBlock curr = toProcess.remove(0);
+			if (!exploredAtAll.contains(curr))
+				for (Instruction inst : curr.instructions)
+				{
+					inst.preDeclarations = new HashMap<> ();
+					inst.postDeclarations = new HashMap<> ();
+				}
+			else
+				exploredAtAll.add(curr);
 			Map<String, Instruction> currMap = new HashMap<> (analyzed.get(curr));
 			for (Instruction inst : curr.instructions)
 			{
@@ -224,20 +241,23 @@ public class Function
 								funcDecl = funcDecl.preDeclarations.get(funcDecl.variablesUsed.get(0));
 							else
 								break;
-						if (funcDecl == null)
-							currMap.put("_all", null);
-						else if (funcDecl.line.contains("*"))
+						boolean noInfo = (funcDecl == null);
+						if (!noInfo && funcDecl.line.contains("*"))
 						{
-							System.out.println("function traced to " + funcDecl);
 							funcName = funcDecl.variablesUsed.get(0);
 							Function calledFunction = graph.getFunction(funcName.substring(1));
 							if (calledFunction.variablesModified != null)
 							{
-								System.out.println("traced function already optimized");
 								for (String str : calledFunction.variablesModified)
 									currMap.put(str, null);
 							}
+							else
+								noInfo = true;
 						}
+						else
+							noInfo = true;
+						if (noInfo)
+							currMap.put("_all", null);
 					}
 				}
 				if (currMap.containsKey("_all"))
@@ -281,13 +301,25 @@ public class Function
 	
 	private void removeUnneededDeclarations()
 	{
+		Set<BasicBlock> exploredAtAll = new HashSet<BasicBlock> ();
 		Map<BasicBlock, Set<String>> analyzed = new HashMap<> ();
 		List<BasicBlock> toProcess = new LinkedList<> ();
 		toProcess.add(endingBlock);
-		analyzed.put(endingBlock, new HashSet<String> (variablesModified));
+		if (isMain)
+			analyzed.put(endingBlock, new HashSet<String> ());
+		else
+			analyzed.put(endingBlock, new HashSet<String> (variablesModified));
 		while (!toProcess.isEmpty())
 		{
 			BasicBlock curr = toProcess.remove(0);
+			if (!exploredAtAll.contains(curr))
+				for (Instruction inst : curr.instructions)
+				{
+					inst.preLiveVariables = new HashSet<> ();
+					inst.postLiveVariables = new HashSet<> ();
+				}
+			else
+				exploredAtAll.add(curr);
 			Set<String> currSet = new HashSet<> (analyzed.get(curr));
 			for (ListIterator<Instruction> iter = curr.instructions.listIterator(curr.instructions.size()); iter.hasPrevious();)
 			{
@@ -308,9 +340,8 @@ public class Function
 						while (funcDecl != null && !funcDecl.line.contains("*")) // temp fix, should be changed
 							if (funcDecl.type == InstructionType.ASSIGNMENT)
 								funcDecl = funcDecl.preDeclarations.get(funcDecl.variablesUsed.get(0));
-						if (funcDecl == null)
-							currSet.add("_all");
-						else if (funcDecl.line.contains("*"))
+						boolean noInfo = (funcDecl == null);
+						if (!noInfo && funcDecl.line.contains("*"))
 						{
 							funcName = funcDecl.variablesUsed.get(0);
 							Function calledFunction = graph.getFunction(funcName.substring(1));
@@ -319,11 +350,18 @@ public class Function
 								for (String str : calledFunction.nonlocalVariablesUsed)
 									currSet.add(str);
 							}
+							else
+								noInfo = true;
 						}
+						else
+							noInfo = true;
+						if (noInfo)
+							currSet.add("_all");
 					}
 				}
 				for (String str : inst.variablesUsed)
-					currSet.add(str);
+					if (str.charAt(0) != '*' && !str.equals("print")) // or any other built-in
+						currSet.add(str);
 				if (currSet.contains("_all"))
 					for (String var : inst.preDeclarations.keySet())
 						if (var.charAt(0) != '_')

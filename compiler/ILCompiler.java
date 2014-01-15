@@ -284,7 +284,7 @@ public class ILCompiler
 				str = compile(ternary.getFalseCase());
 				instructions.add("_te" + expr.getID() + " = " + str);
 				instructions.add("label _2te" + expr.getID());
-				return str;
+				return "_te" + expr.getID();
 			default:
 				throw new UnsupportedOperationException();
 		}
