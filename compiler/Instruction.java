@@ -48,8 +48,7 @@ public class Instruction
 		else if (line.startsWith("call"))
 		{
 			String substr = line.substring(5, line.lastIndexOf(" "));
-			if (!substr.equals("print"))
-				variablesUsed.add(substr);
+			variablesUsed.add(substr);
 			type = InstructionType.FUNCTIONCALL;
 		}
 		else if (line.startsWith("return"))
@@ -66,9 +65,9 @@ public class Instruction
 	void print()
 	{
 //			System.out.println("\t\tPre-Declarations: " + preDeclarations);
-//			System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
+			System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
 //			System.out.println("\t\tReferenced Variables: " + variablesUsed);
-		System.out.println("\t" + line);
+			System.out.println("\t" + line);
 //			System.out.println("\t\tPost-Declarations: " + postDeclarations);
 	}
 	
@@ -112,7 +111,7 @@ public class Instruction
 	private static boolean identifier(String str)
 	{
 		char c = str.charAt(0);
-		if (c == '_')
+		if (c == '_' || c == '*')
 			return true;
 		if (!Character.isLetter(c))
 			return false;

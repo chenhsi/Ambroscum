@@ -10,7 +10,7 @@ import ambroscum.values.*;
 public class ILCompiler
 {
 	private static List<String> instructions;
-	private static Set<List<String>> functions;
+	private static Map<String, List<String>> functions;
 	
 	public static void compile(File input) throws IOException
 	{
@@ -18,7 +18,7 @@ public class ILCompiler
 
 		Block block = (Block) new Block(null, stream, 0);
 
-		functions = new HashSet<> ();
+		functions = new HashMap<> ();
 		for (Line line : block.getLines())
 			functionDeclarations(line);
 
@@ -71,14 +71,13 @@ public class ILCompiler
 				instructions = new LinkedList<String> ();
 				Block block = ((DefLine) line).getBlock();
 				functionDeclarations(block);
-				instructions.add("label _tl" + line.getID());
 				List<String> params = ((DefLine) line).getParams();
 				for (int i = params.size() - 1; i >= 0; i--)
 					instructions.add(params.get(i) + " = paramvalue");
 				for (Line subline : block.getLines())
 					compile(subline, null, null);
 				instructions.add("return null");
-				functions.add(instructions);
+				functions.put("_tl" + line.getID(), instructions);
 				break;
 			case "ClassLine":
 				throw new UnsupportedOperationException();
@@ -263,7 +262,7 @@ public class ILCompiler
 						instructions.add("param " + str);
 					}
 					str = compile(call.getFunction());
-					instructions.add("call &" + str + " " + call.getOperands().size());
+					instructions.add("call " + str + " " + call.getOperands().size());
 					instructions.add("_te" + expr.getID() + " = returnvalue");
 					return "_te" + expr.getID();
 				}
