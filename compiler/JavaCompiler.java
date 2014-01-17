@@ -468,12 +468,23 @@ public class JavaCompiler
 				out.print("\")");
 				break;
 			case "ExpressionReference":
-				ExpressionReference cast = (ExpressionReference) expr;
-				out.print("((List) ");
-				compile(cast.getPrimary());
-				out.print(").get((int) ");
-				compile(cast.getSecondary());
-				out.print(")");
+				ExpressionReference ref = (ExpressionReference) expr;
+				if (ref.getSecondaryRight() == null)
+				{
+					out.print("((List) ");
+					compile(ref.getPrimary());
+					out.print(").get((int) ");
+					compile(ref.getSecondary());
+					out.print(")");
+				}
+				else
+					out.print("((List) ");
+					compile(ref.getPrimary());
+					out.print(").subList((int) ");
+					compile(ref.getSecondary());
+					out.print(", (int) ");
+					compile(ref.getSecondaryRight());
+					out.print(")");
 				break;
 			case "ExpressionList":
 				out.print("_e" + expr.getID());

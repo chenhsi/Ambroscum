@@ -58,6 +58,17 @@ public class ListValue extends ObjectValue {
 		else
 			throw new SyntaxError("Expected int for list index");
 	}
+	public void setRange(Value leftIndex, Value rightIndex, Value valueList)
+	{
+		if (leftIndex instanceof IntValue && rightIndex instanceof IntValue)
+		{
+			if (!(valueList instanceof ListValue))
+				throw new ambroscum.errors.InvalidArgumentException("Can't assign a nonlist to a list slice");
+			throw new UnsupportedOperationException();
+		}
+		else
+			throw new SyntaxError("Expected int for list index");
+	}
 	
 	@Override
 	public Value applyOperator(FunctionOperator op, List<Value> otherValues)

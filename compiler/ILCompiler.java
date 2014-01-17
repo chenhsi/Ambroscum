@@ -148,8 +148,11 @@ public class ILCompiler
 				instructions.add("jump " + continueTarget);
 				break;
 			case "ReturnLine":
-				str = compile(((ReturnLine) line).getReturnExpr());
-				instructions.add("return " + str);
+				Expression returnExpr = ((ReturnLine) line).getReturnExpr();
+				if (returnExpr != null)
+					instructions.add("return " + compile(returnExpr));
+				else
+					instructions.add("return null");
 				break;
 			case "AssertLine":
 				throw new UnsupportedOperationException();
@@ -229,9 +232,22 @@ public class ILCompiler
 					instructions.add("_te" + expr.getID() + " = " + var.getReference());
 				return "_te" + expr.getID();
 			case "ExpressionReference":
-				throw new UnsupportedOperationException();
+				// assuming lists and not dicts
+				ExpressionReference ref = (ExpressionReference) expr;
+				str = compile(ref.getSecondary());
+				instructions.add("_1te" + expr.getID() + " = " + str + " * 4");
+				instructions.add("_te" + expr.getID() + " = *_1te" + expr.getID());
+				return "_te" + expr.getID();
 			case "ExpressionList":
-				throw new UnsupportedOperationException();
+				Expression[] array = ((ExpressionList) expr).getExpressions();
+				instructions.add("_te" + expr.getID() + " = malloc " + array.length * 4);
+				for (int i = 0; i < array.length; i++)
+				{
+					str = compile(array[i]);
+					instructions.add("_" + i + "te" + expr.getID() + " = _te" + expr.getID() + " + " + i * 4);
+					instructions.add("*_" + i + "te" + expr.getID() + " = " + str);
+				}
+				return "_te" + expr.getID();
 			case "ExpressionDict":
 				throw new UnsupportedOperationException();
 			case "ExpressionCall":

@@ -47,8 +47,8 @@ public class Instruction
 		}
 		else if (line.startsWith("call"))
 		{
-			String substr = line.substring(5, line.lastIndexOf(" "));
-			variablesUsed.add(substr);
+			String func = line.substring(5, line.lastIndexOf(" "));
+			variablesUsed.add(func);
 			type = InstructionType.FUNCTIONCALL;
 		}
 		else if (line.startsWith("return"))
@@ -65,7 +65,7 @@ public class Instruction
 	void print()
 	{
 //			System.out.println("\t\tPre-Declarations: " + preDeclarations);
-			System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
+//			System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
 //			System.out.println("\t\tReferenced Variables: " + variablesUsed);
 			System.out.println("\t" + line);
 //			System.out.println("\t\tPost-Declarations: " + postDeclarations);
@@ -99,6 +99,50 @@ public class Instruction
 				optimized = true;
 			}
 		}*/
+		outer: while (!optimized && type == InstructionType.CALCULATION && variablesUsed.size() == 0)
+		{
+			String[] parts = line.split(" ");
+			try
+			{
+				int left = Integer.parseInt(parts[2]);
+				int right = Integer.parseInt(parts[4]);
+				switch (parts[3])
+				{
+					case "+":
+						line = parts[0] + " = " + (left + right);
+						break;
+					case "-":
+						line = parts[0] + " = " + (left - right);
+						break;
+					case "*":
+						line = parts[0] + " = " + (left * right);
+						break;
+					case "/":
+						line = parts[0] + " = " + (left / right);
+						break;
+					default:
+						break outer;
+				}
+				optimized = true;
+			}
+			catch (NumberFormatException ex)
+			{
+				boolean left = Boolean.parseBoolean(parts[2]);
+				boolean right = Boolean.parseBoolean(parts[4]);
+				switch (parts[3])
+				{
+					case "and":
+						line = parts[0] + " = " + (left && right);
+						break;
+					case "or":
+						line = parts[0] + " = " + (left || right);
+						break;
+					default:
+						break outer;
+				}
+				optimized = true;
+			}
+		}
 		if (optimized)
 			optimize();
 	}
@@ -115,7 +159,7 @@ public class Instruction
 			return true;
 		if (!Character.isLetter(c))
 			return false;
-		if (str.equals("true") || str.equals("false") || str.equals("paramvalue") || str.equals("returnvalue") || str.equals("print"))
+		if (str.equals("true") || str.equals("false") || str.equals("paramvalue") || str.equals("returnvalue"))
 			return false;
 		return true;
 	}

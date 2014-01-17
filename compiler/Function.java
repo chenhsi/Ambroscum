@@ -79,6 +79,8 @@ public class Function
 		variablePropogation();
 		propogateVariableDeclarations();
 		removeUnneededDeclarations();
+		propogateVariableDeclarations();
+		variablePropogation();
 		loopAnalysis();
 	}
 	
@@ -173,7 +175,7 @@ public class Function
 				continue;
 			if (curr.children.size() == 1)
 				for (BasicBlock child : curr.children)
-					if (child == endingBlock) // can't remove ending block from graph
+					if (child == endingBlock && curr != startingBlock) // can't remove ending block from graph
 					{
 						child.instructions.addAll(curr.instructions);
 						for (Instruction inst : curr.instructions)

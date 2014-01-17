@@ -35,7 +35,7 @@ def f(a):
 		if a > 4:
 			return
 		end
-		a++
+		a = a + 1
 	end
 end
 

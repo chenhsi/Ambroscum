@@ -64,9 +64,17 @@ public class ExpressionReference extends Expression
 		if (first instanceof FunctionValue)
 			throw new NotDereferenceableException("Cannot dot reference a function");
 		else if (first instanceof ListValue)
+		{
+			if (secondaryRight != null)
+				((ListValue) first).setRange(secondary.evaluate(values), secondaryRight.evaluate(values), value);
 			((ListValue) first).set(secondary.evaluate(values), value);
+		}
 		else if (first instanceof DictValue)
+		{
+			if (secondaryRight != null)
+				throw new SyntaxError("Dictionaries cannot be sliced");
 			((DictValue) first).set(secondary.evaluate(values), value);
+		}
 		else
 			throw new UnsupportedOperationException("this should prob be converted to an operator of some sort");
 	}
