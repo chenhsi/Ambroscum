@@ -58,6 +58,7 @@ public class JavaCompiler
 		out.println("public class Main {");
 		out.println("\tpublic static void main(String[] args) {");
 		out.println("\t\tVariableMap map = new VariableMap();");
+		out.println("\t\tMap<String, VariableMap> scopes = new HashMap<>();");
 		for (Line line : block.getLines())
 		{
 			process(line, 2);
@@ -207,7 +208,7 @@ public class JavaCompiler
 					out.print(";\n");
 				}
 				printIndentation(indentation);
-				printHelper(assign.getAssignTargets().get(lastIndex), assign.getAssignValues().get(lastIndex));
+				assignHelper(assign.getAssignTargets().get(lastIndex), assign.getAssignValues().get(lastIndex));
 				for (int i = 0; i < lastIndex; i++)
 				{
 					printIndentation(indentation);
@@ -398,6 +399,8 @@ public class JavaCompiler
 				ExpressionReference cast = (ExpressionReference) expr;
 				process(cast.getPrimary(), indentation);
 				process(cast.getSecondary(), indentation);
+				if (cast.getSecondaryRight() != null)
+					process(cast.getSecondaryRight(), indentation);
 				break;
 			case "ExpressionList":
 				printIndentation(indentation);
@@ -457,34 +460,34 @@ public class JavaCompiler
 				break;
 			case "ExpressionIdentifier":
 				Expression possParent = ((ExpressionIdentifier) expr).getParent();
-				out.print("map.get(\"");
-				if (possParent != null)
+				if (possParent == null)
+					out.print("map.get(\"");
+				else
 				{
-					throw new UnsupportedOperationException();
-//					compile(possParent);
-//					out.print(".");
+					out.print("scopes.get("));
+					compile(possParent);
+					out.print(").get(\""));
 				}
 				out.print(((ExpressionIdentifier) expr).getReference());
 				out.print("\")");
 				break;
 			case "ExpressionReference":
 				ExpressionReference ref = (ExpressionReference) expr;
+				out.print("((List) ");
+				compile(ref.getPrimary());
 				if (ref.getSecondaryRight() == null)
 				{
-					out.print("((List) ");
-					compile(ref.getPrimary());
 					out.print(").get((int) ");
 					compile(ref.getSecondary());
-					out.print(")");
 				}
 				else
-					out.print("((List) ");
-					compile(ref.getPrimary());
+				{
 					out.print(").subList((int) ");
 					compile(ref.getSecondary());
 					out.print(", (int) ");
 					compile(ref.getSecondaryRight());
-					out.print(")");
+				}
+				out.print(")");
 				break;
 			case "ExpressionList":
 				out.print("_e" + expr.getID());
@@ -493,16 +496,15 @@ public class JavaCompiler
 				throw new UnsupportedOperationException();
 			case "ExpressionCall":
 				ExpressionCall call = (ExpressionCall) expr;
+				out.print("(");
 				if (call.getFunction() instanceof ExpressionOperator)
 				{
 					String type = ((ExpressionOperator) call.getFunction()).getValue().getOperandType();
-					out.print("(");
 					if (call.getOperands().size() == 1)
 					{
 						compile(call.getFunction());
 						out.print(" ((" + type + ") ");
 						compile(call.getOperands().get(0));
-						out.print(")");
 					}
 					else
 					{
@@ -512,13 +514,12 @@ public class JavaCompiler
 						compile(call.getFunction());
 						out.print(" ((" + type + ") ");
 						compile(call.getOperands().get(1));
-						out.print(")");
 					}
 					out.print(")");
 				}
 				else
 				{
-					out.print("((Function) ");
+					out.print("(Function) ");
 					compile(call.getFunction());
 					out.print(").call(");
 					boolean first = true;
@@ -529,8 +530,8 @@ public class JavaCompiler
 						first = false;
 						compile(operand);
 					}
-					out.print(")");
 				}
+				out.print(")");
 				break;
 			case "ExpressionOperator":
 				String asStr = expr.toString();
@@ -566,7 +567,7 @@ public class JavaCompiler
 			out.print("\t");
 	}
 	
-	private static void printHelper(Expression target, Expression value)
+	private static void assignHelper(Expression target, Expression value)
 	{
 		if (target instanceof ExpressionIdentifier)
 		{
@@ -576,7 +577,7 @@ public class JavaCompiler
 			compile(value);
 			out.print(");\n");
 		}
-		if (target instanceof ExpressionReference)
+		else if (target instanceof ExpressionReference)
 		{
 			out.print("((List) ");
 			compile(((ExpressionReference) target).getPrimary());
@@ -600,13 +601,29 @@ public class JavaCompiler
 		}
 		if (target instanceof ExpressionReference)
 		{
-			out.print("((List) ");
-			compile(((ExpressionReference) target).getPrimary());
-			out.print(").set((int) ");
-			compile(((ExpressionReference) target).getSecondary());
-			out.print(", ");
-			out.print(value);
-			out.print(");\n");
+			ExpressionReference ref = (ExpressionReference) target;
+			if (ref.getSecondaryRight() == null)
+			{
+				out.print("((List) ");
+				compile(((ExpressionReference) target).getPrimary());
+				out.print(").set((int) ");
+				compile(((ExpressionReference) target).getSecondary());
+				out.print(", ");
+				out.print(value);
+				out.print(");\n");
+			}
+			else
+			{
+				// need to delete old elements first
+				out.print("((List) ");
+				compile(((ExpressionReference) target).getPrimary());
+				out.print(").addAll((int) ");
+				compile(((ExpressionReference) target).getSecondary());
+				out.print(", (List) ");
+				out.print(value);
+				out.print(");\n");
+				throw new UnsupportedOperationException();
+			}
 		}
 	}
 }

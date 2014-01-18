@@ -123,7 +123,13 @@ public class ILCompiler
 						}
 					}
 					if (target instanceof ExpressionReference)
-						throw new UnsupportedOperationException();
+					{
+						if (((ExpressionReference) target).getSecondaryRight() != null)
+							throw new UnsupportedOperationException();
+						instructions.add("_" + i + "tl2" + expr.getID() + " = _" + i + "tl2" + line.getID() + " + " + i * 4);
+						instructions.add("*_" + i + "te" + expr.getID() + " = " + str);
+						instructions.add(compile(target) + " = _" + i + "tl" + line.getID());
+					}
 					throw new UnsupportedOperationException();
 				}
 				break;
@@ -155,6 +161,8 @@ public class ILCompiler
 					instructions.add("return null");
 				break;
 			case "AssertLine":
+				// tempted to simply assume no errors and continue on
+				// or, maybe special error block?
 				throw new UnsupportedOperationException();
 			case "IfLine":
 				IfLine ifLine = (IfLine) line;
@@ -187,6 +195,19 @@ public class ILCompiler
 				instructions.add("label _3tl" + line.getID());
 				break;
 			case "ForLine":
+				ForLine forLine = (ForLine) line;
+				instructions.add("_1tl" + line.getID() + " = -4");
+				instructions.add("_2tl" + line.getID() + " = " + compile(forLine.getIterable()));
+				instructions.add("label _3tl" + line.getID());
+				instructions.add("jumpunless ?? _4tl" + line.getID());	// still needs to be fixed
+				instructions.add("_1tl" + line.getID() + " = 4 + _1tl" + line.getID());
+				instructions.add("_5tl" + line.getID() + " = _1tl" + line.getID() + " _2tl" + line.getID());
+				instructions.add(compile(forLine.getIterVariable) + " = *_5tl" + line.getID());
+				compile(forLine.getLoopBlock(), "_6tl" + line.getID(), "_3tl" + line.getID());
+				instructions.add("jump _3tl" + line.getID());
+				instructions.add("label _4tl" + line.getID());
+				compile(forLine.getThenBlock(), breakTarget, continueTarget);
+				instructions.add("label _6tl" + line.getID());
 				throw new UnsupportedOperationException();
 			case "DefLine":
 				instructions.add(((DefLine) line).getName() + " = *_tl" + line.getID());
@@ -234,9 +255,9 @@ public class ILCompiler
 			case "ExpressionReference":
 				// assuming lists and not dicts
 				ExpressionReference ref = (ExpressionReference) expr;
-				str = compile(ref.getSecondary());
-				instructions.add("_1te" + expr.getID() + " = " + str + " * 4");
-				instructions.add("_te" + expr.getID() + " = *_1te" + expr.getID());
+				instructions.add("_1te" + expr.getID() + " = " + compile(ref.getSecondary()) + " * 4");
+				instructions.add("_2te" + expr.getID() + " = " + compile(ref.getPrimary()) + " + _1te" + expr.getID());
+				instructions.add("_te" + expr.getID() + " = *_2te" + expr.getID());
 				return "_te" + expr.getID();
 			case "ExpressionList":
 				Expression[] array = ((ExpressionList) expr).getExpressions();
