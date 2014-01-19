@@ -48,3 +48,23 @@ class VariableMap
 		return parent.get(key);
 	}
 }
+
+class AmbroscumList implements Iterable
+{
+	private List<Object> internal = new LinkedList<> ();
+	
+	public void add(Object toAdd)
+	{
+		internal.add(toAdd);
+	}
+	
+	public Object get(int index)
+	{
+		return internal.get(index);
+	}
+	
+	public Iterator iterator()
+	{
+		return internal.iterator();
+	}
+}

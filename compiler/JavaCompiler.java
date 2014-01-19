@@ -315,7 +315,7 @@ public class JavaCompiler
 				if (thenBlock == null)
 				{
 					printIndentation(indentation);
-					out.print("for (Object _l" + line.getID() + " : (List) ");
+					out.print("for (Object _l" + line.getID() + " : (AmbroscumList) ");
 					compile(iterable);
 					out.print(") {\n");
 					printIndentation(indentation + 1);
@@ -329,7 +329,7 @@ public class JavaCompiler
 					printIndentation(indentation);
 					out.println("boolean _la" + line.getID() + ";");
 					printIndentation(indentation);
-					out.print("Iterator _lb" + line.getID() + " = ((List) ");
+					out.print("Iterator _lb" + line.getID() + " = ((AmbroscumList) ");
 					compile(iterable);
 					out.print(").iterator();\n");
 					printIndentation(indentation);
@@ -406,7 +406,7 @@ public class JavaCompiler
 				printIndentation(indentation);
 				for (Expression subexpr : ((ExpressionList) expr).getExpressions())
 					process(subexpr, indentation);
-				out.print("List _e" + expr.getID() + " = new ArrayList ();\n");
+				out.print("AmbroscumList _e" + expr.getID() + " = new AmbroscumList();\n");
 				for (Expression subexpr : ((ExpressionList) expr).getExpressions())
 				{
 					printIndentation(indentation);
@@ -464,16 +464,16 @@ public class JavaCompiler
 					out.print("map.get(\"");
 				else
 				{
-					out.print("scopes.get("));
+					out.print("scopes.get(");
 					compile(possParent);
-					out.print(").get(\""));
+					out.print(").get(\"");
 				}
 				out.print(((ExpressionIdentifier) expr).getReference());
 				out.print("\")");
 				break;
 			case "ExpressionReference":
 				ExpressionReference ref = (ExpressionReference) expr;
-				out.print("((List) ");
+				out.print("((AmbroscumList) ");
 				compile(ref.getPrimary());
 				if (ref.getSecondaryRight() == null)
 				{
@@ -579,7 +579,7 @@ public class JavaCompiler
 		}
 		else if (target instanceof ExpressionReference)
 		{
-			out.print("((List) ");
+			out.print("((AmbroscumList) ");
 			compile(((ExpressionReference) target).getPrimary());
 			out.print(").set((int) ");
 			compile(((ExpressionReference) target).getSecondary());
@@ -604,7 +604,7 @@ public class JavaCompiler
 			ExpressionReference ref = (ExpressionReference) target;
 			if (ref.getSecondaryRight() == null)
 			{
-				out.print("((List) ");
+				out.print("((AmbroscumList) ");
 				compile(((ExpressionReference) target).getPrimary());
 				out.print(").set((int) ");
 				compile(((ExpressionReference) target).getSecondary());
@@ -615,11 +615,11 @@ public class JavaCompiler
 			else
 			{
 				// need to delete old elements first
-				out.print("((List) ");
+				out.print("((AmbroscumList) ");
 				compile(((ExpressionReference) target).getPrimary());
 				out.print(").addAll((int) ");
 				compile(((ExpressionReference) target).getSecondary());
-				out.print(", (List) ");
+				out.print(", (AmbroscumList) ");
 				out.print(value);
 				out.print(");\n");
 				throw new UnsupportedOperationException();

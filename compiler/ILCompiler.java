@@ -126,8 +126,8 @@ public class ILCompiler
 					{
 						if (((ExpressionReference) target).getSecondaryRight() != null)
 							throw new UnsupportedOperationException();
-						instructions.add("_" + i + "tl2" + expr.getID() + " = _" + i + "tl2" + line.getID() + " + " + i * 4);
-						instructions.add("*_" + i + "te" + expr.getID() + " = " + str);
+						instructions.add("_" + i + "tl2" + expr.getID() + " = _" + i + "tl2" + expr.getID() + " + " + i * 4);
+						instructions.add("*_" + i + "te" + expr.getID() + " = _" + i + "tl2" + expr.getID());
 						instructions.add(compile(target) + " = _" + i + "tl" + line.getID());
 					}
 					throw new UnsupportedOperationException();
@@ -202,7 +202,7 @@ public class ILCompiler
 				instructions.add("jumpunless ?? _4tl" + line.getID());	// still needs to be fixed
 				instructions.add("_1tl" + line.getID() + " = 4 + _1tl" + line.getID());
 				instructions.add("_5tl" + line.getID() + " = _1tl" + line.getID() + " _2tl" + line.getID());
-				instructions.add(compile(forLine.getIterVariable) + " = *_5tl" + line.getID());
+				instructions.add(compile(forLine.getIterVariable()) + " = *_5tl" + line.getID());
 				compile(forLine.getLoopBlock(), "_6tl" + line.getID(), "_3tl" + line.getID());
 				instructions.add("jump _3tl" + line.getID());
 				instructions.add("label _4tl" + line.getID());
