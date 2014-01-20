@@ -44,9 +44,6 @@ public class AutoTester {
 					interpreterTest(file);
 				} else {
 					compilerTest(file);
-					// Delete the compiled file
-					(new File("tests/temp/Main.java")).delete();
-					(new File("tests/temp/Main.class")).delete();
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace(System.err);
@@ -136,7 +133,7 @@ public class AutoTester {
 	private static void compilerTest(File file) throws Exception {
 		// Compile to .java
 		try {
-			JavaCompiler.compile(file, new PrintWriter(new BufferedWriter(new FileWriter("tests/temp/Main.java"))));
+			JavaCompiler.compile(file, new PrintWriter(new BufferedWriter(new FileWriter("temp/Main.java"))));
 		} catch (Exception ex) {
 			System.err.println("Failed to compile to Java: " + file.getName());
 			ex.printStackTrace(System.err);
@@ -145,7 +142,7 @@ public class AutoTester {
 		// Compile to .class
 		String s;
 		BufferedReader stdInput;
-		Process compiler = new ProcessBuilder("javac", "-cp", "temp", "tests/temp/Main.java").redirectErrorStream(true).start();
+		Process compiler = new ProcessBuilder("javac", "-cp", "temp", "temp/Main.java").redirectErrorStream(true).start();
 		stdInput = new BufferedReader(new InputStreamReader(compiler.getInputStream()));
 		s = null;
 		boolean compileFailed = false;
@@ -165,7 +162,7 @@ public class AutoTester {
 			return;
 		}
 		// Execute the .class
-		Process executor = new ProcessBuilder("java", "-cp", "tests/temp;temp", "Main").redirectErrorStream(true).start();
+		Process executor = new ProcessBuilder("java", "-cp", "temp;temp", "Main").redirectErrorStream(true).start();
 		stdInput = new BufferedReader(new InputStreamReader(executor.getInputStream()));
 		s = null;
 		StringBuilder compiledOutputStrBuilder = new StringBuilder();
