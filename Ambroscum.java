@@ -9,6 +9,7 @@ package ambroscum;
 
 import java.io.*;
 import ambroscum.compiler.*;
+import java.util.Arrays;
 
 public class Ambroscum
 {
@@ -28,13 +29,14 @@ public class Ambroscum
 	 */
 	public static void commandLineMain(String[] args) throws IOException, InterruptedException
 	{
+		System.out.println(java.util.Arrays.toString(args));
 		if (args.length == 0)
 		{
 			Interpreter.interpret();
 			return;
 		}
 		if (args.length == 1 || args.length > 2)
-			throw new IllegalArgumentException("Not supported as arguments: " + args);
+			throw new IllegalArgumentException("Not supported as arguments: " + Arrays.toString(args));
 		if (args[0].equals("-i"))
 			Interpreter.interpret(new File(args[1]), false);
 		else if (args[0].equals("-ii"))
@@ -44,7 +46,7 @@ public class Ambroscum
 		else if (args[0].equals("-cr"))
 			compileJavaTest(new File(args[1]), true);
 		else
-			throw new IllegalArgumentException("Not supported as arguments: " + args);
+			throw new IllegalArgumentException("Not supported as arguments: " + Arrays.toString(args));
 	}
 	
 	private static void compileILTest(File file) throws IOException

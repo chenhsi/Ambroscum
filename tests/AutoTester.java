@@ -22,53 +22,90 @@ public class AutoTester {
 								CORRECT_EXTENSION = ".correct",
 								ERROR_PREFIX = "ERROR: ";
 	
-	public static void main(String[] args) throws IOException {
-		PrintStream systemOut = System.out;
+	public static void main(String[] args) throws Exception {
+		Scanner input = new Scanner(System.in);
+		System.out.println("1 to run Interpreter tests, 2 to run compiler tests");
+		boolean isInterpreter = input.next().equals("1");
 		
 		File testsFolder = new File(TEST_DIRECTORY);
 		File[] testFiles = testsFolder.listFiles();
 		for (File file : testFiles) {
-			String fileName= file.getName();
+			String fileName = file.getName();
 			if (fileName.lastIndexOf(TEST_EXTENSION) < fileName.length() - TEST_EXTENSION.length()) {
 				// This is not a test file
 				continue;
 			}
 			
-			PipedOutputStream pipeOut = new PipedOutputStream();
-			PipedInputStream pipeIn = new PipedInputStream(pipeOut);
-			System.setOut(new PrintStream(pipeOut));
+			if (isInterpreter) {
+				interpreterTest(file);
+			} else {
+				compilerTest(file);
+			}
+		}
+	}
+	
+	private static void interpreterTest(File file) throws IOException {
+		String fileName = file.getName();
+		PipedOutputStream pipeOut = new PipedOutputStream();
+		PipedInputStream pipeIn = new PipedInputStream(pipeOut);
+		System.setOut(new PrintStream(pipeOut));
 
-			// A hack for now.
-			boolean hadError = false;
-			try {
-				Interpreter.interpret(file, false);
-			} catch (Exception ex) {
-				ex.printStackTrace(System.out);
-				hadError = true;
-			}
-			
-			StringBuilder testOutput = new StringBuilder();
-			while (pipeIn.available() > 0) {
-				int read = pipeIn.read();
-				testOutput.append((char) read);
-			}
-			String testOutputStr = testOutput.toString().replaceAll(System.getProperty("line.separator"), "\n").trim();
-			
-			StringBuilder correctOutputStrBldr = new StringBuilder();
-			
-			Scanner correctFileScanner = new Scanner(new File(file.getPath() + CORRECT_EXTENSION));
-			Scanner testOutputScanner = new Scanner(testOutputStr);
-			
-			boolean correct = true;
-			while (correctFileScanner.hasNextLine()) {
-				String correctLine = correctFileScanner.nextLine();
+		// A hack for now.
+		boolean hadError = false;
+		try {
+			Interpreter.interpret(file, false);
+		} catch (Exception ex) {
+			ex.printStackTrace(System.out);
+			hadError = true;
+		}
+		
+		StringBuilder testOutput = new StringBuilder();
+		while (pipeIn.available() > 0) {
+			int read = pipeIn.read();
+			testOutput.append((char) read);
+		}
+		String testOutputStr = testOutput.toString().replaceAll(System.getProperty("line.separator"), "\n").trim();
+		
+		Scanner correctFileScanner = new Scanner(new File(file.getPath() + CORRECT_EXTENSION));
+		Scanner testOutputScanner = new Scanner(testOutputStr);
+		
+		Object[] result = compare(testOutputScanner, correctFileScanner, hadError);
+		
+		boolean correct = (boolean) result[0];
+		testOutputStr = (String) result[1];
+		String correctOutputStr = (String) result[2];
+		if (correct) {
+			System.err.println("Tests passed for " + fileName);
+		} else {
+			System.err.println("Incorrect output for " + fileName);
+			System.err.println("-----------");
+			System.err.println(testOutputStr);
+			System.err.println("-----------");
+			System.err.println(correctOutputStr);
+		}
+		System.err.println("======================");
+		
+	}
+	private static void compilerTest(File file) throws IOException {
+		// Compile the file
+		// Execute the compiled file
+		// Interpret the original script
+		// Compare the two results
+		// Output the comparison
+	}
+	// Output:
+	// Object[] {boolean isCorrect, String testOutput, String correctOutput}
+	private static Object[] compare(Scanner testOutputScanner, Scanner correctFileScanner, boolean hadError) {
+		StringBuilder correctOutputStrBldr = new StringBuilder();
+		StringBuilder testOutputStrBldr = new StringBuilder();
+
+		boolean correct = true;
+		while (testOutputScanner.hasNextLine()) {
+			String correctLine = correctFileScanner.hasNextLine() ? correctFileScanner.nextLine() : null;
+			if (correctLine != null) {
 				correctOutputStrBldr.append(correctLine + "\n");
-				String testLine = testOutputScanner.hasNextLine() ? testOutputScanner.nextLine() : null;
-				// Not enough output - incorrect
-				if (testLine == null) {
-					correct = false;
-					break;
-				}
+				String testLine = testOutputScanner.nextLine();
+				testOutputStrBldr.append(testLine + "\n");
 				// Check if this line was supposed to be an error.
 				if (correctLine.indexOf(ERROR_PREFIX) == 0) {
 					String expectedError = correctLine.substring(ERROR_PREFIX.length());
@@ -83,30 +120,18 @@ public class AutoTester {
 					correct = false;
 					break;
 				}
-			}
-			
-			// Read in the rest of the correct output
-			while (correctFileScanner.hasNextLine()) {
-				// Test output did not finish
-				correct = false;
-				correctOutputStrBldr.append(correctFileScanner.nextLine() + "\n");
-			}
-			// Test output had extra stuff in it
-			if (!hadError && testOutputScanner.hasNextLine()) {
-				correct = false;
-			}
-			
-			String correctOutputStr = correctOutputStrBldr.toString().replaceAll(System.getProperty("line.separator"), "\n").trim();
-			if (correct) {
-				System.err.println("Tests passed for " + fileName);
 			} else {
-				System.err.println("Incorrect output for " + fileName);
-				System.err.println("-----------");
-				System.err.println(testOutputStr);
-				System.err.println("-----------");
-				System.err.println(correctOutputStr);
+				// Not enough output - incorrect
+				correct = false;
+				break;
 			}
-			System.err.println("======================");
 		}
+		// Test output had extra stuff in it
+		while (!hadError && testOutputScanner.hasNextLine()) {
+			correct = false;
+			testOutputStrBldr.append(testOutputScanner.nextLine() + "\n");
+		}
+		
+		return new Object[] {correct, testOutputStrBldr.toString().replaceAll(System.getProperty("line.separator"), "\n").trim(), correctOutputStrBldr.toString().replaceAll(System.getProperty("line.separator"), "\n").trim()};
 	}
 }
