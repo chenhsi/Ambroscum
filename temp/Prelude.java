@@ -56,12 +56,12 @@ class VariableMap
 		if (values.containsKey(key))
 			return values.get(key);
 		if (parent == null)
-			throw new RuntimeException("this should be changed to a better exception");
+			throw new RuntimeException("this should be changed to a better exception: " + key);
 		return parent.get(key);
 	}
 }
 
-class AmbroscumList extends Value implements Iterable
+class AmbroscumList extends Value implements Iterable<Value>
 {
 	private List<Value> internal = new LinkedList<> ();
 	
@@ -81,7 +81,7 @@ class AmbroscumList extends Value implements Iterable
 		return obj;
 	}
 	
-	public Iterator iterator()
+	public Iterator<Value> iterator()
 	{
 		return internal.iterator();
 	}
@@ -185,8 +185,8 @@ class IntValue extends Value
 
 class BooleanValue extends Value
 {
-	private static final BooleanValue TRUE = new BooleanValue(true);
-	private static final BooleanValue FALSE = new BooleanValue(false);
+	public static final BooleanValue TRUE = new BooleanValue(true);
+	public static final BooleanValue FALSE = new BooleanValue(false);
 	public final boolean value;
 	
 	private BooleanValue(boolean b)

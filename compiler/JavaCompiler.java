@@ -568,7 +568,7 @@ public class JavaCompiler
 		{
 			out.print("((AmbroscumList) ");
 			compile(((ExpressionReference) target).getPrimary());
-			out.print(").put((IntValue) ");
+			out.print(").set((IntValue) ");
 			compile(((ExpressionReference) target).getSecondary());
 			out.print(", ");
 			compile(value);

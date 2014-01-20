@@ -27,7 +27,7 @@ public class AutoTester {
 	public static void main(String[] args) throws Exception {
 		Scanner input = new Scanner(System.in);
 		System.out.println("1 to run Interpreter tests, 2 to run compiler tests");
-		boolean isInterpreter = input.next().equals("1");
+		boolean isInterpreter = false;
 		
 		File testsFolder = new File(TEST_DIRECTORY);
 		File[] testFiles = testsFolder.listFiles();

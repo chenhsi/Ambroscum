@@ -32,7 +32,7 @@ public class IdentifierMap
 	}
 	private IdentifierMap[] parents; // represents link to surrounding scopes,
 									 // in preference order of left to right
-	private HashMap<String, Value> map;
+	private Map<String, Value> map;
 	private Set<String> nonlocal;
 
 	/**
@@ -43,7 +43,8 @@ public class IdentifierMap
 	public IdentifierMap(IdentifierMap... prev)
 	{
 		parents = prev;
-		map = new HashMap<String, Value>();
+		map = new HashMap<>();
+		nonlocal = new HashSet<> ();
 	}
 
 	/**
