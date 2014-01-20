@@ -45,8 +45,8 @@ public class AutoTester {
 				} else {
 					compilerTest(file);
 					// Delete the compiled file
-//					(new File("tests/temp/Main.java")).delete();
-//					(new File("tests/temp/Main.class")).delete();
+					(new File("tests/temp/Main.java")).delete();
+					(new File("tests/temp/Main.class")).delete();
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace(System.err);
@@ -145,7 +145,7 @@ public class AutoTester {
 		// Compile to .class
 		String s;
 		BufferedReader stdInput;
-		Process compiler = new ProcessBuilder("javac", "-cp", "temp", "temp/Main.java").redirectErrorStream(true).start();
+		Process compiler = new ProcessBuilder("javac", "-cp", "temp", "tests/temp/Main.java").redirectErrorStream(true).start();
 		stdInput = new BufferedReader(new InputStreamReader(compiler.getInputStream()));
 		s = null;
 		boolean compileFailed = false;
@@ -165,7 +165,7 @@ public class AutoTester {
 			return;
 		}
 		// Execute the .class
-		Process executor = new ProcessBuilder("java", "-cp", "temp", "Main").redirectErrorStream(true).start();
+		Process executor = new ProcessBuilder("java", "-cp", "tests/temp;temp", "Main").redirectErrorStream(true).start();
 		stdInput = new BufferedReader(new InputStreamReader(executor.getInputStream()));
 		s = null;
 		StringBuilder compiledOutputStrBuilder = new StringBuilder();
