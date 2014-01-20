@@ -46,7 +46,7 @@ public class ExpressionIdentifier extends Expression
 	public void setValue(Value value, IdentifierMap values)
 	{
 		if (parent == null)
-			values.add(identifier, value);
+			values.set(identifier, value);
 		else
 		{
 			Value parentValue = parent.evaluate(values);

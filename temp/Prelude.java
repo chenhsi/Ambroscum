@@ -45,9 +45,11 @@ class VariableMap
 		this.parent = parent;
 	}
 	
-	public void put(String key, Value value)
+	public Value put(String key, Value value)
 	{
+		// is this how we want to do scoping
 		values.put(key, value);
+		return value;
 	}
 	public Value get(String key)
 	{
@@ -75,7 +77,8 @@ class AmbroscumList extends Value implements Iterable
 	
 	public Value set(IntValue index, Value obj)
 	{
-		return internal.set(index.value, obj);
+		internal.set(index.value, obj);
+		return obj;
 	}
 	
 	public Iterator iterator()

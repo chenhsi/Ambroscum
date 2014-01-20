@@ -97,6 +97,8 @@ public abstract class Line
 			return new AssertLine(parent, stream);
 		if (token.toString().equals("print") || token.toString().equals("println"))
 			return new PrintLine(parent, stream, token.toString().length() == 7);
+		if (token.toString().equals("nonlocal"))
+			return new NonlocalLine(parent, stream);
 		if (token.toString().equals("break"))
 			return new BreakLine(parent, stream);
 		if (token.toString().equals("continue"))

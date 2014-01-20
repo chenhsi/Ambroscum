@@ -27,11 +27,13 @@ public class IdentifierMap
 		illegal.add("elif"); illegal.add("else"); illegal.add("then");
 		illegal.add("break"); illegal.add("continue"); illegal.add("return");
 		illegal.add("end");
+		illegal.add("self"); illegal.add("nonlocal");
 		illegalIdentifiers = Collections.unmodifiableSet(illegal);
 	}
 	private IdentifierMap[] parents; // represents link to surrounding scopes,
 									 // in preference order of left to right
 	private HashMap<String, Value> map;
+	private Set<String> nonlocal;
 
 	/**
 	 * Constructs an <code>IdentifierMap</code>.
@@ -47,23 +49,26 @@ public class IdentifierMap
 	/**
 	 * 
 	 */
-	public void add(String name, Value value)
+	public void setNonlocal(String name)
 	{
 		if (!isValidIdentifier(name))
 			throw new SyntaxError("\"" + name + "\" is not a valid identifier.");
-		// Not sure how to deal with overriding variables
-		map.put(name, value);
+		nonlocal.add(name);
 	}
 
 	public void set(String name, Value value)
 	{
 		if (!isValidIdentifier(name))
 			throw new SyntaxError("\"" + name + "\" is not a valid identifier.");
-		IdentifierMap containingScope = getContainingScope(name);
-		if (containingScope == null || containingScope == this)
-			map.put(name, value);
+		if (nonlocal.contains(name))
+		{
+			if (parents.length == 0)
+				throw new SyntaxError("Cannot set variables as nonlocal in the global scope");
+			parents[0].set(name, value);
+			// multiple inheritance probably not used, so this should be safe
+		}
 		else
-			containingScope.map.put(name, value);
+			map.put(name, value);
 	}
 
 	public Value get(String name)

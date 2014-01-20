@@ -44,7 +44,7 @@ public class CustomValue extends ObjectValue
 	{
 		if ("new".equals(ref))
 			throw new NonassignableException(this + ".new is not assignable");
-		scope.add(ref, val);
+		scope.set(ref, val);
 	}
 	
 	public Value deepClone(Map<Value, Value> alreadyCloned) {

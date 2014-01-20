@@ -26,7 +26,7 @@ public class FunctionValue extends Value
 		if (params.size() != arguments.size())
 			throw new InvalidArgumentException("wrong number of arguments");
 		for (int i = 0; i < params.size(); i++)
-			ownScope.add(params.get(i), arguments.get(i));
+			ownScope.set(params.get(i), arguments.get(i));
 		switch (code.evaluate(ownScope))
 		{
 			case CONTINUE:

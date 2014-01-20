@@ -55,7 +55,7 @@ public class ClassLine extends Line
 		
 		IdentifierMap scope = new IdentifierMap(values);
 		block.evaluate(scope);
-		values.add(name, new CustomValue(scope));
+		values.set(name, new CustomValue(scope));
 
 		return Block.ExitStatus.NORMAL;
 	}

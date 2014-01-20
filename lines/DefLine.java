@@ -71,7 +71,7 @@ public class DefLine extends Line
 	@Override
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
-		values.add(name, new FunctionValue(list, block, values));
+		values.set(name, new FunctionValue(list, block, values));
 		return Block.ExitStatus.NORMAL;
 	}
 	

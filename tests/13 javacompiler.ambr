@@ -1,0 +1,6 @@
+def f():
+	print "1 "
+	return 2
+end
+
+print 0, f()

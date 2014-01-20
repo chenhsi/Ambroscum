@@ -427,7 +427,8 @@ public class JavaCompiler
 			case "ExpressionOperator":
 				break;
 			case "ExpressionIncrement":
-				throw new UnsupportedOperationException();
+				process(((ExpressionIncrement) expr).getBaseExpression(), indentation);
+				break;
 			case "ExpressionTernary":
 				ExpressionTernary ternary = (ExpressionTernary) expr;
 				process(ternary.getCond(), indentation);
@@ -567,7 +568,7 @@ public class JavaCompiler
 		{
 			out.print("((AmbroscumList) ");
 			compile(((ExpressionReference) target).getPrimary());
-			out.print(").set((IntValue) ");
+			out.print(").put((IntValue) ");
 			compile(((ExpressionReference) target).getSecondary());
 			out.print(", ");
 			compile(value);
