@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import java.util.*;
 
 
@@ -18,3 +19,5 @@ public class Main {
 		System.out.println();
 	}
 }
+=======
+>>>>>>> Silly github
