@@ -71,4 +71,8 @@ public class BooleanValue extends ObjectValue
 	public String toString() {
 		return Boolean.toString(value);
 	}
+	
+	public Value deepClone(Map<Value, Value> alreadyCloned) {
+		return this;
+	}
 }

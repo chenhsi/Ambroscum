@@ -10,8 +10,13 @@ import org.objenesis.ObjenesisStd;
 import org.objenesis.instantiator.ObjectInstantiator;
 
 public class DictValue extends ObjectValue {
-	private Map<Value, Value> map = new HashMap<> ();
+	private Map<Value, Value> map = new HashMap<>();
 	
+	/**
+	 * Creates an empty DictValue
+	 */
+	public DictValue() {
+	}
 	public DictValue(List<Value> origKeys, List<Value> origValues) {
 		for (int i = 0; i < origKeys.size(); i++)
 			set(origKeys.get(i), origValues.get(i));
@@ -23,76 +28,7 @@ public class DictValue extends ObjectValue {
 		throw new ambroscum.errors.NoSuchElementException(this + " has no element " + key);
 	}
 	public void set(Value key, Value value) {
-		// Cast is guaranteed to be safe because clone() is called on a Value
-		map.put((Value) clone(key, new HashMap<Object, Object>()), value);
-	}
-	// Deep-clones o. Has to deal with nonsense like circular references. Sigh.
-	public static Object clone(Object o, Map<Object, Object> alreadyCloned) {
-		// lolk. Pretty much, if it's a built-in thing, don't clone it. Because bad things will happen.
-		// I don't think we'll ever encounter a situation where we try to clone something dangerous
-		// that isn't in java built-in. Cross that bridge if we get to it, I guess.
-		if (o == null)
-			return null;
-		String packageName = o.getClass().getPackage().getName();
-		if (packageName.indexOf("java") == 0) {
-			alreadyCloned.put(o, o);
-			return o;
-		}
-		// If already cloned, then get the clone
-		if (alreadyCloned.containsKey(o)) {
-			return alreadyCloned.get(o);
-		}
-		
-		// Special handling for arrays, because they're annoying. Not sure this is actually necessary.
-		// Commented out for now, since I don't think this case will ever happen.
-		if (o.getClass().isArray()) {
-			Object newArray = cloneArray(o, alreadyCloned);
-			alreadyCloned.put(o, newArray);
-			return newArray;
-		}
-		
-		// Create an empty copy of o
-		// Using Objenesis to get "blank" instances of o
-		ObjenesisStd objenesis = new ObjenesisStd();
-		ObjectInstantiator instantiator = objenesis.getInstantiatorOf(o.getClass());
-		Object clone = instantiator.newInstance();
-		alreadyCloned.put(o, clone);
-		// Recursively copy the fields of o
-		for (Field field : o.getClass().getDeclaredFields()) {
-			boolean isAccessible = field.isAccessible();
-			try {
-				field.setAccessible(true);
-				Object fieldVal = field.get(o);
-				
-				// Ewwwww. Why don't arrays have fields? >.>
-				if (fieldVal.getClass().isArray()) {
-					// HAHAHAHAHAHAHAHAHA I HATE REFLECTION WHY DID I EVER THINK THIS WAS A GOOD IDEA
-					Object newArray = cloneArray(fieldVal, alreadyCloned);
-					field.set(clone, newArray);
-				} else {
-					field.set(clone, clone(fieldVal, alreadyCloned));
-				}
-			} catch (IllegalAccessException ex) {
-				// IDK how to handle this
-				// Although hopefully, Java Security Manager won't actually care about our classes
-				// Which is probably a reasonable assumption
-			} finally {
-				field.setAccessible(isAccessible);
-			}
-		}
-		return clone;
-	}
-	private static Object cloneArray(Object o, Map<Object, Object> alreadyCloned) {
-		int length = Array.getLength(o);
-		Object newArray = Array.newInstance(o.getClass().getComponentType(), length);
-		for (int i = 0; i < length; i++) {
-		    Object element = Array.get(o, i);
-		    Object elementClone = clone(element, alreadyCloned);
-		    alreadyCloned.put(element, elementClone);
-		    Array.set(newArray, i, elementClone);
-		}
-		alreadyCloned.put(o, newArray);
-		return newArray;
+		map.put(key.deepClone(new HashMap<Value, Value>()), value);
 	}
 	
 	@Override
@@ -155,5 +91,18 @@ public class DictValue extends ObjectValue {
 		
 		builder.append('}');
 		return builder.toString();
+	}
+	
+	public Value deepClone(Map<Value, Value> alreadyCloned) {
+		DictValue clone = new DictValue();
+		alreadyCloned.put(this, clone);
+		Set<Value> keySet = map.keySet();
+		for (Value origKey : keySet) {
+			Value cloneKey = origKey.deepClone(alreadyCloned);
+			Value cloneVal = map.get(origKey).deepClone(alreadyCloned);
+			
+			clone.map.put(cloneKey, cloneVal);
+		}
+		return clone;
 	}
 }

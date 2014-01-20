@@ -20,4 +20,8 @@ public class NullValue extends ObjectValue
 	{
 		return "null";
 	}
+	
+	public Value deepClone(Map<Value, Value> alreadyCloned) {
+		return this;
+	}
 }

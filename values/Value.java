@@ -27,4 +27,11 @@ public abstract class Value {
 	public String repr() {
 		return toString();
 	}
+	
+	/**
+	 * Creates a copy of this object, with fields also being cloned.
+	 * As a side effect, adds this object and its clone to the alreadyCloned map
+	 * at the start of the method (i.e. before cloning the fields).
+	 */
+	public abstract Value deepClone(Map<Value, Value> alreadyCloned);
 }

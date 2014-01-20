@@ -120,4 +120,8 @@ public class FunctionOperator extends FunctionValue
 		
 		public static void ready() {} // exists just to be called for the static initializer
 	}
+	
+	public Value deepClone(Map<Value, Value> alreadyCloned) {
+		return this;
+	}
 }

@@ -1,6 +1,7 @@
 package ambroscum.values;
 
 import java.util.List;
+import java.util.Map;
 import ambroscum.*;
 import ambroscum.errors.FunctionNotFoundException;
 import ambroscum.errors.VariableNotFoundException;
@@ -44,5 +45,9 @@ public class CustomValue extends ObjectValue
 		if ("new".equals(ref))
 			throw new NonassignableException(this + ".new is not assignable");
 		scope.add(ref, val);
+	}
+	
+	public Value deepClone(Map<Value, Value> alreadyCloned) {
+		return this;
 	}
 }

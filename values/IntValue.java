@@ -130,4 +130,8 @@ public class IntValue extends ObjectValue
 	{
 		return value + "";
 	}
+	
+	public Value deepClone(Map<Value, Value> alreadyCloned) {
+		return this;
+	}
 }

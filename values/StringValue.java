@@ -78,4 +78,8 @@ public class StringValue extends ObjectValue
 	public String repr() {
 		return '\"' + value + '\"';
 	}
+	
+	public Value deepClone(Map<Value, Value> alreadyCloned) {
+		return this;
+	}
 }

@@ -1,6 +1,7 @@
 package ambroscum.values;
 
 import java.util.List;
+import java.util.Map;
 import ambroscum.lines.Block;
 import ambroscum.IdentifierMap;
 import ambroscum.errors.InvalidArgumentException;
@@ -43,5 +44,9 @@ public class FunctionValue extends Value
 	public String toString()
 	{
 		return "(funcdecl " + params + " " + code + ")";
+	}
+	
+	public Value deepClone(Map<Value, Value> alreadyCloned) {
+		return this;
 	}
 }

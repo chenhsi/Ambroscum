@@ -126,8 +126,8 @@ public class ILCompiler
 					{
 						if (((ExpressionReference) target).getSecondaryRight() != null)
 							throw new UnsupportedOperationException();
-						instructions.add("_" + i + "tl2" + expr.getID() + " = _" + i + "tl2" + expr.getID() + " + " + i * 4);
-						instructions.add("*_" + i + "te" + expr.getID() + " = _" + i + "tl2" + expr.getID());
+						instructions.add("_" + i + "tl2" + line.getID() + " = _" + i + "tl2" + line.getID() + " + " + i * 4);
+						instructions.add("*_" + i + "te" + line.getID() + " = _" + i + "tl2" + line.getID());
 						instructions.add(compile(target) + " = _" + i + "tl" + line.getID());
 					}
 					throw new UnsupportedOperationException();

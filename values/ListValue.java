@@ -141,4 +141,13 @@ public class ListValue extends ObjectValue {
 	{
 		return Arrays.toString(list);
 	}
+	
+	public Value deepClone(Map<Value, Value> alreadyCloned) {
+		ListValue clone = new ListValue(new Value[list.length]);
+		alreadyCloned.put(this, clone);
+		for (int i = 0; i < list.length; i++) {
+			clone.list[i] = list[i].deepClone(alreadyCloned);
+	    }
+		return clone;
+	}
 }
