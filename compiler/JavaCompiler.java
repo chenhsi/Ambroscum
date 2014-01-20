@@ -18,7 +18,7 @@ import ambroscum.values.*;
 public class JavaCompiler
 {
 	private static final boolean optimizeLocally = false; // should be a safe optimization, i.e. does not introduce errors or change behavior
-	private static final boolean propogateConstants = true; // causes errors when there are multiple scopes
+	private static final boolean propogateConstants = false; // causes errors when there are multiple scopes
 	private static final boolean variableLiveness = false; // doesn't currently do anything
 	
 	private static PrintWriter out;

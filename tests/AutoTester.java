@@ -45,8 +45,8 @@ public class AutoTester {
 				} else {
 					compilerTest(file);
 					// Delete the compiled file
-					(new File("tests/temp/Main.java")).delete();
-					(new File("tests/temp/Main.class")).delete();
+//					(new File("tests/temp/Main.java")).delete();
+//					(new File("tests/temp/Main.class")).delete();
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace(System.err);
