@@ -46,7 +46,8 @@ public class ReturnLine extends Line
 	@Override
 	public Line localOptimize()
 	{
-		expr = expr.localOptimize();
+		if (expr != null)
+			expr = expr.localOptimize();
 		return this;
 	}
 	
@@ -59,5 +60,11 @@ public class ReturnLine extends Line
 	public Expression getReturnExpr()
 	{
 		return expr;
+	}
+	
+	@Override
+	protected boolean endsWithReturn()
+	{
+		return true;
 	}
 }

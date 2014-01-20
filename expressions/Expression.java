@@ -215,6 +215,6 @@ public abstract class Expression
 
 	private static ExpressionLiteral parseString(String text)
 	{
-		return new ExpressionLiteral(new StringValue(text.substring(1, text.length() - 1)));
+		return new ExpressionLiteral(StringValue.fromString(text.substring(1, text.length() - 1)));
 	}
 }

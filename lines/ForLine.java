@@ -104,4 +104,10 @@ public class ForLine extends Line
 	{
 		return thenBlock;
 	}
+	
+	@Override
+	protected boolean endsWithReturn()
+	{
+		throw new UnsupportedOperationException();
+	}
 }

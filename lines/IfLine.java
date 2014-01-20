@@ -153,4 +153,15 @@ public class IfLine extends Line
 		if (elseBlock != null)
 			elseBlock.setDeclarations(declarations, false);
 	}
+	
+	@Override
+	protected boolean endsWithReturn()
+	{
+		for (Block block : blocks)
+			if (block != null && !block.endsWithReturn())
+				return false;
+		if (elseBlock != null)
+			return elseBlock.endsWithReturn();
+		return true;
+	}
 }

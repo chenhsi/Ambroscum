@@ -63,11 +63,17 @@ public class Block extends Line
 	{
 		return returnValue;
 	}
-	
+
 	@Override
 	protected void setReturnValue(Value value)
 	{
 		returnValue = value;
+	}
+
+	@Override
+	public boolean endsWithReturn()
+	{
+		return lines.get(lines.size() - 1).endsWithReturn();
 	}
 	
 	public List<Line> getLines()

@@ -41,6 +41,8 @@ public class IntValue extends ObjectValue
 			case "+":
 				if (other instanceof IntValue)
 					return IntValue.fromInt(value + ((IntValue) other).getValue());
+				if (other instanceof StringValue)
+					return StringValue.fromString(value + ((StringValue) other).getValue());
 				throw new FunctionNotFoundException("int's '+' operator not defined with value " + other);
 			case "-":
 				if (other instanceof IntValue)

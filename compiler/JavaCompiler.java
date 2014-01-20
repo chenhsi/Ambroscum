@@ -17,7 +17,7 @@ import ambroscum.values.*;
 
 public class JavaCompiler
 {
-	private static final boolean optimizeLocally = false; // should be a safe optimization, i.e. does not introduce errors or change behavior
+	private static final boolean optimizeLocally = true; // should be a safe optimization, i.e. does not introduce errors or change behavior
 	private static final boolean propogateConstants = false; // causes errors when there are multiple scopes
 	private static final boolean variableLiveness = false; // doesn't currently do anything
 	
@@ -102,15 +102,13 @@ public class JavaCompiler
 				out.println("\t}");
 				out.println("\tprotected Value call(VariableMap map) {");
 				Block block = ((DefLine) line).getBlock();
-				boolean lastReturn = false;
 				if (block != null)
 					for (Line subLine : block.getLines())
 					{
 						process(subLine, 2);
 						compile(subLine, 2);
-						lastReturn = subLine instanceof ReturnLine;
 					}
-				if (!lastReturn)
+				if (!block.endsWithReturn())
 					out.println("\treturn null;");
 				out.println("\t}");
 				out.println("}");
@@ -163,7 +161,9 @@ public class JavaCompiler
 			case "ContinueLine":
 				break;
 			case "ReturnLine":
-				process(((ReturnLine) line).getReturnExpr(), indentation);
+				Expression returnExpr = ((ReturnLine) line).getReturnExpr();
+				if (returnExpr != null)
+					process(returnExpr, indentation);
 				break;
 			case "CallLine":
 				process(((CallLine) line).getCall(), indentation);
@@ -330,7 +330,7 @@ public class JavaCompiler
 					printIndentation(indentation);
 					out.println("boolean _la" + line.getID() + ";");
 					printIndentation(indentation);
-					out.print("Iterator _lb" + line.getID() + " = ((AmbroscumList) ");
+					out.print("Iterator<Value> _lb" + line.getID() + " = ((AmbroscumList) ");
 					compile(iterable);
 					out.print(").iterator();\n");
 					printIndentation(indentation);

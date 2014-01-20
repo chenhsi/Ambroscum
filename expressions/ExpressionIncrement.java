@@ -39,7 +39,18 @@ public class ExpressionIncrement extends ExpressionCall
 	@Override
 	public String toString()
 	{
-		throw new UnsupportedOperationException();
+		if (prefix)
+			return "(" + baseExpr + "=" + opExpr + ")";
+		else
+			return "(temp=" + baseExpr + "," + baseExpr + "=" + opExpr + ",temp)";
+	}
+
+	@Override
+	public Expression localOptimize()
+	{
+		baseExpr = baseExpr.localOptimize();
+		opExpr = opExpr.localOptimize();
+		return this;
 	}
 	
 	@Override

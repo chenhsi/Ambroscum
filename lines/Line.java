@@ -41,6 +41,11 @@ public abstract class Line
 		parent.setReturnValue(v);
 	}
 	
+	protected boolean endsWithReturn()
+	{
+		return false;
+	}
+	
 	public Line localOptimize()
 	{
 		return this;

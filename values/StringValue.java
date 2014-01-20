@@ -8,9 +8,14 @@ public class StringValue extends ObjectValue
 {
 	private String value;
 	
-	public StringValue(String val)
+	private StringValue(String val)
 	{
 		value = val;
+	}
+	
+	public static StringValue fromString(String val)
+	{
+		return new StringValue(val);
 	}
 	
 	// technically redundant with toString, but is more consistent with other Value classes
@@ -29,9 +34,9 @@ public class StringValue extends ObjectValue
 		{
 			case "+":
 				if (other instanceof IntValue)
-					return new StringValue(value + ((IntValue) other).getValue());
+					return StringValue.fromString(value + ((IntValue) other).getValue());
 				if (other instanceof StringValue)
-					return new StringValue(value + ((StringValue) other).toString());
+					return StringValue.fromString(value + ((StringValue) other).toString());
 				throw new FunctionNotFoundException("string's '+' operator not defined with value " + other);
 			case "<":
 				if (other instanceof StringValue)
