@@ -16,7 +16,7 @@ public class Ambroscum
 	public static void main(String[] args) throws IOException, InterruptedException
 	{
 //		commandLineMain(args);
-		commandLineMain(new String[] {"-cr", "tests/11 operators.ambr"});
+		commandLineMain(new String[] {"-cr", "tests/01 printlns.ambr"});
 //		compileILTest(new File("tests/08 functions.ambr"));
 	}
 	

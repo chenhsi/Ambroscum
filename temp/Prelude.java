@@ -68,9 +68,14 @@ class AmbroscumList extends Value implements Iterable
 		internal.add(toAdd);
 	}
 	
-	public Value get(int index)
+	public Value get(IntValue index)
 	{
-		return internal.get(index);
+		return internal.get(index.value);
+	}
+	
+	public Value set(IntValue index, Value obj)
+	{
+		return internal.set(index.value, obj);
 	}
 	
 	public Iterator iterator()
@@ -81,6 +86,11 @@ class AmbroscumList extends Value implements Iterable
 	public Value operator(String op, Value... otherArgs)
 	{
 		throw new IllegalArgumentException("Cannot apply operators to lists");
+	}
+	
+	public String toString()
+	{
+		return internal.toString();
 	}
 }
 
@@ -95,7 +105,7 @@ class IntValue extends Value
 	
 	public static IntValue from(int n)
 	{
-		return IntValue.from(n);
+		return new IntValue(n);
 	}
 	
 	public Value operator(String op, Value... otherArgs)
@@ -109,6 +119,8 @@ class IntValue extends Value
 					return StringValue.from(this.value + ((StringValue) otherArgs[0]).value);
 				throw new IllegalArgumentException("Cannot apply operator '+' to an int with " + otherArgs[0]);
 			case "-":
+				if (otherArgs.length == 0)
+					return IntValue.from(-this.value);
 				if (otherArgs[0] instanceof IntValue)
 					return IntValue.from(this.value - ((IntValue) otherArgs[0]).value);
 				throw new IllegalArgumentException("Cannot apply operator '-' to an int with " + otherArgs[0]);
@@ -161,6 +173,11 @@ class IntValue extends Value
 		}
 		throw new UnsupportedOperationException();
 	}
+	
+	public String toString()
+	{
+		return value + "";
+	}
 }
 
 class BooleanValue extends Value
@@ -200,6 +217,11 @@ class BooleanValue extends Value
 			
 		}
 		throw new UnsupportedOperationException();
+	}
+	
+	public String toString()
+	{
+		return value + "";
 	}
 }
 
@@ -255,5 +277,10 @@ class StringValue extends Value
 				throw new IllegalArgumentException("Cannot apply operator '!=' to a string with " + otherArgs[0]);
 		}
 		throw new UnsupportedOperationException();
+	}
+	
+	public String toString()
+	{
+		return value;
 	}
 }

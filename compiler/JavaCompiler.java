@@ -17,7 +17,7 @@ import ambroscum.values.*;
 
 public class JavaCompiler
 {
-	private static final boolean optimizeLocally = true; // should be a safe optimization, i.e. does not introduce errors or change behavior
+	private static final boolean optimizeLocally = false; // should be a safe optimization, i.e. does not introduce errors or change behavior
 	private static final boolean propogateConstants = true; // causes errors when there are multiple scopes
 	private static final boolean variableLiveness = false; // doesn't currently do anything
 	
@@ -188,8 +188,9 @@ public class JavaCompiler
 			case "AssertLine":
 				AssertLine asAssert = (AssertLine) line;
 				printIndentation(indentation);
-				out.print("assert (boolean) ");
+				out.print("assert ((BooleanValue) ");
 				compile(asAssert.getTest());
+				out.print(").value");
 				if (asAssert.getErrorMessage() != null)
 				{
 					out.print(" : ");
@@ -241,9 +242,9 @@ public class JavaCompiler
 				List<Block> clauses = ((IfLine) line).getClauses();
 				
 				printIndentation(indentation);
-				out.print("if ((boolean) ");
+				out.print("if (((BooleanValue) ");
 				compile(conditions.get(0));
-				out.print(") {\n");
+				out.print(").value) {\n");
 				compile(clauses.get(0), indentation + 1);
 				printIndentation(indentation);
 				out.print("}\n");
@@ -251,9 +252,9 @@ public class JavaCompiler
 				for (int i = 1; i < conditions.size(); i++)
 				{
 					printIndentation(indentation);
-					out.print("else if ((boolean) ");
+					out.print("else if (((BooleanValue) ");
 					compile(conditions.get(i));
-					out.print(") {\n");
+					out.print(").value) {\n");
 					compile(clauses.get(i), indentation + 1);
 					printIndentation(indentation);
 					out.println("}");
@@ -275,9 +276,9 @@ public class JavaCompiler
 				if (thenBlock == null)
 				{
 					printIndentation(indentation);
-					out.print("while ((boolean) ");
+					out.print("while (((BooleanValue) ");
 					compile(condition);
-					out.print(") {\n");
+					out.print(").value) {\n");
 					compile(block, indentation + 1);
 					printIndentation(indentation);
 					out.println("}");
@@ -291,9 +292,9 @@ public class JavaCompiler
 					printIndentation(indentation + 1);
 					out.println("_l" + line.getID() + " = true;");
 					printIndentation(indentation + 1);
-					out.print("if (!((boolean) ");
+					out.print("if (");
 					compile(condition);
-					out.print(")) break;\n");
+					out.print(" == BooleanValue.FALSE) break;\n");
 					printIndentation(indentation + 1);
 					out.println("_l" + line.getID() + " = false;");
 					compile(block, indentation + 1);
@@ -448,13 +449,13 @@ public class JavaCompiler
 						out.print("null");
 						break;
 					case "BooleanValue":
-						out.print(((BooleanValue) v).getValue());
+						out.print("BooleanValue.from(" + ((BooleanValue) v).getValue() + ")");
 						break;
 					case "IntValue":
-						out.print(((IntValue) v).getValue());
+						out.print("IntValue.from(" + ((IntValue) v).getValue() + ")");
 						break;
 					case "StringValue":
-						out.print(v.repr());
+						out.print("StringValue.from(" + v.repr() + ")");
 						break;
 				}
 				break;
@@ -477,14 +478,14 @@ public class JavaCompiler
 				compile(ref.getPrimary());
 				if (ref.getSecondaryRight() == null)
 				{
-					out.print(").get((int) ");
+					out.print(").get((IntValue) ");
 					compile(ref.getSecondary());
 				}
 				else
 				{
-					out.print(").subList((int) ");
+					out.print(").subList((IntValue) ");
 					compile(ref.getSecondary());
-					out.print(", (int) ");
+					out.print(", (IntValue) ");
 					compile(ref.getSecondaryRight());
 				}
 				out.print(")");
@@ -501,8 +502,9 @@ public class JavaCompiler
 				{
 					String type = ((ExpressionOperator) call.getFunction()).getValue().getOperandType();
 					compile(call.getOperands().get(0));
-					out.print(".operator(");
+					out.print(".operator(\"");
 					compile(call.getFunction());
+					out.print("\"");
 					if (call.getOperands().size() > 1)
 					{
 						out.print(", ");
@@ -533,9 +535,9 @@ public class JavaCompiler
 				throw new UnsupportedOperationException();
 			case "ExpressionTernary":
 				ExpressionTernary ternary = (ExpressionTernary) expr;
-				out.print("((boolean) ");
+				out.print("(((BooleanValue) ");
 				compile(ternary.getCond());
-				out.print(" ? ");
+				out.print(").value ? ");
 				compile(ternary.getTrueCase());
 				out.print(" : ");
 				compile(ternary.getFalseCase());
@@ -565,7 +567,7 @@ public class JavaCompiler
 		{
 			out.print("((AmbroscumList) ");
 			compile(((ExpressionReference) target).getPrimary());
-			out.print(").set((int) ");
+			out.print(").set((IntValue) ");
 			compile(((ExpressionReference) target).getSecondary());
 			out.print(", ");
 			compile(value);
@@ -590,7 +592,7 @@ public class JavaCompiler
 			{
 				out.print("((AmbroscumList) ");
 				compile(((ExpressionReference) target).getPrimary());
-				out.print(").set((int) ");
+				out.print(").set((IntValue) ");
 				compile(((ExpressionReference) target).getSecondary());
 				out.print(", ");
 				out.print(value);
@@ -601,7 +603,7 @@ public class JavaCompiler
 				// need to delete old elements first
 				out.print("((AmbroscumList) ");
 				compile(((ExpressionReference) target).getPrimary());
-				out.print(").addAll((int) ");
+				out.print(").addAll((IntValue) ");
 				compile(((ExpressionReference) target).getSecondary());
 				out.print(", (AmbroscumList) ");
 				out.print(value);
