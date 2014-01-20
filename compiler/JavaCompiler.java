@@ -100,7 +100,7 @@ public class JavaCompiler
 					out.print(", \"" + str + "\"");
 				out.print(");\n");
 				out.println("\t}");
-				out.println("\tprotected Object call(VariableMap map) {");
+				out.println("\tprotected Value call(VariableMap map) {");
 				Block block = ((DefLine) line).getBlock();
 				boolean lastReturn = false;
 				if (block != null)
@@ -203,7 +203,7 @@ public class JavaCompiler
 				for (int i = 0; i < lastIndex; i++)
 				{
 					printIndentation(indentation);
-					out.print("Object _e" + assign.getAssignTargets().get(i).getID() + " = ");
+					out.print("Value _e" + assign.getAssignTargets().get(i).getID() + " = ");
 					compile(assign.getAssignValues().get(i));
 					out.print(";\n");
 				}
@@ -315,7 +315,7 @@ public class JavaCompiler
 				if (thenBlock == null)
 				{
 					printIndentation(indentation);
-					out.print("for (Object _l" + line.getID() + " : (AmbroscumList) ");
+					out.print("for (Value _l" + line.getID() + " : (AmbroscumList) ");
 					compile(iterable);
 					out.print(") {\n");
 					printIndentation(indentation + 1);
@@ -500,19 +500,12 @@ public class JavaCompiler
 				if (call.getFunction() instanceof ExpressionOperator)
 				{
 					String type = ((ExpressionOperator) call.getFunction()).getValue().getOperandType();
-					if (call.getOperands().size() == 1)
+					compile(call.getOperands().get(0));
+					out.print(".operator(");
+					compile(call.getFunction());
+					if (call.getOperands().size() > 1)
 					{
-						compile(call.getFunction());
-						out.print(" ((" + type + ") ");
-						compile(call.getOperands().get(0));
-					}
-					else
-					{
-						out.print("((" + type + ") ");
-						compile(call.getOperands().get(0));
-						out.print(") ");
-						compile(call.getFunction());
-						out.print(" ((" + type + ") ");
+						out.print(", ");
 						compile(call.getOperands().get(1));
 					}
 					out.print(")");
@@ -534,16 +527,7 @@ public class JavaCompiler
 				out.print(")");
 				break;
 			case "ExpressionOperator":
-				String asStr = expr.toString();
-				if (asStr.equals("and"))
-					asStr = "&&";
-				else if (asStr.equals("or"))
-					asStr = "||";
-				else if (asStr.equals("not"))
-					asStr = "!";
-				else if (asStr.equals("="))
-					asStr = "==";
-				out.print(asStr);
+				out.print(expr.toString());
 				break;
 			case "ExpressionIncrement":
 				throw new UnsupportedOperationException();

@@ -109,7 +109,7 @@ public class IntValue extends ObjectValue
 					}
 					return IntValue.fromInt(prod);
 				}
-				throw new FunctionNotFoundException("int's '**operator not defined with value " + other);
+				throw new FunctionNotFoundException("int's '**' operator not defined with value " + other);
 		}
 		return super.applyOperator(op, otherValues);
 	}
