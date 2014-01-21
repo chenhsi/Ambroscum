@@ -3,7 +3,12 @@
  * <p>
  * Can represent normal assignments (e.g. <code>x = 3</code>),
  * multi-assignments (e.g. <code>x, y = 3, 4</code>), and compound assignment
- * (e.g. <code>x += 5</code>.
+ * (e.g. <code>x += 5</code>. Multi-compound assignments, however, are not
+ * supported.
+ * <p>
+ * It is undefined behavior to assign to the same variable or reference twice
+ * in a single line, or to cause side effects in referencing the assignment
+ * target (e.g. <code>f()[0] = 3</code>, when <code>f</code> has side effects.
  * 
  * @author Chen-Hsi Steven Bi, Jing-Lun Edward Gao
  * @version 1.0

@@ -18,8 +18,8 @@ import ambroscum.values.*;
 public class JavaCompiler
 {
 	private static final boolean optimizeLocally = true; // should be a safe optimization, i.e. does not introduce errors or change behavior
+														 // actually, a necessary optimization - removes lines after jump statements that javac hates
 	private static final boolean propogateConstants = false; // causes errors when there are multiple scopes
-	private static final boolean variableLiveness = false; // doesn't currently do anything
 	
 	private static PrintWriter out;
 	
@@ -43,11 +43,6 @@ public class JavaCompiler
 			block.setDeclarations(lastDeclarations, true);
 			if (optimizeLocally)
 				block = (Block) block.localOptimize();
-		}
-		if (variableLiveness)
-		{
-			// probably not going to implement this until after basic blocks are created
-			// doing this with SSA form seems much easier
 		}
 
 		out.println("import java.util.*;");
@@ -200,7 +195,7 @@ public class JavaCompiler
 				break;
 			case "AssignmentLine":
 				AssignmentLine assign = (AssignmentLine) line;
-				int lastIndex = assign.getAssignTargets().size() - 1;
+				int lastIndex = assign.getAssignTargets().size();
 				for (int i = 0; i < lastIndex; i++)
 				{
 					printIndentation(indentation);
@@ -208,14 +203,15 @@ public class JavaCompiler
 					compile(assign.getAssignValues().get(i));
 					out.print(";\n");
 				}
-				printIndentation(indentation);
-				assignHelper(assign.getAssignTargets().get(lastIndex), assign.getAssignValues().get(lastIndex));
+				ExpressionOperator assignType = assign.getAssignType();
 				for (int i = 0; i < lastIndex; i++)
 				{
 					printIndentation(indentation);
-					printHelper(assign.getAssignTargets().get(i), "_e" + assign.getAssignTargets().get(i).getID());
+					String assignTarget = "_e" + assign.getAssignTargets().get(i).getID();
+					if (assignType != null)
+						throw new UnsupportedOperationException("not currently dealing with assignments with operators");
+					printHelper(assign.getAssignTargets().get(i), assignTarget);
 				}
-				// not currently dealing with assignments with operators
 				break;
 			case "PrintLine":
 				PrintLine print = (PrintLine) line;
@@ -390,6 +386,25 @@ public class JavaCompiler
 		switch (expr.getClass().getSimpleName())
 		{
 			case "ExpressionLiteral":
+				printIndentation(indentation);
+				out.print("Value _te" + expr.getID() + " = ");
+				Value v = ((ExpressionLiteral) expr).getValue();
+				switch (v.getClass().getSimpleName())
+				{
+					case "NullValue":
+						out.print("null");
+						break;
+					case "BooleanValue":
+						out.print("BooleanValue.from(" + ((BooleanValue) v).getValue() + ")");
+						break;
+					case "IntValue":
+						out.print("IntValue.from(" + ((IntValue) v).getValue() + ")");
+						break;
+					case "StringValue":
+						out.print("StringValue.from(" + v.repr() + ")");
+						break;
+				}
+				out.print(";\n");
 				break;
 			case "ExpressionIdentifier":
 				Expression possParent = ((ExpressionIdentifier) expr).getParent();
@@ -443,22 +458,7 @@ public class JavaCompiler
 		switch (expr.getClass().getSimpleName())
 		{
 			case "ExpressionLiteral":
-				Value v = ((ExpressionLiteral) expr).getValue();
-				switch (v.getClass().getSimpleName())
-				{
-					case "NullValue":
-						out.print("null");
-						break;
-					case "BooleanValue":
-						out.print("BooleanValue.from(" + ((BooleanValue) v).getValue() + ")");
-						break;
-					case "IntValue":
-						out.print("IntValue.from(" + ((IntValue) v).getValue() + ")");
-						break;
-					case "StringValue":
-						out.print("StringValue.from(" + v.repr() + ")");
-						break;
-				}
+				out.print("_te" + expr.getID());
 				break;
 			case "ExpressionIdentifier":
 				Expression possParent = ((ExpressionIdentifier) expr).getParent();
