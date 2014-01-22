@@ -154,14 +154,17 @@ public class IfLine extends Line
 			elseBlock.setDeclarations(declarations, false);
 	}
 	
+	// commented out solution is correct solution, but since this is only used by java compiler,
+	// which currently compiles if lines in a strange way, this hack is used instead
 	@Override
 	protected boolean endsWithReturn()
 	{
-		for (Block block : blocks)
+		return false;
+/*		for (Block block : blocks)
 			if (block != null && !block.endsWithReturn())
 				return false;
 		if (elseBlock != null)
 			return elseBlock.endsWithReturn();
-		return true;
+		return true;*/
 	}
 }

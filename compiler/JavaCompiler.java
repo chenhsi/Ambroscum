@@ -88,8 +88,8 @@ public class JavaCompiler
 				functionDeclaration(((ForLine) line).getThenBlock());
 				break;
 			case "DefLine":
-				out.println("class _l" + line.getID() + " extends Function {");
-				out.println("\tpublic _l" + line.getID() + "(VariableMap parentMap) {");
+				out.println("class _tl" + line.getID() + " extends Function {");
+				out.println("\tpublic _tl" + line.getID() + "(VariableMap parentMap) {");
 				out.print("\t\tsuper(parentMap");
 				for (String str : ((DefLine) line).getParams())
 					out.print(", \"" + str + "\"");
@@ -189,7 +189,7 @@ public class JavaCompiler
 				int lastIndex = assign.getAssignTargets().size();
 				for (int i = 0; i < lastIndex; i++)
 				{
-					Expression target = assign.getAssignTargets().get(i);
+					Expression target = assign.getAssignValues().get(i);
 					process(target, indentation);
 					printIndentation(indentation);
 					out.print("Value _" + i + "tl" + assign.getID() + " = ");
@@ -234,9 +234,6 @@ public class JavaCompiler
 				List<Expression> conditions = ((IfLine) line).getConditions();
 				List<Block> clauses = ((IfLine) line).getClauses();
 				
-				for (Expression expr : ((IfLine) line).getConditions())
-					process(expr, indentation);
-				
 				printIndentation(indentation);
 				out.println("boolean _tl" + line.getID() + " = true;");
 				
@@ -249,9 +246,9 @@ public class JavaCompiler
 					out.print("if (((BooleanValue) ");
 					compile(conditions.get(i));
 					out.print(").value) {\n");
-					compile(clauses.get(i), indentation + 2);
-					printIndentation(indentation + 1);
+					printIndentation(indentation + 2);
 					out.println("_tl" + line.getID() + " = false;");
+					compile(clauses.get(i), indentation + 2);
 					printIndentation(indentation + 1);
 					out.println("}");
 					printIndentation(indentation);
@@ -273,18 +270,18 @@ public class JavaCompiler
 				thenBlock = ((WhileLine) line).getThenBlock();
 				
 				printIndentation(indentation);
-				out.println("boolean _l" + line.getID() + ";");
+				out.println("boolean _tl" + line.getID() + ";");
 				printIndentation(indentation);
 				out.println("while (true) {");
 				printIndentation(indentation + 1);
-				out.println("_l" + line.getID() + " = true;");
+				out.println("_tl" + line.getID() + " = true;");
 				process(condition, indentation + 1);
 				printIndentation(indentation + 1);
 				out.print("if (");
 				compile(condition);
 				out.print(" == BooleanValue.FALSE) break;\n");
 				printIndentation(indentation + 1);
-				out.println("_l" + line.getID() + " = false;");
+				out.println("_tl" + line.getID() + " = false;");
 				compile(block, indentation + 1);
 				printIndentation(indentation);
 				out.println("}");
@@ -292,7 +289,7 @@ public class JavaCompiler
 				if (thenBlock != null)
 				{
 					printIndentation(indentation);
-					out.println("if (_l" + line.getID() + ") {");
+					out.println("if (_tl" + line.getID() + ") {");
 					compile(thenBlock, indentation + 1);
 					printIndentation(indentation);
 					out.println("}");
@@ -307,11 +304,11 @@ public class JavaCompiler
 				if (thenBlock == null)
 				{
 					printIndentation(indentation);
-					out.print("for (Value _l" + line.getID() + " : (AmbroscumList) ");
+					out.print("for (Value _tl" + line.getID() + " : (AmbroscumList) ");
 					compile(iterable);
 					out.print(") {\n");
 					printIndentation(indentation + 1);
-					out.println("map.put(\"" + var.getReference() + "\", _l" + line.getID() + ");");
+					out.println("map.put(\"" + var.getReference() + "\", _tl" + line.getID() + ");");
 					compile(block, indentation + 1);
 					printIndentation(indentation);
 					out.println("}");
@@ -319,26 +316,26 @@ public class JavaCompiler
 				else
 				{
 					printIndentation(indentation);
-					out.println("boolean _la" + line.getID() + ";");
+					out.println("boolean _1tl" + line.getID() + ";");
 					printIndentation(indentation);
-					out.print("Iterator<Value> _lb" + line.getID() + " = ((AmbroscumList) ");
+					out.print("Iterator<Value> _2tl" + line.getID() + " = ((AmbroscumList) ");
 					compile(iterable);
 					out.print(").iterator();\n");
 					printIndentation(indentation);
 					out.println("while (true) {");
 					printIndentation(indentation + 1);
-					out.println("_la" + line.getID() + " = true;");
+					out.println("_1tl" + line.getID() + " = true;");
 					printIndentation(indentation + 1);
-					out.println("if (!_lb" + line.getID() + ".hasNext()) break;");
+					out.println("if (!_2tl" + line.getID() + ".hasNext()) break;");
 					printIndentation(indentation + 1);
-					out.println("_la" + line.getID() + " = false;");
+					out.println("_1tl" + line.getID() + " = false;");
 					printIndentation(indentation + 1);
-					out.println("map.put(\"" + var.getReference() + "\", _lb" + line.getID() + ".next());");
+					out.println("map.put(\"" + var.getReference() + "\", _2tl" + line.getID() + ".next());");
 					compile(block, indentation + 1);
 					printIndentation(indentation);
 					out.println("}");
 					printIndentation(indentation);
-					out.println("if (_la" + line.getID() + ") {");
+					out.println("if (_2tl" + line.getID() + ") {");
 					compile(thenBlock, indentation + 1);
 					printIndentation(indentation);
 					out.println("}");
@@ -346,7 +343,7 @@ public class JavaCompiler
 				break;
 			case "DefLine":
 				printIndentation(indentation);
-				out.println("map.put(\"" + ((DefLine) line).getName() + "\", new _l" + line.getID() + "(map));");
+				out.println("map.put(\"" + ((DefLine) line).getName() + "\", new _tl" + line.getID() + "(map));");
 				break;
 			case "BreakLine":
 				printIndentation(indentation);
