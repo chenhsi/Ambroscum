@@ -114,6 +114,7 @@ public class JavaCompiler
 		}
 	}
 	
+	// should probably be moved into compile(Line)
 	private static void process(Line line, int indentation)
 	{
 		if (line == null)
@@ -123,28 +124,14 @@ public class JavaCompiler
 			case "Block":
 				break;
 			case "AssertLine":
-				AssertLine asAssert = (AssertLine) line;
-				process(asAssert.getTest(), indentation);
-				if (asAssert.getErrorMessage() != null)
-					process(asAssert.getErrorMessage(), indentation);
 				break;
 			case "AssignmentLine":
-				AssignmentLine assign = (AssignmentLine) line;
-				for (Expression expr : assign.getAssignTargets())
-					process(expr, indentation);
-				for (Expression expr : assign.getAssignValues())
-					process(expr, indentation);
 				break;
 			case "PrintLine":
-				for (Expression expr : ((PrintLine) line).getPrintExpressions())
-					process(expr, indentation);
 				break;
 			case "IfLine":
-				for (Expression expr : ((IfLine) line).getConditions())
-					process(expr, indentation);
 				break;
 			case "WhileLine":
-				process(((WhileLine) line).getCondition(), indentation);
 				break;
 			case "ForLine":
 				process(((ForLine) line).getIterable(), indentation);
@@ -156,12 +143,8 @@ public class JavaCompiler
 			case "ContinueLine":
 				break;
 			case "ReturnLine":
-				Expression returnExpr = ((ReturnLine) line).getReturnExpr();
-				if (returnExpr != null)
-					process(returnExpr, indentation);
 				break;
 			case "CallLine":
-				process(((CallLine) line).getCall(), indentation);
 				break;
 		}
 	}
@@ -182,32 +165,44 @@ public class JavaCompiler
 				break;
 			case "AssertLine":
 				AssertLine asAssert = (AssertLine) line;
+				process(asAssert.getTest(), indentation);
 				printIndentation(indentation);
-				out.print("assert ((BooleanValue) ");
+				out.print("if (((BooleanValue) ");
 				compile(asAssert.getTest());
-				out.print(").value");
+				out.print(").value) {\n");
+				if (asAssert.getErrorMessage() != null)
+					process(asAssert.getErrorMessage(), indentation + 1);
+				printIndentation(indentation);
+				out.print("assert false");
 				if (asAssert.getErrorMessage() != null)
 				{
 					out.print(" : ");
 					compile(asAssert.getErrorMessage());
 				}
+				printIndentation(indentation + 1);
 				out.print(";\n");
+				printIndentation(indentation);
+				out.println("}");
 				break;
 			case "AssignmentLine":
 				AssignmentLine assign = (AssignmentLine) line;
 				int lastIndex = assign.getAssignTargets().size();
 				for (int i = 0; i < lastIndex; i++)
 				{
+					Expression target = assign.getAssignTargets().get(i);
+					process(target, indentation);
 					printIndentation(indentation);
-					out.print("Value _e" + assign.getAssignTargets().get(i).getID() + " = ");
-					compile(assign.getAssignValues().get(i));
+					out.print("Value _" + i + "tl" + assign.getID() + " = ");
+					compile(target);
 					out.print(";\n");
 				}
+				for (Expression expr : assign.getAssignTargets())
+					process(expr, indentation);
 				ExpressionOperator assignType = assign.getAssignType();
 				for (int i = 0; i < lastIndex; i++)
 				{
 					printIndentation(indentation);
-					String assignTarget = "_e" + assign.getAssignTargets().get(i).getID();
+					String assignTarget = "_" + i + "tl" + assign.getID();
 					if (assignType != null)
 						throw new UnsupportedOperationException("not currently dealing with assignments with operators");
 					printHelper(assign.getAssignTargets().get(i), assignTarget);
@@ -215,6 +210,8 @@ public class JavaCompiler
 				break;
 			case "PrintLine":
 				PrintLine print = (PrintLine) line;
+				for (Expression expr : print.getPrintExpressions())
+					process(expr, indentation);
 				boolean first = true;
 				for (Expression expr : print.getPrintExpressions())
 				{
@@ -237,28 +234,34 @@ public class JavaCompiler
 				List<Expression> conditions = ((IfLine) line).getConditions();
 				List<Block> clauses = ((IfLine) line).getClauses();
 				
-				printIndentation(indentation);
-				out.print("if (((BooleanValue) ");
-				compile(conditions.get(0));
-				out.print(").value) {\n");
-				compile(clauses.get(0), indentation + 1);
-				printIndentation(indentation);
-				out.print("}\n");
+				for (Expression expr : ((IfLine) line).getConditions())
+					process(expr, indentation);
 				
-				for (int i = 1; i < conditions.size(); i++)
+				printIndentation(indentation);
+				out.println("boolean _tl" + line.getID() + " = true;");
+				
+				for (int i = 0; i < conditions.size(); i++)
 				{
 					printIndentation(indentation);
-					out.print("else if (((BooleanValue) ");
+					out.println("if (_tl" + line.getID() + ") {");
+					process(conditions.get(i), indentation + 1);
+					printIndentation(indentation + 1);
+					out.print("if (((BooleanValue) ");
 					compile(conditions.get(i));
 					out.print(").value) {\n");
-					compile(clauses.get(i), indentation + 1);
+					compile(clauses.get(i), indentation + 2);
+					printIndentation(indentation + 1);
+					out.println("_tl" + line.getID() + " = false;");
+					printIndentation(indentation + 1);
+					out.println("}");
 					printIndentation(indentation);
 					out.println("}");
 				}
 				if (clauses.size() > conditions.size())
 				{
 					printIndentation(indentation);
-					out.println("else {");
+					out.println("if (_tl" + line.getID() + ") {");
+					process(clauses.get(clauses.size() - 1), indentation + 1);
 					compile(clauses.get(clauses.size() - 1), indentation + 1);
 					printIndentation(indentation);
 					out.println("}");
@@ -269,33 +272,25 @@ public class JavaCompiler
 				block = ((WhileLine) line).getBlock();
 				thenBlock = ((WhileLine) line).getThenBlock();
 				
-				if (thenBlock == null)
+				printIndentation(indentation);
+				out.println("boolean _l" + line.getID() + ";");
+				printIndentation(indentation);
+				out.println("while (true) {");
+				printIndentation(indentation + 1);
+				out.println("_l" + line.getID() + " = true;");
+				process(condition, indentation + 1);
+				printIndentation(indentation + 1);
+				out.print("if (");
+				compile(condition);
+				out.print(" == BooleanValue.FALSE) break;\n");
+				printIndentation(indentation + 1);
+				out.println("_l" + line.getID() + " = false;");
+				compile(block, indentation + 1);
+				printIndentation(indentation);
+				out.println("}");
+				
+				if (thenBlock != null)
 				{
-					printIndentation(indentation);
-					out.print("while (((BooleanValue) ");
-					compile(condition);
-					out.print(").value) {\n");
-					compile(block, indentation + 1);
-					printIndentation(indentation);
-					out.println("}");
-				}
-				else
-				{
-					printIndentation(indentation);
-					out.println("boolean _l" + line.getID() + ";");
-					printIndentation(indentation);
-					out.println("while (true) {");
-					printIndentation(indentation + 1);
-					out.println("_l" + line.getID() + " = true;");
-					printIndentation(indentation + 1);
-					out.print("if (");
-					compile(condition);
-					out.print(" == BooleanValue.FALSE) break;\n");
-					printIndentation(indentation + 1);
-					out.println("_l" + line.getID() + " = false;");
-					compile(block, indentation + 1);
-					printIndentation(indentation);
-					out.println("}");
 					printIndentation(indentation);
 					out.println("if (_l" + line.getID() + ") {");
 					compile(thenBlock, indentation + 1);
@@ -362,16 +357,23 @@ public class JavaCompiler
 				out.println("continue;");
 				break;
 			case "ReturnLine":
-				printIndentation(indentation);
-				out.print("return ");
-				Expression expr = ((ReturnLine) line).getReturnExpr();
-				if (expr != null)
-					compile(expr);
+				Expression returnExpr = ((ReturnLine) line).getReturnExpr();
+				if (returnExpr == null)
+				{
+					printIndentation(indentation);
+					out.println("return null;");
+				}
 				else
-					out.print("null");
-				out.print(";\n");
+				{
+					process(returnExpr, indentation);
+					printIndentation(indentation);
+					out.print("return ");
+					compile(returnExpr);
+					out.print(";\n");
+				}
 				break;
 			case "CallLine":
+				process(((CallLine) line).getCall(), indentation);
 				printIndentation(indentation);
 				compile(((CallLine) line).getCall());
 				out.print(";\n");

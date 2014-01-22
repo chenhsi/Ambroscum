@@ -5,6 +5,7 @@ import ambroscum.parser.TokenStream;
 import ambroscum.parser.Token;
 import ambroscum.errors.SyntaxError;
 import ambroscum.expressions.Expression;
+import ambroscum.values.Value;
 import java.util.*;
 
 public class PrintLine extends Line
@@ -58,11 +59,14 @@ public class PrintLine extends Line
 	public Block.ExitStatus evaluate(IdentifierMap values)
 	{
 		boolean first = true;
+		List<Value> printValues = new LinkedList<> ();
 		for (Expression expr : toPrint)
+			printValues.add(expr.evaluate(values));
+		for (Value value : printValues)
 		{
 			if (!first)
 				System.out.print(" ");
-			System.out.print(expr.evaluate(values));
+			System.out.print(value);
 			first = false;
 		}
 		if (newline)
