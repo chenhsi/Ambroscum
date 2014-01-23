@@ -134,7 +134,6 @@ public class JavaCompiler
 			case "WhileLine":
 				break;
 			case "ForLine":
-				process(((ForLine) line).getIterable(), indentation);
 				break;
 			case "DefLine":
 				break;
@@ -196,16 +195,42 @@ public class JavaCompiler
 					compile(target);
 					out.print(";\n");
 				}
-				for (Expression expr : assign.getAssignTargets())
-					process(expr, indentation);
 				ExpressionOperator assignType = assign.getAssignType();
 				for (int i = 0; i < lastIndex; i++)
 				{
+					Expression target = assign.getAssignTargets().get(i);
+					process(target, indentation);
 					printIndentation(indentation);
-					String assignTarget = "_" + i + "tl" + assign.getID();
-					if (assignType != null)
-						throw new UnsupportedOperationException("not currently dealing with assignments with operators");
-					printHelper(assign.getAssignTargets().get(i), assignTarget);
+					if (target instanceof ExpressionIdentifier)
+					{
+						if (((ExpressionIdentifier) target).getParent() != null)
+							throw new UnsupportedOperationException();
+						out.print("map.put(\"" + ((ExpressionIdentifier) target).getReference() + "\", ");
+						if (assignType == null)
+							out.print("_" + i + "tl" + assign.getID());
+						else
+						{
+							compile(target);
+							out.print(".operator(\"" + assignType + "\", _" + i + "tl" + assign.getID() + ")");
+						}
+						out.print(");\n");
+					}
+					else if (target instanceof ExpressionReference)
+					{
+						out.print("((AmbroscumList) ");
+						compile(((ExpressionReference) target).getPrimary());
+						out.print(").set((IntValue) ");
+						compile(((ExpressionReference) target).getSecondary());
+						out.print(", ");
+						if (assignType == null)
+							out.print("_" + i + "tl" + assign.getID());
+						else
+						{
+							compile(target);
+							out.print(".operator(\"" + assignType + "\", _" + i + "tl" + assign.getID() + ")");
+						}
+						out.print(");\n");
+					}
 				}
 				break;
 			case "PrintLine":
@@ -303,6 +328,7 @@ public class JavaCompiler
 				
 				if (thenBlock == null)
 				{
+					process(iterable, indentation);
 					printIndentation(indentation);
 					out.print("for (Value _tl" + line.getID() + " : (AmbroscumList) ");
 					compile(iterable);
@@ -317,6 +343,7 @@ public class JavaCompiler
 				{
 					printIndentation(indentation);
 					out.println("boolean _1tl" + line.getID() + ";");
+					process(iterable, indentation);
 					printIndentation(indentation);
 					out.print("Iterator<Value> _2tl" + line.getID() + " = ((AmbroscumList) ");
 					compile(iterable);
@@ -335,7 +362,7 @@ public class JavaCompiler
 					printIndentation(indentation);
 					out.println("}");
 					printIndentation(indentation);
-					out.println("if (_2tl" + line.getID() + ") {");
+					out.println("if (_1tl" + line.getID() + ") {");
 					compile(thenBlock, indentation + 1);
 					printIndentation(indentation);
 					out.println("}");
