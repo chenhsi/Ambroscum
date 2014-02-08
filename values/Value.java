@@ -29,6 +29,31 @@ public abstract class Value {
 	}
 	
 	/**
+	 * Returns the toString of this object, taking into account the possibility
+	 * of infinite recursion.
+	 */
+	public String toString(Set<Value> alreadyStringified) {
+		if (alreadyStringified.contains(this)) {
+			return "...";
+		} else {
+			alreadyStringified.add(this);
+			return toString();
+		}
+	}
+	/**
+	 * Returns the repr of this object, taking into account the possibility
+	 * of infinite recursion.
+	 */
+	public String repr(Set<Value> alreadyStringified) {
+		if (alreadyStringified.contains(this)) {
+			return "...";
+		} else {
+			alreadyStringified.add(this);
+			return repr();
+		}
+	}
+	
+	/**
 	 * Creates a copy of this object, with fields also being cloned.
 	 * As a side effect, adds this object and its clone to the alreadyCloned map
 	 * at the start of the method (i.e. before cloning the fields).

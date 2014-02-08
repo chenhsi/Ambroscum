@@ -94,6 +94,9 @@ public class DictValue extends ObjectValue {
 	}
 	
 	public Value deepClone(Map<Value, Value> alreadyCloned) {
+		if (alreadyCloned.containsKey(this)) {
+			return alreadyCloned.get(this);
+		}
 		DictValue clone = new DictValue();
 		alreadyCloned.put(this, clone);
 		Set<Value> keySet = map.keySet();

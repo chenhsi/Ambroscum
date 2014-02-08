@@ -6,14 +6,23 @@ import ambroscum.values.Value;
 import ambroscum.values.IntValue;
 import java.util.*;
 
+/**
+ * A Value representing a list. Has variable length. Modeled off of Python lists.
+ */
 public class ListValue extends ObjectValue {
 	
 	private Value[] list;
 	
+	/**
+	 * Construct a ListValue initialized to contain vals.
+	 */
 	public ListValue(Value... vals) {
 		list = vals;
 	}
 	
+	/**
+	 * @return The Value stored at the given index
+	 */
 	public Value get(Value index)
 	{
 		if (index instanceof IntValue)
@@ -27,6 +36,9 @@ public class ListValue extends ObjectValue {
 		else
 			throw new SyntaxError("Expected int for list index");
 	}
+	/**
+	 * @return The sublist starting at leftIndex and going up to rightIndex - 1, inclusive.
+	 */
 	public Value getRange(Value leftIndex, Value rightIndex) // currently exclusive, as in Python syntax
 															 // I kind of prefer inclusive though
 	{
@@ -143,6 +155,9 @@ public class ListValue extends ObjectValue {
 	}
 	
 	public Value deepClone(Map<Value, Value> alreadyCloned) {
+		if (alreadyCloned.containsKey(this)) {
+			return alreadyCloned.get(this);
+		}
 		ListValue clone = new ListValue(new Value[list.length]);
 		alreadyCloned.put(this, clone);
 		for (int i = 0; i < list.length; i++) {

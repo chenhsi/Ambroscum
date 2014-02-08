@@ -13,40 +13,82 @@ import java.util.Arrays;
 
 public class Ambroscum
 {
+	public static final String USAGE_MESSAGE = "Usage: ambroscum [-icRh] [file] [args]\n\nargs Command line arguments to pass to the interpreted file\n\n[no args] Basic interactive session\n-i Execute file if given, then go to interactive session (if not specified, execute the given file and exit)\n-c Compile file to arg0.java\n-R If -c was specified, invoke javac and java on the output Java file\n-h Print this help message and exit";
+	
 	public static void main(String[] args) throws IOException, InterruptedException
 	{
-//		commandLineMain(args);
-		commandLineMain(new String[] {"-c", "tests/03 if.ambr"});
+		commandLineMain(args);
+//		commandLineMain(new String[] {"-c", "tests/03 if.ambr"});
 //		compileILTest(new File("tests/08 functions.ambr"));
 	}
 	
-	/* Command line arguments
-	 *    no args		interactive session
-	 *    -i File		interpret file and exit session
-	 *    -ii File		interpret file and start interactive session
-	 *    -c File		compile file, currently to a file Main.java
-	 *    -cr File 		compile file to a file Main.java, and evoke javac/java on the output file
+	/* Usage: ambroscum [-icRh] [file] [-a args]
+	 *
+	 * [no args] Basic interactive session
+	 * -a Specify command-line arguments to pass to the interpreter (can be used by the script)
+	 * -i Execute file if given, then go to interactive session (if not specified, execute the given file and exit)
+	 * -c Compile file to arg0.java (overridden by -i)
+	 * -R If -c was specified, invoke javac and java on the output Java file
+	 * -h Print this help message and exit
 	 */
-	public static void commandLineMain(String[] args) throws IOException, InterruptedException
-	{
-		System.out.println(java.util.Arrays.toString(args));
-		if (args.length == 0)
-		{
+	public static void commandLineMain(String[] args) throws IOException, InterruptedException {
+		if (args.length == 0) {
 			Interpreter.interpret();
-			return;
+		} else {
+			// Process command line args
+			boolean interactive = false, compile = false, compileRun = false;
+			int i;
+			for (i = 0; i < args.length; i++) {
+				if (args[i].charAt(0) == '-') {
+					if (args[i].indexOf('i') > -1) {
+						interactive = true;
+					}
+					if (args[i].indexOf('c') > -1) {
+						compile = true;
+					}
+					if (args[i].indexOf('R') > -1) {
+						compileRun = true;
+					}
+					if (args[i].indexOf('h') > -1) {
+						System.out.println(USAGE_MESSAGE);
+						System.exit(0);
+					}
+				} else {
+					// End of the command line flags
+					break;
+				}
+			}
+			if (!interactive && !compile && !compileRun) {
+				// If no flags set
+				i--;
+			}
+			String[] interpreterArgs = null;
+			String fileName = null;
+			if (i < args.length) {
+				// We either have a file to execute, or command line args, or both
+				if (args[i].equals("-a")) {
+					interpreterArgs = new String[args.length - 1 - i];
+					System.arraycopy(args, i + 1, interpreterArgs, 0, interpreterArgs.length);
+				} else {
+					fileName = args[i];
+					i++;
+					// Do we have more arguments?
+					if (i < args.length && args[i].equals("-a")) {
+						interpreterArgs = new String[args.length - 1 - i];
+						System.arraycopy(args, i + 1, interpreterArgs, 0, interpreterArgs.length);
+					}
+				}
+			}
+			if (interactive || !compile) {
+				interpreterArgs = interpreterArgs != null ? interpreterArgs : new String[] {};
+				if (fileName != null)
+					Interpreter.interpret(new File(fileName), interactive, interpreterArgs);
+				else
+					Interpreter.interpret(interpreterArgs);
+			} else {
+				compileJavaTest(new File(fileName), compileRun);
+			}
 		}
-		if (args.length == 1 || args.length > 2)
-			throw new IllegalArgumentException("Not supported as arguments: " + Arrays.toString(args));
-		if (args[0].equals("-i"))
-			Interpreter.interpret(new File(args[1]), false);
-		else if (args[0].equals("-ii"))
-			Interpreter.interpret(new File(args[1]), true);
-		else if (args[0].equals("-c"))
-			compileJavaTest(new File(args[1]), false);
-		else if (args[0].equals("-cr"))
-			compileJavaTest(new File(args[1]), true);
-		else
-			throw new IllegalArgumentException("Not supported as arguments: " + Arrays.toString(args));
 	}
 	
 	private static void compileILTest(File file) throws IOException

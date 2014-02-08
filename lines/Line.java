@@ -94,7 +94,10 @@ public abstract class Line
 			stream.removeFirst();
 		}
 		if (stream.getFirst() == Token.EOF)
+		{
+			stream.removeFirst();
 			return new EndLine(parent);
+		}
 		Token token = stream.removeFirst();
 		if (token == Token.NEWLINE)
 			return Line.interpret(parent, stream, indentation);

@@ -16,6 +16,9 @@ import ambroscum.lines.EndLine;
 import ambroscum.lines.IfLine;
 import ambroscum.lines.Line;
 import ambroscum.parser.TokenStream;
+import ambroscum.values.Value;
+import ambroscum.values.StringValue;
+import ambroscum.values.ListValue;
 
 public class Interpreter
 {
@@ -33,7 +36,8 @@ public class Interpreter
 		{
 			try
 			{
-				Line.interpret(null, stream, 0).evaluate(identifiers);
+				Line l = Line.interpret(null, stream, 0);
+				l.localOptimize().evaluate(identifiers);
 				System.out.println();
 			}
 			catch (AmbroscumError ex)
@@ -60,5 +64,29 @@ public class Interpreter
 			stream.makeInteractive();
 			interactive(stream, identifiers);
 		}
+	}
+	
+	public static void interpret(File file, boolean thenInteract, String[] args) throws FileNotFoundException {
+		TokenStream stream = TokenStream.readFile(file);
+		IdentifierMap identifiers = new IdentifierMap();
+		Value[] argValues = new Value[args.length];
+		for (int i = 0; i < args.length; i++) {
+			argValues[i] = StringValue.fromString(args[i]);
+	    }
+	    identifiers.set("args", new ListValue(argValues));
+		new Block(null, stream, 0).evaluate(identifiers);
+		if (thenInteract) {
+			stream.makeInteractive();
+			interactive(stream, identifiers);
+		}
+	}
+	public static void interpret(String[] args) {
+		IdentifierMap identifiers = new IdentifierMap();
+		Value[] argValues = new Value[args.length];
+		for (int i = 0; i < args.length; i++) {
+			argValues[i] = StringValue.fromString(args[i]);
+	    }
+	    identifiers.set("args", new ListValue(argValues));
+		interactive(TokenStream.interactiveInput(), identifiers);
 	}
 }
