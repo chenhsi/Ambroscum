@@ -17,9 +17,10 @@ public class Ambroscum
 	
 	public static void main(String[] args) throws IOException, InterruptedException
 	{
-		commandLineMain(args);
+//		commandLineMain(args);
 //		commandLineMain(new String[] {"-c", "tests/03 if.ambr"});
-//		compileILTest(new File("tests/08 functions.ambr"));
+//		compileILTest(new File("tests/03 if.ambr"));
+		compileMIPSTest("01 printlns", true);
 	}
 	
 	/* Usage: ambroscum [-icRh] [file] [-a args]
@@ -105,6 +106,45 @@ public class Ambroscum
 		catch (Exception ex)
 		{
 			System.err.println("Failed when compiling .ambr file");
+			throw ex;
+		}
+	}
+	
+	private static void compileMIPSTest(String fileName, boolean execute) throws IOException, InterruptedException
+	{
+		String outputFileName = "temp/" + fileName + ".asm";
+		try
+		{
+			MIPSCompiler.compile(new File("tests/" + fileName + ".ambr"),
+								 new PrintWriter(new BufferedWriter(new FileWriter(outputFileName))));
+			if (!execute)
+				return;
+		}
+		catch (IOException ex)
+		{
+			System.err.println("Failed in IO");
+			throw ex;
+		}
+		catch (Exception ex)
+		{
+			System.err.println("Failed when compiling .ambr file");
+			throw ex;
+		}
+		
+		System.out.println("\nNow attempting to execute .asm file\n");
+		
+		try
+		{
+			Process executor = new ProcessBuilder("java", "-jar", "mars.jar", outputFileName, "nc").redirectErrorStream(true).start();
+			BufferedReader stdInput = new BufferedReader(new InputStreamReader(executor.getInputStream()));
+			String s = null;
+			while ((s = stdInput.readLine()) != null)
+				System.out.println(s);
+			executor.waitFor();
+		}
+		catch (Exception ex)
+		{
+			System.err.println("Error when executing .class file");
 			throw ex;
 		}
 	}

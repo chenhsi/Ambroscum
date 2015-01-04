@@ -23,8 +23,8 @@ public class IdentifierMap
 		illegal.add("true"); illegal.add("false");
 		illegal.add("and"); illegal.add("or"); illegal.add("not");
 		illegal.add("def"); illegal.add("class");
-		illegal.add("if"); illegal.add("for"); illegal.add("while");
-		illegal.add("elif"); illegal.add("else"); illegal.add("then");
+		illegal.add("if"); illegal.add("elif"); illegal.add("else"); 
+		illegal.add("for"); illegal.add("while"); illegal.add("then");
 		illegal.add("break"); illegal.add("continue"); illegal.add("return");
 		illegal.add("end");
 		illegal.add("self"); illegal.add("nonlocal");

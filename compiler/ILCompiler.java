@@ -12,7 +12,7 @@ public class ILCompiler
 	private static List<String> instructions;
 	private static Map<String, List<String>> functions;
 	
-	public static void compile(File input) throws IOException
+	public static ControlFlowGraph compile(File input) throws IOException
 	{
 		TokenStream stream = TokenStream.readFile(input);
 
@@ -25,10 +25,12 @@ public class ILCompiler
 		instructions = new LinkedList<> ();
 		for (Line line : block.getLines())
 			compile(line, null, null);
-		instructions.add("return null");
+//		instructions.add("return null");
 
 		ControlFlowGraph graph = new ControlFlowGraph(instructions, functions);
 		graph.optimize();
+		
+		return graph;
 	}
 	
 	private static void functionDeclarations(Line line)

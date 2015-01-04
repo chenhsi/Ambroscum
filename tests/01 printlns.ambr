@@ -1,5 +1,6 @@
 println 1 ; these are tests
 println [1, 2, 3]; for comments
+; println [1, 2, 3]
 println []
 println [1, 2, 3][0]
 println 2 + 3 * -4

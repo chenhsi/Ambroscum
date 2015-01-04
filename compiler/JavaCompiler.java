@@ -28,10 +28,9 @@ public class JavaCompiler
 	 *
 	 * @param	file			the Ambroscum file to read from and compile
 	 */
-	public static void compile(File input, PrintWriter output) throws FileNotFoundException
+	public static void compile(File input, PrintWriter out) throws FileNotFoundException
 	{
 		TokenStream stream = TokenStream.readFile(input);
-		out = output;
 
 		Block block = new Block(null, stream, 0);
 		if (optimizeLocally)

@@ -57,6 +57,7 @@ public class Instruction
 			if (!returnValue.equals("null"))
 				variablesUsed.add(returnValue);
 			type = InstructionType.FUNCTIONRETURN;
+			throw new UnsupportedOperationException(line + " not recognized");
 		}
 		else
 			throw new UnsupportedOperationException(line + " not recognized");
@@ -64,15 +65,16 @@ public class Instruction
 	
 	void print()
 	{
-//			System.out.println("\t\tPre-Declarations: " + preDeclarations);
-//			System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
-//			System.out.println("\t\tReferenced Variables: " + variablesUsed);
-			System.out.println("\t" + line);
-//			System.out.println("\t\tPost-Declarations: " + postDeclarations);
+//		System.out.println("\t\tPre-Declarations: " + preDeclarations);
+		// System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
+		// System.out.println("\t\tReferenced Variables: " + variablesUsed);
+		System.out.println("\t" + line);
+		// System.out.println("\t\tPost-Declarations: " + postDeclarations);
 	}
 	
 	void optimize()
 	{
+//		System.out.println("Optimizing self: " + this);
 		boolean optimized = false;
 		if (type == InstructionType.ASSIGNMENT || type == InstructionType.CALCULATION || type == InstructionType.FUNCTIONRETURN)
 			for (String str : variablesUsed)
@@ -99,13 +101,14 @@ public class Instruction
 				optimized = true;
 			}
 		}*/
-		outer: while (!optimized && type == InstructionType.CALCULATION && variablesUsed.size() == 0)
+		if (!optimized && type == InstructionType.CALCULATION && variablesUsed.size() == 0)
 		{
 			String[] parts = line.split(" ");
 			try
 			{
 				int left = Integer.parseInt(parts[2]);
 				int right = Integer.parseInt(parts[4]);
+				boolean change = true;
 				switch (parts[3])
 				{
 					case "+":
@@ -120,29 +123,70 @@ public class Instruction
 					case "/":
 						line = parts[0] + " = " + (left / right);
 						break;
+					case "%":
+						line = parts[0] + " = " + (left % right);
+						break;
+					case ">":
+						line = parts[0] + " = " + (left > right);
+						break;
+					case "<":
+						line = parts[0] + " = " + (left < right);
+						break;
+					case ">=":
+						line = parts[0] + " = " + (left >= right);
+						break;
+					case "<=":
+						line = parts[0] + " = " + (left <= right);
+						break;
+					case "=":
+						line = parts[0] + " = " + (left == right);
+						break;
+					case "!=":
+						line = parts[0] + " = " + (left != right);
+						break;
 					default:
-						break outer;
+						change = false;
+						break;
 				}
-				optimized = true;
+				if (change)
+				{
+					type = InstructionType.ASSIGNMENT;
+					optimized = true;
+				}
 			}
 			catch (NumberFormatException ex)
 			{
-				boolean left = Boolean.parseBoolean(parts[2]);
-				boolean right = Boolean.parseBoolean(parts[4]);
-				switch (parts[3])
+				boolean change = true;
+				if (parts[2].equals("not"))
 				{
-					case "and":
-						line = parts[0] + " = " + (left && right);
-						break;
-					case "or":
-						line = parts[0] + " = " + (left || right);
-						break;
-					default:
-						break outer;
+					boolean unary = Boolean.parseBoolean(parts[3]);
+					line = parts[0] + " = " + !unary;
 				}
-				optimized = true;
+				else
+				{
+					boolean left = Boolean.parseBoolean(parts[2]);
+					boolean right = Boolean.parseBoolean(parts[4]);
+					switch (parts[3])
+					{
+						case "and":
+							line = parts[0] + " = " + (left && right);
+							break;
+						case "or":
+							line = parts[0] + " = " + (left || right);
+							break;
+						default:
+							change = false;
+							break;
+					}
+				}
+				if (change)
+				{
+					type = InstructionType.ASSIGNMENT;
+					optimized = true;
+				}
 			}
 		}
+//		System.out.println("After self-optimizing: " + this);
 		if (optimized)
 			optimize();
 	}
@@ -152,14 +196,22 @@ public class Instruction
 		return "inst:\"" + line + "\"";
 	}
 	
+	private static final Set<String> identifiers = new HashSet<String> ();
+	static
+	{
+		identifiers.add("true"); identifiers.add("false");
+		identifiers.add("paramvalue"); identifiers.add("returnvalue");
+		identifiers.add("and"); identifiers.add("or"); identifiers.add("not");
+	}
+	
 	private static boolean identifier(String str)
 	{
 		char c = str.charAt(0);
-		if (c == '_' || c == '*')
+		if (c == '_' || c == '*' && str.length() > 1)
 			return true;
 		if (!Character.isLetter(c))
 			return false;
-		if (str.equals("true") || str.equals("false") || str.equals("paramvalue") || str.equals("returnvalue"))
+		if (identifiers.contains(str))
 			return false;
 		return true;
 	}
