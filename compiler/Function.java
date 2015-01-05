@@ -6,8 +6,8 @@ public class Function
 {
 	private ControlFlowGraph graph;
 	
-	private BasicBlock startingBlock;
-	private BasicBlock endingBlock;
+	BasicBlock startingBlock;
+	BasicBlock endingBlock;
 	
 	private Set<String> nonlocalVariablesUsed;
 	private Set<String> variablesModified;

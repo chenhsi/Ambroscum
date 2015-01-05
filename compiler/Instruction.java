@@ -204,7 +204,7 @@ public class Instruction
 		identifiers.add("and"); identifiers.add("or"); identifiers.add("not");
 	}
 	
-	private static boolean identifier(String str)
+	public static boolean identifier(String str)
 	{
 		char c = str.charAt(0);
 		if (c == '_' || c == '*' && str.length() > 1)
