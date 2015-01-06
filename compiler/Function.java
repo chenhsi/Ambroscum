@@ -28,18 +28,22 @@ public class Function
 			if (str.startsWith("label "))
 			{
 				BasicBlock next = new BasicBlock();
+				next.name = str.substring(6);
 				connect(curr, next);
+				labels.put(next.name, next);
 				curr = next;
-				labels.put(str.substring(6), curr);
 				continue;
 			}
 			else if (str.startsWith("jump")) // jump or jumpunless
 			{
 				hasJump.add(curr);
-				BasicBlock next = new BasicBlock();
 				curr.add(str);
+				BasicBlock next = new BasicBlock();
 				if (str.startsWith("jumpunless"))
+				{
 					connect(curr, next);
+					curr.nextBlock = next;
+				}
 				curr = next;
 				continue;
 			}
@@ -393,7 +397,7 @@ public class Function
 			for (ListIterator<Instruction> iter = block.instructions.listIterator(); iter.hasNext();)
 			{
 				Instruction inst = iter.next();
-				if (inst.type == InstructionType.ASSIGNMENT || inst.type == InstructionType.CALCULATION)
+				if (inst.type == InstructionType.ASSIGNMENT || inst.type == InstructionType.CALCULATION || inst.type == InstructionType.SPECIALASSIGNMENT)
 				{
 					String assigned = inst.line.substring(0, inst.line.indexOf(" = "));
 					if (!inst.postLiveVariables.contains(assigned))

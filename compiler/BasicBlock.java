@@ -7,7 +7,9 @@ public class BasicBlock
 	List<Instruction> instructions = new LinkedList<Instruction> ();
 	Set<BasicBlock> parents = new HashSet<> ();
 	Set<BasicBlock> children = new HashSet<> ();
+	BasicBlock nextBlock;
 	
+	String name;
 	static int counter = 0;
 	int id = ++counter;
 	Set<BasicBlock> dominators = new HashSet<BasicBlock> ();

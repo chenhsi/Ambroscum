@@ -119,12 +119,9 @@ public class ILCompiler
 						if (((ExpressionIdentifier) target).getParent() != null)
 							throw new UnsupportedOperationException();
 						else
-						{
 							instructions.add(((ExpressionIdentifier) target).getReference() + " = _" + i + "tl" + line.getID());
-							continue;
-						}
 					}
-					if (target instanceof ExpressionReference)
+					else if (target instanceof ExpressionReference)
 					{
 						if (((ExpressionReference) target).getSecondaryRight() != null)
 							throw new UnsupportedOperationException();
@@ -132,7 +129,8 @@ public class ILCompiler
 						instructions.add("*_" + i + "te" + line.getID() + " = _" + i + "tl2" + line.getID());
 						instructions.add(compile(target) + " = _" + i + "tl" + line.getID());
 					}
-					throw new UnsupportedOperationException();
+					else
+						throw new UnsupportedOperationException();
 				}
 				break;
 			case "PrintLine":

@@ -19,10 +19,10 @@ public class ControlFlowGraph
 	{
 //		mainFunction.printAll();
 		mainFunction.optimize();
-		for (Function f : otherFunctions.values())
-			f.optimize();
-		mainFunction.optimize();
-//		mainFunction.printAll();
+//		for (Function f : otherFunctions.values())
+//			f.optimize();
+//		mainFunction.optimize();
+		mainFunction.printAll();
 		for (Function f : otherFunctions.values())
 			f.printAll();
 	}

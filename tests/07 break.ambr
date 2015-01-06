@@ -17,18 +17,3 @@ while x < 5:
 	println x
 end
 println
-
-; Nested loops
-x = 0
-while x < 2:
-	y = 0
-	while y < 5:
-		println x, y
-		if y > 2:
-			break
-		end
-		y = y + 1
-	end
-	x = x + 1
-end
-println

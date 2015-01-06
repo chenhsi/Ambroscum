@@ -33,13 +33,13 @@ public class Instruction
 				if (identifier(substr))
 					variablesUsed.add(substr);
 		}
-		else if (line.startsWith("jump"))
-			type = InstructionType.JUMP;
 		else if (line.startsWith("jumpunless"))
 		{
 			variablesUsed.add(line.substring(11, line.lastIndexOf(" ")));
 			type = InstructionType.JUMP;
 		}
+		else if (line.startsWith("jump"))
+			type = InstructionType.JUMP;
 		else if (line.startsWith("param"))
 		{
 			variablesUsed.add(line.substring(6));
@@ -66,8 +66,8 @@ public class Instruction
 	void print()
 	{
 //		System.out.println("\t\tPre-Declarations: " + preDeclarations);
-		// System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
-		// System.out.println("\t\tReferenced Variables: " + variablesUsed);
+		System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
+		System.out.println("\t\tReferenced Variables: " + variablesUsed);
 		System.out.println("\t" + line);
 		// System.out.println("\t\tPost-Declarations: " + postDeclarations);
 	}
