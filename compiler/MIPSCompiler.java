@@ -43,7 +43,8 @@ public class MIPSCompiler
 			do
 			{
 				if (compiled.contains(block))
-					continue;
+					break;
+				compiled.add(block);
 				toExplore.addAll(block.children);
 				if (block.name != null)
 					out.println(block.name + ":");
@@ -62,6 +63,7 @@ public class MIPSCompiler
 			{
 				String assignTarget = getEmptyRegister(registersUsed);
 				registersUsed.add(assignTarget);
+				registersMap.put(inst.line.substring(0, inst.line.indexOf(" = ")), assignTarget);
 				String[] parts = inst.line.split(" ");
 				switch (parts[3])
 				{
@@ -109,6 +111,7 @@ public class MIPSCompiler
 				}
 				else
 					out.println("  addi $" + assignTarget + ", $0, " + assignValue);
+				registersMap.put(inst.line.substring(0, inst.line.indexOf(" = ")), assignTarget);
 				registersUsed.add(assignTarget);
 				break;
 			case FUNCTIONCALL:
@@ -117,11 +120,15 @@ public class MIPSCompiler
 				{
 					out.println("  li $v0 4");
 					out.println("  syscall");
-					registersUsed.remove("a0");
-					break;
 				}
 				else
 					throw new UnsupportedOperationException();
+				for (int i = 0; i < 4; i++)
+					if (!registersUsed.contains("a" + i))
+						break;
+					else
+						registersUsed.remove("a" + i);
+				break;
 			case FUNCTIONPARAM:
 				for (int i = 0; i < 4; i++)
 					if (!registersUsed.contains("a" + i))
@@ -142,11 +149,18 @@ public class MIPSCompiler
 					String jumpCond = inst.line.substring(11, inst.line.lastIndexOf(" "));
 					String jumpTarget = inst.line.substring(inst.line.lastIndexOf(" ") + 1);
 					out.println("  bne $0, $" + registersMap.get(jumpCond) + ", " + jumpTarget);
+					if (!inst.postLiveVariables.contains(jumpCond))
+					{
+						registersUsed.remove(registersMap.get(jumpCond));
+						registersMap.remove(jumpCond);
+					}
 				}
 				else
 					out.println("  j " + inst.line.substring(5));
 				break;
 		}
+//		out.println("(from " + inst.line);
+//		out.println(registersUsed + ", " + registersMap);
 		out.flush();
 	}
 	

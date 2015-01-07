@@ -25,22 +25,3 @@ if 1 < 2:
 else:
 	print "wtf"
 end
-
-def test(x):
-	if x < 0:
-		return -1
-	elif x = 0:
-		return 0
-	else:
-		return 1
-	end
-end
-
-println test(-4)
-println test(5)
-println test(0)
-println test(test(1)) + test(test(-1))
-
-println x > y ? x : y
-println x < y ? x : y
-println true ? true : true

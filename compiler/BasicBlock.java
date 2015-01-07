@@ -40,25 +40,30 @@ public class BasicBlock
 		Map<String, Set<Instruction>> subExpressions = new HashMap<> ();
 		outer: for (Instruction inst : instructions)
 		{
-			if (inst.type != InstructionType.CALCULATION)
-				continue;
-			String rightHalf = inst.line.substring(inst.line.indexOf(" = ") + 3);
-			if (!subExpressions.containsKey(rightHalf))
-				subExpressions.put(rightHalf, new HashSet<Instruction> ());
-			else
-				inner: for (Instruction prev : subExpressions.get(rightHalf))
-				{
-					for (String str : inst.variablesUsed)
-						if (inst.preDeclarations.get(str) != prev.preDeclarations.get(str) || inst.preDeclarations.get(str) == null)
-							continue inner;
-					String newValue = prev.line.substring(0, prev.line.indexOf(" = "));
-					inst.line = inst.line.substring(0, inst.line.indexOf(" = ")) + " = " + newValue;
-					inst.type = InstructionType.ASSIGNMENT;
-					inst.variablesUsed = new LinkedList<String> ();
-					inst.variablesUsed.add(newValue);
-					continue outer;
-				}
-			subExpressions.get(rightHalf).add(inst);
+			if (inst.type == InstructionType.CALCULATION)
+			{
+				String rightHalf = inst.line.substring(inst.line.indexOf(" = ") + 3);
+				if (!subExpressions.containsKey(rightHalf))
+					subExpressions.put(rightHalf, new HashSet<Instruction> ());
+				else
+					inner: for (Instruction prev : subExpressions.get(rightHalf))
+					{
+						for (String str : inst.variablesUsed)
+							if (inst.preDeclarations.get(str) != prev.preDeclarations.get(str) || inst.preDeclarations.get(str) == null)
+								continue inner;
+						String newValue = prev.line.substring(0, prev.line.indexOf(" = "));
+						inst.line = inst.line.substring(0, inst.line.indexOf(" = ")) + " = " + newValue;
+						inst.type = InstructionType.ASSIGNMENT;
+						inst.variablesUsed = new LinkedList<String> ();
+						inst.variablesUsed.add(newValue);
+						continue outer;
+					}
+				subExpressions.get(rightHalf).add(inst);
+			}
+			else if (inst.type == InstructionType.JUMP)
+			{
+				// should do a always-skip or never-skip check for jumpunless
+			}
 		}
 		for (Instruction inst : instructions)
 			inst.optimize();
