@@ -45,11 +45,13 @@ public class MIPSCompiler
 				if (compiled.contains(block))
 					break;
 				compiled.add(block);
-				toExplore.addAll(block.children);
-				if (block.name != null)
-					out.println(block.name + ":");
+				out.println("_b" + block.id + ":");
 				for (Instruction line : block.instructions)
 					compile(line, registersUsed, registersMap);
+				if (block.nextBlock != null)
+					toExplore.add(block.nextBlock);
+				if (block.jumpBlock != null)
+					toExplore.add(block.jumpBlock);
 				block = block.nextBlock;
 			} while (block != null);
 		}
@@ -144,10 +146,10 @@ public class MIPSCompiler
 			case SPECIALASSIGNMENT:
 				throw new UnsupportedOperationException();
 			case JUMP:
+				String jumpTarget = "_b" + inst.block.id;
 				if (inst.line.startsWith("jumpunless"))
 				{
 					String jumpCond = inst.line.substring(11, inst.line.lastIndexOf(" "));
-					String jumpTarget = inst.line.substring(inst.line.lastIndexOf(" ") + 1);
 					out.println("  bne $0, $" + registersMap.get(jumpCond) + ", " + jumpTarget);
 					if (!inst.postLiveVariables.contains(jumpCond))
 					{
@@ -156,7 +158,7 @@ public class MIPSCompiler
 					}
 				}
 				else
-					out.println("  j " + inst.line.substring(5));
+					out.println("  j " + jumpTarget);
 				break;
 		}
 //		out.println("(from " + inst.line);

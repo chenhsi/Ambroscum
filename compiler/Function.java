@@ -28,9 +28,8 @@ public class Function
 			if (str.startsWith("label "))
 			{
 				BasicBlock next = new BasicBlock();
-				next.name = str.substring(6);
-				connect(curr, next);
-				labels.put(next.name, next);
+				connect(curr, next, true);
+				labels.put(str.substring(6), next);
 				curr = next;
 				continue;
 			}
@@ -41,7 +40,7 @@ public class Function
 				BasicBlock next = new BasicBlock();
 				if (str.startsWith("jumpunless"))
 				{
-					connect(curr, next);
+					connect(curr, next, true);
 					curr.nextBlock = next;
 				}
 				curr = next;
@@ -55,13 +54,16 @@ public class Function
 			else if (str.startsWith("return "))
 			{
 				curr.add(str);
-				connect(curr, endingBlock);
+				connect(curr, endingBlock, false);
 				curr = new BasicBlock();
 			}
 			else
 				curr.add(str);
 		}
-		connect(curr, endingBlock);
+		connect(curr, endingBlock, true);
+		
+		// Now that we have a list of all the labels,
+		// we can connect jump statements to targets
 		for (BasicBlock block : hasJump)
 			for (ListIterator<Instruction> iter = block.instructions.listIterator(); iter.hasNext();)
 			{
@@ -69,23 +71,39 @@ public class Function
 				if (str.startsWith("jump")) // jump or jumpunless
 				{
 					String jumpTarget = str.substring(str.lastIndexOf(" ") + 1);
-					connect(block, labels.get(jumpTarget));
-					if (str.startsWith("jump "))
-						iter.remove();
+					connect(block, labels.get(jumpTarget), false);
+					
+					// I had this here, but I don't remember why anymore,
+					// and I don't think it should be here
+					// If my intent was that jump statements could be converted to direct connections
+					// I'm now doing that somewhere else
+//					if (str.startsWith("jump "))
+//						iter.remove();
 				}
 			}
 	}
 	
 	public void optimize()
 	{
+		// No particular sense to this ordering
+//		System.out.println("Optimizing part 1: ");
 		simplifyBlockStructure();
+//		System.out.println("Optimizing part 2: ");
 		propogateVariableDeclarations();
+//		System.out.println("Optimizing part 3: ");
 		variablePropogation();
+//		System.out.println("Optimizing part 4: ");
 		propogateVariableDeclarations();
+//		System.out.println("Optimizing part 5: ");
 		removeUnneededDeclarations();
+//		System.out.println("Optimizing part 6: ");
 		propogateVariableDeclarations();
+//		System.out.println("Optimizing part 7: ");
 		variablePropogation();
-		loopAnalysis();
+//		System.out.println("Optimizing part 8: ");
+		// Currently causes infinite loops, haven't figured out why
+//		loopAnalysis();
+//		System.out.println("Optimizing Done");
 	}
 	
 	public void printAll()
@@ -110,15 +128,19 @@ public class Function
 			curr.print();
 			System.out.println();
 			explored.add(curr);
-			for (BasicBlock child : curr.children)
-				frontier.add(child);
+			if (curr.nextBlock != null)
+				frontier.add(curr.nextBlock);
+			if (curr.jumpBlock != null)
+				frontier.add(curr.jumpBlock);
 		}
-		System.out.println();
 	}
 
-	private static void connect(BasicBlock parent, BasicBlock child)
+	private static void connect(BasicBlock parent, BasicBlock child, boolean normalTransition)
 	{
-		parent.children.add(child);
+		if (normalTransition)
+			parent.nextBlock = child;
+		else
+			parent.jumpBlock = child;
 		child.parents.add(parent);
 	}
 	
@@ -126,44 +148,111 @@ public class Function
 	{
 		// remove empty blocks by directly connecting their parents/children
 		Set<BasicBlock> explored = new HashSet<> ();
-		List<BasicBlock> frontier = new LinkedList<> ();
+		Queue<BasicBlock> frontier = new LinkedList<> ();
 		frontier.add(startingBlock);
 		while (!frontier.isEmpty())
 		{
-			BasicBlock curr = frontier.remove(0);
+			BasicBlock curr = frontier.remove();
 			if (explored.contains(curr))
 				continue;
+			explored.add(curr);
 			if (curr.instructions.size() == 0 && curr != startingBlock && curr != endingBlock)
 			{
+				// If a block is empty, then it has to directly lead to the next block
+				if (curr.nextBlock == null || curr.jumpBlock != null)
+					throw new AssertionError();
 				for (BasicBlock parent : curr.parents)
-					for (BasicBlock child : curr.children)
-						connect(parent, child);
-				for (BasicBlock parent : curr.parents)
-					parent.children.remove(curr);
-				for (BasicBlock child : curr.children)
 				{
-					frontier.add(child);
-					child.parents.remove(curr);
+					if (parent.nextBlock == curr)
+						parent.nextBlock = curr.nextBlock;
+					else if (parent.jumpBlock == curr)
+						parent.jumpBlock = curr.nextBlock;
+					curr.nextBlock.parents.add(parent);
 				}
+				curr.nextBlock.parents.remove(curr);
+				// The following block might also be empty, so search that too
+				frontier.add(curr.nextBlock);
 				continue;
 			}
-			explored.add(curr);
-			for (BasicBlock child : curr.children)
-				frontier.add(child);
+			// if a block is small enough, you can just copy/merge it into its parents
+			// disabled due to bugs
+			else if (curr.instructions.size() <= 5 && curr != startingBlock && curr != endingBlock && false)
+			{ // 5 is an arbitarily chosen number
+				// whether or not curr should be removed afterwards,
+				// or has been merged with all parents
+				boolean stillKeep = false;
+				for (BasicBlock parent : curr.parents)
+				{
+					if (parent.nextBlock != null && parent.jumpBlock != null)
+					{
+						// can't merge if parent ends with a branch
+						stillKeep = true;
+						continue;
+					}
+					if (parent.jumpBlock != null && curr.nextBlock != null && curr.jumpBlock != null)
+					{
+						// can't merge if parent jumps here and curr is a branch
+						stillKeep = true;
+						continue;
+					}
+					System.out.println("Trying to merge: ");
+					parent.print();
+					curr.print();
+					System.out.println("Above is being merged");
+					boolean parentJump = parent.jumpBlock != null;
+					if (parentJump) // delete the jump statement, readd later
+						parent.instructions.remove(parent.instructions.size() - 1);
+					for (Instruction inst : curr.instructions)
+					{
+						Instruction newInst = new Instruction(inst.line, parent);
+						parent.instructions.add(newInst);
+					}
+					if (parentJump && curr.nextBlock != null)
+					{
+						parent.instructions.add(new Instruction("jump " + "unused", parent));
+						parent.jumpBlock = curr.nextBlock;
+					}
+					else
+					{
+						parent.nextBlock = curr.nextBlock;
+						parent.jumpBlock = curr.jumpBlock;
+					}
+					if (curr.nextBlock != null)
+						curr.nextBlock.parents.add(parent);
+					if (curr.jumpBlock != null)
+						curr.jumpBlock.parents.add(parent);
+				}
+				if (!stillKeep)
+				{
+					if (curr.nextBlock != null)
+						curr.nextBlock.parents.remove(curr);
+					if (curr.jumpBlock != null)
+						curr.jumpBlock.parents.remove(curr);
+				}
+			}
+			// If a block's conditional jump just goes to the next block anyway
+			else if (curr.nextBlock == curr.jumpBlock && curr != endingBlock)
+			{
+				if (curr.nextBlock == null)
+					throw new AssertionError();
+				curr.jumpBlock = null;
+//				curr.print();
+				curr.instructions.remove(curr.instructions.size() - 1);
+			}
+			if (curr.nextBlock != null)
+				frontier.add(curr.nextBlock);
+			if (curr.jumpBlock != null)
+				frontier.add(curr.jumpBlock);
 		}
 
 		// remove unreachable blocks from structure
 		for (BasicBlock block : explored)
 		{
-			outer: while (true)
+			for (Iterator<BasicBlock> iter = block.parents.iterator(); iter.hasNext(); )
 			{
-				for (BasicBlock parent : block.parents)
-					if (!explored.contains(parent))
-					{
-						block.parents.remove(parent);
-						continue outer;
-					}
-				break;
+				BasicBlock parent = iter.next();
+				if (!explored.contains(parent))
+					iter.remove();
 			}
 		}
 
@@ -172,42 +261,84 @@ public class Function
 		explored = new HashSet<> ();
 		frontier = new LinkedList<> ();
 		frontier.add(startingBlock);
-		while (!frontier.isEmpty())
+		outer: while (!frontier.isEmpty())
 		{
-			BasicBlock curr = frontier.remove(0);
+			BasicBlock curr = frontier.remove();
 			if (explored.contains(curr))
 				continue;
-			if (curr.children.size() == 1)
-				for (BasicBlock child : curr.children)
-					if (child == endingBlock && curr != startingBlock) // can't remove ending block from graph
+			explored.add(curr);
+			if (curr.nextBlock == null ^ curr.jumpBlock == null) // If exactly 1 child
+			{
+				BasicBlock child = curr.nextBlock == null ? curr.jumpBlock : curr.nextBlock;
+				// can't remove ending block from graph, but need to rethink how to do this
+				if (child == endingBlock)
+					continue;
+//				if (child == endingBlock && curr != startingBlock)
+//				{
+//					child.instructions.addAll(curr.instructions);
+//					for (Instruction inst : curr.instructions)
+//						inst.block = curr;
+//					child.parents = curr.parents;
+//					for (BasicBlock parent : curr.parents)
+//					{
+//						parent.children.remove(curr);
+//						parent.children.add(child);
+//					}
+//					break;
+//				}
+				if (child.parents.size() == 1)
+				{
+					// if curr had terminated in a unconditioned jump
+					// cut out the jump statement, since now merging
+					if (curr.jumpBlock != null)
+						curr.instructions.remove(curr.instructions.size() - 1);
+					// Move the instructions to curr
+					for (Instruction inst : child.instructions)
+						inst.block = curr;
+					curr.instructions.addAll(child.instructions);
+					
+					// Make curr's children = child's children's parents
+					curr.nextBlock = child.nextBlock;
+					if (child.nextBlock != null)
 					{
-						child.instructions.addAll(curr.instructions);
-						for (Instruction inst : curr.instructions)
-							inst.block = curr;
-						child.parents = curr.parents;
-						for (BasicBlock parent : curr.parents)
-						{
-							parent.children.remove(curr);
-							parent.children.add(child);
-						}
-						break;
+						child.nextBlock.parents.remove(child);
+						child.nextBlock.parents.add(curr);
 					}
-					else if (child.parents.size() == 1)
+					curr.jumpBlock = child.jumpBlock;
+					if (child.jumpBlock != null)
 					{
-						curr.instructions.addAll(child.instructions);
-						for (Instruction inst : curr.instructions)
-							inst.block = curr;
-						curr.children = child.children;
-						for (BasicBlock newChild : child.children)
-						{
-							newChild.parents.remove(child);
-							newChild.parents.add(curr);
-						}
-						frontier.add(curr);
-						break;
+						child.jumpBlock.parents.remove(child);
+						child.jumpBlock.parents.add(curr);
 					}
-			else
-				explored.add(curr);
+
+					// Push curr back onto the search queue,
+					// since this optimization might work again
+					frontier.add(curr);
+					continue outer;
+				}
+			}
+			
+			// If curr is a jump block, and the jump target isn't directly
+			// connected to any of it's parents, then make them directly
+			// connected
+			// Choice of which of curr.child's parents becomes a direct
+			// connection is currently completely arbitrary (random loop order)
+			if (curr.nextBlock == null && curr != endingBlock)
+			{
+				for (BasicBlock childParents : curr.jumpBlock.parents)
+				{
+					if (childParents.nextBlock == curr.jumpBlock)
+						continue outer; // This optimization doesn't work, skip
+				}
+				curr.nextBlock = curr.jumpBlock;
+				curr.jumpBlock = null;
+				curr.instructions.remove(curr.instructions.size() - 1);
+			}
+			
+			if (curr.nextBlock != null)
+				frontier.add(curr.nextBlock);
+			if (curr.jumpBlock != null)
+				frontier.add(curr.jumpBlock);
 		}
 	}
 	
@@ -278,7 +409,12 @@ public class Function
 				for (String key : currMap.keySet())
 					if (key.charAt(0) != '_')
 						variablesModified.add(key);
-			for (BasicBlock child : curr.children)
+			List<BasicBlock> children = new ArrayList<> (2);
+			if (curr.nextBlock != null)
+				children.add(curr.nextBlock);
+			if (curr.jumpBlock != null)
+				children.add(curr.jumpBlock);
+			for (BasicBlock child : children)
 			{
 				if (!analyzed.containsKey(child))
 				{
@@ -416,10 +552,12 @@ public class Function
 			BasicBlock curr = frontier.remove(0);
 			if (explored.contains(curr))
 				continue;
-			curr.variablePropogation();
 			explored.add(curr);
-			for (BasicBlock child : curr.children)
-				frontier.add(child);
+			curr.variablePropogation();
+			if (curr.nextBlock != null)
+				frontier.add(curr.nextBlock);
+			if (curr.jumpBlock != null)
+				frontier.add(curr.jumpBlock);
 		}
 	}
 	
@@ -428,32 +566,44 @@ public class Function
 		Set<BasicBlock> explored = new HashSet<> ();
 		
 		// First, calculate dominators
-		List<BasicBlock> frontier = new LinkedList<> ();
+		Queue<BasicBlock> frontier = new LinkedList<> ();
 		frontier.add(startingBlock);
 		while (!frontier.isEmpty())
 		{
-			BasicBlock curr = frontier.remove(0);
+			BasicBlock curr = frontier.remove();
 			if (!explored.contains(curr))
 				curr.dominators = new HashSet<BasicBlock> ();
-			Set<BasicBlock> temp = new HashSet<> (curr.dominators);
-			for (BasicBlock parent : curr.parents)
-				if (parent.dominators.size() == 0)
-					continue;
-				else if (!explored.contains(curr))
-					curr.dominators.addAll(parent.dominators);
-				else
-					curr.dominators.retainAll(parent.dominators);
-			curr.dominators.add(curr);
 			explored.add(curr);
-			if (!temp.equals(curr.dominators))
-				for (BasicBlock block : curr.children)
-					frontier.add(block);
+			Set<BasicBlock> temp = new HashSet<> ();
+			for (BasicBlock parent : curr.parents)
+				if (!explored.contains(parent)) // Haven't analyzed parent yet, skip for now
+					continue;
+				else if (temp.isEmpty()) // Special case to initialize temp
+					temp.addAll(parent.dominators);
+				else // Usual case of finding intersection of parent.dominators
+					temp.retainAll(parent.dominators);
+			temp.add(curr);
+			if (!temp.equals(curr.dominators)) // If there are any changes
+			{
+				if (curr.nextBlock != null)
+					frontier.add(curr.nextBlock);
+				if (curr.jumpBlock != null)
+					frontier.add(curr.jumpBlock);
+			}
 		}
 		
 		// Using dominators, determine all loops, as well as their header
 		Map<BasicBlock, Set<BasicBlock>> loops = new HashMap<> ();
 		for (BasicBlock block : explored)
-			for (BasicBlock child : block.children)
+		{
+			List<BasicBlock> children = new ArrayList<> (2);
+			if (block.nextBlock != null)
+				children.add(block.nextBlock);
+			if (block.jumpBlock != null)
+				children.add(block.jumpBlock);
+			
+			//// This is probably wrong
+			for (BasicBlock child : children)
 				if (block.dominators.contains(child) && block != child)
 				{
 					BasicBlock header = child;
@@ -474,6 +624,7 @@ public class Function
 					else
 						loops.put(header, loopActual);
 				}
+		}
 		
 		// insert an empty block in front of each loop header
 		Map<BasicBlock, BasicBlock> loopPreHeaders = new HashMap<> ();
@@ -481,14 +632,16 @@ public class Function
 		{
 			BasicBlock insert = new BasicBlock();
 			for (BasicBlock loopParent : header.parents)
-				if (!loopParent.dominators.contains(header))
+				if (!loopParent.dominators.contains(header)) // If the parent is a dominator of the loop
 				{
-					loopParent.children.remove(header);
-					loopParent.children.add(insert);
+					if (loopParent.nextBlock == header)
+						loopParent.nextBlock = insert;
+					else if (loopParent.jumpBlock == header)
+						loopParent.jumpBlock = insert;
 					insert.parents.add(loopParent);
 				}
 			header.parents.removeAll(insert.parents);
-			connect(insert, header);
+			connect(insert, header, true);
 			loopPreHeaders.put(header, insert);
 		}
 		
@@ -507,6 +660,8 @@ public class Function
 					for (String str : inst.variablesUsed)
 					{
 						Instruction decl = inst.preDeclarations.get(str);
+						// If the source line is unknown or within the loop, not considered invariant
+						//// Future work: could be within the loop but still invariant
 						if (decl == null || loops.get(header).contains(decl.block))
 							continue outer;
 					}
@@ -526,9 +681,12 @@ public class Function
 						}
 						// if instruction does not dominate all loop exits
 						if (!loopBlock2.dominators.contains(loopBlock))
-							for (BasicBlock potentialExit : loopBlock2.children)
-								if (!loops.get(header).contains(potentialExit))
-									continue outer;
+						{
+							if (loopBlock2.nextBlock != null && !loops.get(header).contains(loopBlock2.nextBlock))
+								continue outer;
+							if (loopBlock2.jumpBlock != null && !loops.get(header).contains(loopBlock2.jumpBlock))
+								continue outer;
+						}
 					}
 					// invariant and safe, so go ahead and pull out
 					iter.remove();

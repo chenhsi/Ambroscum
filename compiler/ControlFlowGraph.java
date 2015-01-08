@@ -17,7 +17,9 @@ public class ControlFlowGraph
 	
 	public void optimize()
 	{
-//		mainFunction.printAll();
+		mainFunction.printAll();
+		mainFunction.optimize();
+		mainFunction.optimize();
 		mainFunction.optimize();
 //		for (Function f : otherFunctions.values())
 //			f.optimize();

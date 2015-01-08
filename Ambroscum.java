@@ -19,8 +19,8 @@ public class Ambroscum
 	{
 //		commandLineMain(args);
 //		commandLineMain(new String[] {"-c", "tests/03 if.ambr"});
-//		compileILTest(new File("tests/07 break.ambr"));
-		compileMIPSTest("03 if", true);
+		compileILTest(new File("tests/07 break.ambr"));
+//		compileMIPSTest("03 if", true);
 	}
 	
 	/* Usage: ambroscum [-icRh] [file] [-a args]

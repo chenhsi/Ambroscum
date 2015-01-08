@@ -66,17 +66,17 @@ public class Instruction
 	void print()
 	{
 //		System.out.println("\t\tPre-Declarations: " + preDeclarations);
-		System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
-		System.out.println("\t\tReferenced Variables: " + variablesUsed);
+//		System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
+//		System.out.println("\t\tReferenced Variables: " + variablesUsed);
 		System.out.println("\t" + line);
-		// System.out.println("\t\tPost-Declarations: " + postDeclarations);
+//		System.out.println("\t\tPost-Declarations: " + postDeclarations);
 	}
 	
 	void optimize()
 	{
 //		System.out.println("Optimizing self: " + this);
 		boolean optimized = false;
-		if (type == InstructionType.ASSIGNMENT || type == InstructionType.CALCULATION || type == InstructionType.FUNCTIONRETURN)
+//		if (type == InstructionType.ASSIGNMENT || type == InstructionType.CALCULATION || type == InstructionType.FUNCTIONRETURN)
 			for (String str : variablesUsed)
 			{
 				Instruction decl = preDeclarations.get(str);
@@ -90,17 +90,32 @@ public class Instruction
 				optimized = true;
 				break;
 			}
-// this "optimization" reverses other optimizations done; I don't remember why I thought it would be useful
-/*			if (!optimized && line.indexOf(" = ") != -1 && variablesUsed.size() == 1 && line.endsWith(" = " + variablesUsed.get(0)))
+
+		if (line.startsWith("jumpunless"))
 		{
-			Instruction decl = preDeclarations.get(variablesUsed.get(0));
-			if (decl != null && decl.block == this.block && decl.line.split(" ").length == 5)
+			// Optimizations on the jump condition
+			String jumpCond = line.substring(11, line.lastIndexOf(" "));
+			if (!identifier(jumpCond))
 			{
-				line = line.substring(0, line.indexOf(" = ")) + decl.line.substring(decl.line.indexOf(" = "));
-				variablesUsed.remove(0);
+				if (!jumpCond.equals("true") && !jumpCond.equals("false"))
+					throw new AssertionError(); // Could also be a syntax error, but assertions for now
 				optimized = true;
+				if (jumpCond.equals("true")) // Never jump
+				{
+					type = InstructionType.NOP;
+					line = "nop";
+					block.jumpBlock.parents.remove(block);
+					block.jumpBlock = null;
+				}
+				else // jumpCond is false, always jump
+				{
+					line = "jump" + line.substring(line.lastIndexOf(" "));
+					block.nextBlock.parents.remove(block);
+					block.nextBlock = null;
+				}
 			}
-		}*/
+		}
+
 		if (!optimized && type == InstructionType.CALCULATION && variablesUsed.size() == 0)
 		{
 			String[] parts = line.split(" ");
@@ -219,7 +234,7 @@ public class Instruction
 
 enum InstructionType
 {
-	CALCULATION(true), ASSIGNMENT(true), FUNCTIONCALL(false), FUNCTIONPARAM(false), FUNCTIONRETURN(false), SPECIALASSIGNMENT(true), JUMP(false);
+	CALCULATION(true), ASSIGNMENT(true), FUNCTIONCALL(false), FUNCTIONPARAM(false), FUNCTIONRETURN(false), SPECIALASSIGNMENT(true), JUMP(false), NOP(false);
 	
 	private boolean assignmentType;
 	

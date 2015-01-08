@@ -6,10 +6,9 @@ public class BasicBlock
 {
 	List<Instruction> instructions = new LinkedList<Instruction> ();
 	Set<BasicBlock> parents = new HashSet<> ();
-	Set<BasicBlock> children = new HashSet<> ();
 	BasicBlock nextBlock;
+	BasicBlock jumpBlock;
 	
-	String name;
 	static int counter = 0;
 	int id = ++counter;
 	Set<BasicBlock> dominators = new HashSet<BasicBlock> ();
@@ -30,7 +29,7 @@ public class BasicBlock
 		System.out.println("Parents: " + parents);
 		for (Instruction inst : instructions)
 			inst.print();
-		System.out.println("Children: " + children);
+		System.out.println("Children: " + nextBlock + (jumpBlock == null ? "" : (" " + jumpBlock)));
 	}
 	
 	void variablePropogation()
@@ -60,12 +59,13 @@ public class BasicBlock
 					}
 				subExpressions.get(rightHalf).add(inst);
 			}
-			else if (inst.type == InstructionType.JUMP)
-			{
-				// should do a always-skip or never-skip check for jumpunless
-			}
 		}
-		for (Instruction inst : instructions)
+		for (Iterator<Instruction> iter = instructions.iterator(); iter.hasNext();)
+		{
+			Instruction inst = iter.next();
 			inst.optimize();
+			if (inst.line.equals("nop"))
+				iter.remove();
+		}
 	}
 }
