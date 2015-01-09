@@ -42,7 +42,8 @@ public class Instruction
 			type = InstructionType.JUMP;
 		else if (line.startsWith("param"))
 		{
-			variablesUsed.add(line.substring(6));
+			if (identifier(line.substring(6)))
+				variablesUsed.add(line.substring(6));
 			type = InstructionType.FUNCTIONPARAM;
 		}
 		else if (line.startsWith("call"))
@@ -63,33 +64,23 @@ public class Instruction
 			throw new UnsupportedOperationException(line + " not recognized");
 	}
 	
-	void print()
-	{
-//		System.out.println("\t\tPre-Declarations: " + preDeclarations);
-//		System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
-//		System.out.println("\t\tReferenced Variables: " + variablesUsed);
-		System.out.println("\t" + line);
-//		System.out.println("\t\tPost-Declarations: " + postDeclarations);
-	}
-	
 	void optimize()
 	{
 //		System.out.println("Optimizing self: " + this);
 		boolean optimized = false;
-//		if (type == InstructionType.ASSIGNMENT || type == InstructionType.CALCULATION || type == InstructionType.FUNCTIONRETURN)
-			for (String str : variablesUsed)
-			{
-				Instruction decl = preDeclarations.get(str);
-				if (decl == null || decl.block != this.block || decl.type != InstructionType.ASSIGNMENT)
-					continue;
-				String rest = decl.line.substring(decl.line.indexOf(" = ") + 3);
-				line = line.replaceAll(str, rest);
-				variablesUsed.remove(str);
-				if (identifier(rest))
-					variablesUsed.add(rest);
-				optimized = true;
-				break;
-			}
+		for (String str : variablesUsed)
+		{
+			Instruction decl = preDeclarations.get(str);
+			if (decl == null || decl.block != this.block || decl.type != InstructionType.ASSIGNMENT)
+				continue;
+			String rest = decl.line.substring(decl.line.indexOf(" = ") + 3);
+			line = line.replaceAll(str, rest);
+			variablesUsed.remove(str);
+			if (identifier(rest))
+				variablesUsed.add(rest);
+			optimized = true;
+			break;
+		}
 
 		if (line.startsWith("jumpunless"))
 		{
@@ -204,6 +195,15 @@ public class Instruction
 //		System.out.println("After self-optimizing: " + this);
 		if (optimized)
 			optimize();
+	}
+	
+	void print()
+	{
+//		System.out.println("\t\tPre-Declarations: " + preDeclarations);
+//		System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
+//		System.out.println("\t\tReferenced Variables: " + variablesUsed);
+		System.out.println("\t" + line);
+//		System.out.println("\t\tPost-Declarations: " + postDeclarations);
 	}
 	
 	public String toString()

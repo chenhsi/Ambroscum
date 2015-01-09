@@ -88,6 +88,7 @@ public class Function
 		// No particular sense to this ordering
 //		System.out.println("Optimizing part 1: ");
 		simplifyBlockStructure();
+		complicateBlockStructure();
 //		System.out.println("Optimizing part 2: ");
 		propogateVariableDeclarations();
 //		System.out.println("Optimizing part 3: ");
@@ -162,73 +163,11 @@ public class Function
 				if (curr.nextBlock == null || curr.jumpBlock != null)
 					throw new AssertionError();
 				for (BasicBlock parent : curr.parents)
-				{
-					if (parent.nextBlock == curr)
-						parent.nextBlock = curr.nextBlock;
-					else if (parent.jumpBlock == curr)
-						parent.jumpBlock = curr.nextBlock;
-					curr.nextBlock.parents.add(parent);
-				}
+					connect(parent, curr.nextBlock, parent.nextBlock == curr);
 				curr.nextBlock.parents.remove(curr);
 				// The following block might also be empty, so search that too
 				frontier.add(curr.nextBlock);
 				continue;
-			}
-			// if a block is small enough, you can just copy/merge it into its parents
-			// disabled due to bugs
-			else if (curr.instructions.size() <= 5 && curr != startingBlock && curr != endingBlock && false)
-			{ // 5 is an arbitarily chosen number
-				// whether or not curr should be removed afterwards,
-				// or has been merged with all parents
-				boolean stillKeep = false;
-				for (BasicBlock parent : curr.parents)
-				{
-					if (parent.nextBlock != null && parent.jumpBlock != null)
-					{
-						// can't merge if parent ends with a branch
-						stillKeep = true;
-						continue;
-					}
-					if (parent.jumpBlock != null && curr.nextBlock != null && curr.jumpBlock != null)
-					{
-						// can't merge if parent jumps here and curr is a branch
-						stillKeep = true;
-						continue;
-					}
-					System.out.println("Trying to merge: ");
-					parent.print();
-					curr.print();
-					System.out.println("Above is being merged");
-					boolean parentJump = parent.jumpBlock != null;
-					if (parentJump) // delete the jump statement, readd later
-						parent.instructions.remove(parent.instructions.size() - 1);
-					for (Instruction inst : curr.instructions)
-					{
-						Instruction newInst = new Instruction(inst.line, parent);
-						parent.instructions.add(newInst);
-					}
-					if (parentJump && curr.nextBlock != null)
-					{
-						parent.instructions.add(new Instruction("jump " + "unused", parent));
-						parent.jumpBlock = curr.nextBlock;
-					}
-					else
-					{
-						parent.nextBlock = curr.nextBlock;
-						parent.jumpBlock = curr.jumpBlock;
-					}
-					if (curr.nextBlock != null)
-						curr.nextBlock.parents.add(parent);
-					if (curr.jumpBlock != null)
-						curr.jumpBlock.parents.add(parent);
-				}
-				if (!stillKeep)
-				{
-					if (curr.nextBlock != null)
-						curr.nextBlock.parents.remove(curr);
-					if (curr.jumpBlock != null)
-						curr.jumpBlock.parents.remove(curr);
-				}
 			}
 			// If a block's conditional jump just goes to the next block anyway
 			else if (curr.nextBlock == curr.jumpBlock && curr != endingBlock)
@@ -273,21 +212,9 @@ public class Function
 				// can't remove ending block from graph, but need to rethink how to do this
 				if (child == endingBlock)
 					continue;
-//				if (child == endingBlock && curr != startingBlock)
-//				{
-//					child.instructions.addAll(curr.instructions);
-//					for (Instruction inst : curr.instructions)
-//						inst.block = curr;
-//					child.parents = curr.parents;
-//					for (BasicBlock parent : curr.parents)
-//					{
-//						parent.children.remove(curr);
-//						parent.children.add(child);
-//					}
-//					break;
-//				}
 				if (child.parents.size() == 1)
 				{
+					if (curr.jumpBlock != null)
 					// if curr had terminated in a unconditioned jump
 					// cut out the jump statement, since now merging
 					if (curr.jumpBlock != null)
@@ -298,17 +225,17 @@ public class Function
 					curr.instructions.addAll(child.instructions);
 					
 					// Make curr's children = child's children's parents
-					curr.nextBlock = child.nextBlock;
+					curr.nextBlock = null;
+					curr.jumpBlock = null;
 					if (child.nextBlock != null)
 					{
+						connect(curr, child.nextBlock, true);
 						child.nextBlock.parents.remove(child);
-						child.nextBlock.parents.add(curr);
 					}
-					curr.jumpBlock = child.jumpBlock;
 					if (child.jumpBlock != null)
 					{
+						connect(curr, child.jumpBlock, false);
 						child.jumpBlock.parents.remove(child);
-						child.jumpBlock.parents.add(curr);
 					}
 
 					// Push curr back onto the search queue,
@@ -319,8 +246,7 @@ public class Function
 			}
 			
 			// If curr is a jump block, and the jump target isn't directly
-			// connected to any of it's parents, then make them directly
-			// connected
+			// connected to any of it's parents, then directly connect them
 			// Choice of which of curr.child's parents becomes a direct
 			// connection is currently completely arbitrary (random loop order)
 			if (curr.nextBlock == null && curr != endingBlock)
@@ -341,33 +267,111 @@ public class Function
 				frontier.add(curr.jumpBlock);
 		}
 	}
+
+	// if a block is small enough, you can just copy/merge it into its parents
+	private static final int SMALL_BLOCK = 5; // 5 is an arbitarily chosen number
+	private void complicateBlockStructure()
+	{
+		Set<BasicBlock> explored = new HashSet<> ();
+		Queue<BasicBlock> frontier = new LinkedList<> ();
+		frontier.add(startingBlock);
+		while (!frontier.isEmpty())
+		{
+			BasicBlock curr = frontier.remove();
+			if (explored.contains(curr))
+				continue;
+			explored.add(curr);
+
+			if (curr.nextBlock != null)
+				frontier.add(curr.nextBlock);
+			if (curr.jumpBlock != null)
+				frontier.add(curr.jumpBlock);
+			
+			if (curr == startingBlock || curr == endingBlock)
+				continue;
+			if (curr.instructions.size() > SMALL_BLOCK)
+				continue;
+			
+			// all the parents that are to be removed
+			Set<BasicBlock> toRemove = new HashSet<> ();
+			for (BasicBlock parent : curr.parents)
+			{
+				// can't merge if parent ends with a branch
+				if (parent.nextBlock != null && parent.jumpBlock != null)
+					continue;
+				if (parent.jumpBlock != null) // delete jump statement, readd later maybe
+					parent.instructions.remove(parent.instructions.size() - 1);
+				for (Instruction inst : curr.instructions)
+					parent.instructions.add(new Instruction(inst.line, parent));
+				toRemove.add(parent);
+			}
+
+			// If curr doesn't branch, our work is a bit simpler
+			// just have the parent jump to curr's child
+			if (curr.nextBlock == null)
+			{ 
+				for (BasicBlock parent : toRemove)
+				{
+					parent.nextBlock = null;
+					connect(parent, curr.jumpBlock, false);
+				}
+			}
+			else if (curr.jumpBlock == null)
+			{ 
+				for (BasicBlock parent : toRemove)
+				{
+					parent.nextBlock = null;
+					connect(parent, curr.nextBlock, false);
+					parent.instructions.add(new Instruction("jump " + "somewhereidk", parent));
+				}
+			}
+			// Otherwise, we need to create a new block to be parent.nextBlock
+			// And have that new block then jump to curr.nextBlock
+			else
+			{
+				for (BasicBlock parent : toRemove)
+				{
+					BasicBlock newChild = new BasicBlock();
+					newChild.instructions.add(new Instruction("jump " + "somewhereidk", newChild));
+					connect(parent, newChild, true);
+					connect(newChild, curr.nextBlock, false);
+					connect(parent, curr.jumpBlock, false);
+				}
+			}
+
+			curr.parents.removeAll(toRemove);
+			if (curr.parents.size() == 0)
+			{
+				if (curr.nextBlock != null)
+					curr.nextBlock.parents.remove(curr);
+				if (curr.jumpBlock != null)
+					curr.jumpBlock.parents.remove(curr);
+			}
+		}
+	}
 	
 	private void propogateVariableDeclarations()
 	{
-		Set<BasicBlock> exploredAtAll = new HashSet<BasicBlock> ();
-		variablesModified = new HashSet<String> ();
+		// Maps each basic block to the set of instruction declarations entering the block
+		//// something that might be better to put within each basic block, as a field?
 		Map<BasicBlock, Map<String, Instruction>> analyzed = new HashMap<> ();
-		List<BasicBlock> toProcess = new LinkedList<> ();
-		toProcess.add(startingBlock);
 		analyzed.put(startingBlock, new HashMap<String, Instruction> ());
+		
+		Set<BasicBlock> exploredAtAll = new HashSet<BasicBlock> ();
+		Queue<BasicBlock> toProcess = new LinkedList<> ();
+		toProcess.add(startingBlock);
 		while (!toProcess.isEmpty())
 		{
-			BasicBlock curr = toProcess.remove(0);
-			if (!exploredAtAll.contains(curr))
-				for (Instruction inst : curr.instructions)
-				{
-					inst.preDeclarations = new HashMap<> ();
-					inst.postDeclarations = new HashMap<> ();
-				}
-			else
-				exploredAtAll.add(curr);
+			BasicBlock curr = toProcess.remove();
+			exploredAtAll.add(curr);
+			// the current map of variables to the declaration lines (or null, if can't be determined)
 			Map<String, Instruction> currMap = new HashMap<> (analyzed.get(curr));
 			for (Instruction inst : curr.instructions)
 			{
 				inst.preDeclarations = new HashMap<> (currMap);
-				if (inst.type.isAssignment())
+				if (inst.type.isAssignment()) // adds the declaration
 					currMap.put(inst.line.substring(0, inst.line.indexOf(" = ")), inst);
-				else if (inst.type == InstructionType.FUNCTIONCALL)
+				else if (inst.type == InstructionType.FUNCTIONCALL) //// haven't debugged yet
 				{
 					String funcName = inst.variablesUsed.get(0);
 					if (!funcName.equals("print")) // or any other built-in function
@@ -393,22 +397,19 @@ public class Function
 						}
 						else
 							noInfo = true;
+						// _all corresponds to having gone to an unknown function call,
+						// so any or all variables may have been changed
+						// and any number of new variables may be present
 						if (noInfo)
+						{
+							currMap.clear();
 							currMap.put("_all", null);
+						}
 					}
 				}
-				if (currMap.containsKey("_all"))
-					for (String key : currMap.keySet())
-						if (key.charAt(0) != '_')
-							currMap.put(key, null);
 				inst.postDeclarations = new HashMap<> (currMap);
 			}
-			if (currMap.containsKey("_all"))
-				variablesModified.add("_all");
-			else
-				for (String key : currMap.keySet())
-					if (key.charAt(0) != '_')
-						variablesModified.add(key);
+			
 			List<BasicBlock> children = new ArrayList<> (2);
 			if (curr.nextBlock != null)
 				children.add(curr.nextBlock);
@@ -421,31 +422,62 @@ public class Function
 					analyzed.put(child, new HashMap<> (currMap));
 					toProcess.add(child);
 				}
-				else
+				else // already have some info on child, now supplementing
 				{
 					Map<String, Instruction> orig = analyzed.get(child);
 					boolean changed = false;
-					for (String key : currMap.keySet())
-						if (!orig.containsKey(key) || orig.get(key) != currMap.get(key) && orig.get(key) != null)
-						{
-							changed = true;
-							if (orig.containsKey(key))
-								orig.put(key, null);
-							else
+					// If either orig or currMap has "_all", then just keep the
+					// values they share in common
+					if (orig.containsKey("_all") || currMap.containsKey("_all"))
+					{
+						Map<String, Instruction> keep = new HashMap<> ();
+						for (String key : currMap.keySet())
+							if (orig.get(key) == currMap.get(key))
+								keep.put(key, currMap.get(key));
+						keep.put("_all", null);
+						changed = orig.equals(keep);
+						analyzed.put(child, keep);
+					}
+					else // otherwise, keep track of exactly which values conflict
+					{
+						for (String key : currMap.keySet())
+							// if child didn't have info on this variable before
+							if (!orig.containsKey(key))
+							{
+								changed = true;
 								orig.put(key, currMap.get(key));
-						}
+							}
+							// if child did have info, but conflicting
+							else if (orig.get(key) != currMap.get(key) && orig.get(key) != null)
+							{
+								changed = true;
+								orig.put(key, null);
+							}
+					}
 					if (changed)
 						toProcess.add(child);
 				}
 			}
 		}
+
+		// Note which values have changed in this function
+		variablesModified = new HashSet<String> ();
+		Map<String, Instruction> currMap = analyzed.get(endingBlock);
+		if (currMap.containsKey("_all"))
+			variablesModified.add("_all");
+		else
+			for (String key : currMap.keySet())
+				if (key.charAt(0) != '_')
+					variablesModified.add(key);
 	}
-	
+
+	// includes a liveless analysis
 	private void removeUnneededDeclarations()
 	{
+		nonlocalVariablesUsed = new HashSet<String> ();
 		Set<BasicBlock> exploredAtAll = new HashSet<BasicBlock> ();
 		Map<BasicBlock, Set<String>> analyzed = new HashMap<> ();
-		List<BasicBlock> toProcess = new LinkedList<> ();
+		Queue<BasicBlock> toProcess = new LinkedList<> ();
 		toProcess.add(endingBlock);
 		if (isMain)
 			analyzed.put(endingBlock, new HashSet<String> ());
@@ -453,7 +485,7 @@ public class Function
 			analyzed.put(endingBlock, new HashSet<String> (variablesModified));
 		while (!toProcess.isEmpty())
 		{
-			BasicBlock curr = toProcess.remove(0);
+			BasicBlock curr = toProcess.remove();
 			if (!exploredAtAll.contains(curr))
 				for (Instruction inst : curr.instructions)
 				{
@@ -463,17 +495,14 @@ public class Function
 			else
 				exploredAtAll.add(curr);
 			Set<String> currSet = new HashSet<> (analyzed.get(curr));
+			// Iterating through the instructions in reverse order
 			for (ListIterator<Instruction> iter = curr.instructions.listIterator(curr.instructions.size()); iter.hasPrevious();)
 			{
 				Instruction inst = iter.previous();
 				inst.postLiveVariables.addAll(currSet);
-				if (inst.type.isAssignment())
-				{
-					int index = inst.line.indexOf(" = ");
-					if (index != -1)
-						currSet.remove(inst.line.substring(0, index));
-				}
-				else if (inst.type == InstructionType.FUNCTIONCALL)
+				if (inst.type.isAssignment()) // assigned variable not alive immediately before it
+					currSet.remove(inst.line.substring(0, inst.line.indexOf(" = ")));
+				else if (inst.type == InstructionType.FUNCTIONCALL) //// not debugging right now
 				{
 					String funcName = inst.variablesUsed.get(0);
 					if (!funcName.equals("print")) // or any other built-in function
@@ -498,17 +527,17 @@ public class Function
 						else
 							noInfo = true;
 						if (noInfo)
+						{
+							//// or something like this? _all is not supported right now and being completely ignored
+							currSet.clear();
 							currSet.add("_all");
+						}
 					}
 				}
 				for (String str : inst.variablesUsed)
-					if (str.charAt(0) != '*' && !str.equals("print")) // or any other built-in
+					if (!str.equals("print")) //// don't want to deal with memory accesses right now
+//					if (str.charAt(0) != '*' && !str.equals("print")) // or any other built-in function
 						currSet.add(str);
-				if (currSet.contains("_all"))
-					for (String var : inst.preDeclarations.keySet())
-						if (var.charAt(0) != '_')
-							currSet.add(var);
-					
 				inst.preLiveVariables.addAll(currSet);
 			}
 			for (BasicBlock parent : curr.parents)
@@ -520,6 +549,8 @@ public class Function
 				}
 				else
 				{
+					// i.e. if there are any additions, then readd parent into the search queue
+					// does not deal with _all or anything complicated like that
 					int currSize = analyzed.get(parent).size();
 					analyzed.get(parent).addAll(currSet);
 					if (currSize != analyzed.get(parent).size())
@@ -527,13 +558,15 @@ public class Function
 				}
 			}
 			if (curr == startingBlock)
-				nonlocalVariablesUsed = currSet;
+				nonlocalVariablesUsed.addAll(currSet);
 		}
+		
+		// now for the actual removal
 		for (BasicBlock block : analyzed.keySet())
 			for (ListIterator<Instruction> iter = block.instructions.listIterator(); iter.hasNext();)
 			{
 				Instruction inst = iter.next();
-				if (inst.type == InstructionType.ASSIGNMENT || inst.type == InstructionType.CALCULATION || inst.type == InstructionType.SPECIALASSIGNMENT)
+				if (inst.type.isAssignment())
 				{
 					String assigned = inst.line.substring(0, inst.line.indexOf(" = "));
 					if (!inst.postLiveVariables.contains(assigned))

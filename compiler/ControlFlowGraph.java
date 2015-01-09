@@ -17,10 +17,12 @@ public class ControlFlowGraph
 	
 	public void optimize()
 	{
-		mainFunction.printAll();
-		mainFunction.optimize();
-		mainFunction.optimize();
-		mainFunction.optimize();
+//		mainFunction.printAll();
+		for (int i = 0; i < 10; i++) // should be smarter about this
+		{
+//			System.out.println("Optimization iteration " + i);
+			mainFunction.optimize();
+		}
 //		for (Function f : otherFunctions.values())
 //			f.optimize();
 //		mainFunction.optimize();

@@ -135,17 +135,23 @@ public class ILCompiler
 				break;
 			case "PrintLine":
 				PrintLine printLine = (PrintLine) line;
+				boolean firstPrint = true;
 				for (Expression expr : printLine.getPrintExpressions())
+				{
+					if (!firstPrint)
+					{
+						instructions.add("param \" \"");
+						instructions.add("call print 1");
+					}
+					firstPrint = true;
 					instructions.add("param " + compile(expr));
+					instructions.add("call print 1");
+				}
 				if (printLine.isPrintNewline())
 				{
-					instructions.add("_1tl" + line.getID() + " = \"\\\\n\"");
-					instructions.add("param _1tl" + line.getID());
-					instructions.add("call print " + (printLine.getPrintExpressions().size() + 1));
+					instructions.add("param \"\\\\n\"");
+					instructions.add("call print 1");
 				}
-				else
-					instructions.add("call print " + printLine.getPrintExpressions().size());
-				instructions.add("_2tl" + line.getID() + " = returnvalue");
 				break;
 			case "BreakLine":
 				instructions.add("jump " + breakTarget);

@@ -17,19 +17,20 @@ public class MIPSCompiler
 		MIPSCompiler.out = out;
 		
 		out.println(".data");
+		out.println("  stringTrue: .asciiz \"true\"");
+		out.println("  stringFalse: .asciiz \"false\"");
+		out.println("  stringSpace: .asciiz \" \"");
+		out.println("  stringNewline: .asciiz \"\\n\"");
 		out.println();
 		out.println(".text");
 		
-		compile(graph.getMain());
-		
-		out.println("  li $v0 10");
-		out.println("  syscall");
+		compile(graph.getMain(), true);
 		
 		out.flush();
 		out.close();
 	}
 	
-	private static void compile(Function func)
+	private static void compile(Function func, boolean mainFunction)
 	{
 		Set<String> registersUsed = new HashSet<> ();
 		Map<String, String> registersMap = new HashMap<> ();
@@ -48,8 +49,17 @@ public class MIPSCompiler
 				out.println("_b" + block.id + ":");
 				for (Instruction line : block.instructions)
 					compile(line, registersUsed, registersMap);
-				if (block.nextBlock != null)
-					toExplore.add(block.nextBlock);
+				if (block == func.endingBlock)
+				{
+					if (mainFunction)
+					{
+						out.println("  li $v0 10");
+						out.println("  syscall");
+					}
+					else
+						throw new UnsupportedOperationException();
+					break;
+				}
 				if (block.jumpBlock != null)
 					toExplore.add(block.jumpBlock);
 				block = block.nextBlock;
@@ -59,6 +69,8 @@ public class MIPSCompiler
 	
 	private static void compile(Instruction inst, Set<String> registersUsed, Map<String, String> registersMap)
 	{
+//		out.println(inst.line);
+		out.flush();
 		outer: switch (inst.type)
 		{
 			case CALCULATION:
@@ -67,26 +79,44 @@ public class MIPSCompiler
 				registersUsed.add(assignTarget);
 				registersMap.put(inst.line.substring(0, inst.line.indexOf(" = ")), assignTarget);
 				String[] parts = inst.line.split(" ");
+				String leftReg = registersMap.get(parts[2]);
+				if (leftReg == null)
+				{
+					leftReg = getEmptyRegister(registersUsed);
+					registersUsed.add(leftReg);
+					setPrimitiveValue(parts[2], "$" + leftReg);
+				}
+				String rightReg = registersMap.get(parts[4]);
+				if (rightReg == null)
+				{
+					rightReg = getEmptyRegister(registersUsed);
+					registersUsed.add(rightReg);
+					setPrimitiveValue(parts[4], "$" + rightReg);
+				}
 				switch (parts[3])
 				{
 					case "+":
-						out.println("  add $" + assignTarget + ", $" + registersMap.get(parts[2]) + ", " + registersMap.get(parts[4]));
+						out.println("  add $" + assignTarget + ", $" + leftReg + ", $" + rightReg);
 						break;
 					case "<":
-						out.println("  slt $" + assignTarget + ", $" + registersMap.get(parts[2]) + ", " + registersMap.get(parts[4]));
+						out.println("  slt $" + assignTarget + ", $" + leftReg + ", $" + rightReg);
 						break;
 					case ">":
-						out.println("  slt $" + assignTarget + ", $" + registersMap.get(parts[4]) + ", " + registersMap.get(parts[2]));
+						out.println("  slt $" + assignTarget + ", $" + leftReg + ", $" + rightReg);
 						break;
 					default:
 						throw new UnsupportedOperationException();
 				}
-				if (!inst.postLiveVariables.contains(parts[2]))
+				if (registersMap.get(parts[2]) == null)
+					registersUsed.remove(leftReg);
+				else if (!inst.postLiveVariables.contains(parts[2]))
 				{
 					registersUsed.remove(registersMap.get(parts[2]));
 					registersMap.remove(parts[2]);
 				}
-				if (!inst.postLiveVariables.contains(parts[4]))
+				if (registersMap.get(parts[4]) == null)
+					registersUsed.remove(rightReg);
+				else if (!inst.postLiveVariables.contains(parts[4]))
 				{
 					registersUsed.remove(registersMap.get(parts[4]));
 					registersMap.remove(parts[4]);
@@ -135,8 +165,12 @@ public class MIPSCompiler
 				for (int i = 0; i < 4; i++)
 					if (!registersUsed.contains("a" + i))
 					{
-						out.println("  move $a" + i + ", $" + registersMap.get(inst.variablesUsed.get(0)));
-						registersUsed.add("a" + i);
+						String register = "$a" + i;
+						if (inst.variablesUsed.size() > 0)
+							out.println("  move " + register + ", $" + registersMap.get(inst.variablesUsed.get(0)));
+						else
+							setPrimitiveValue(inst.line.substring(6), register);
+						registersUsed.add(register);
 						break outer;
 					}
 				throw new UnsupportedOperationException();
@@ -146,7 +180,7 @@ public class MIPSCompiler
 			case SPECIALASSIGNMENT:
 				throw new UnsupportedOperationException();
 			case JUMP:
-				String jumpTarget = "_b" + inst.block.id;
+				String jumpTarget = "_b" + inst.block.jumpBlock.id;
 				if (inst.line.startsWith("jumpunless"))
 				{
 					String jumpCond = inst.line.substring(11, inst.line.lastIndexOf(" "));
@@ -184,5 +218,31 @@ public class MIPSCompiler
 		if (assignTarget == null)
 			throw new UnsupportedOperationException();
 		return assignTarget;
+	}
+	
+	private static void setPrimitiveValue(String str, String register)
+	{
+		if (str.equals("true"))
+			out.println("  la " + register + ", stringTrue");
+		else if (str.equals("false"))
+			out.println("  la " + register + ", stringFalse");
+		else if (str.equals("\" \""))
+			out.println("  la " + register + ", stringSpace");
+		else if (str.equals("\"\\\\n\""))
+			out.println("  la " + register + ", stringNewline");
+		else if (str.charAt(0) == '\"') // idk what to do if string
+			throw new UnsupportedOperationException(str);
+		else // if not boolean or string, probably an int (until we add support for other stuff)
+		{
+			try
+			{
+				int value = Integer.parseInt(str);
+				out.println("  addi " + register + ", $0, " + value);
+			}
+			catch (NumberFormatException ex)
+			{
+				throw new AssertionError("printing something weird: " + str);
+			}
+		}
 	}
 }
