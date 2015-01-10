@@ -21,6 +21,8 @@ public class MIPSCompiler
 		out.println("  stringFalse: .asciiz \"false\"");
 		out.println("  stringSpace: .asciiz \" \"");
 		out.println("  stringNewline: .asciiz \"\\n\"");
+		Set<String> foundLiterals = new HashSet<> ();
+		printLiterals(graph.getMain(), foundLiterals);
 		out.println();
 		out.println(".text");
 		
@@ -30,10 +32,95 @@ public class MIPSCompiler
 		out.close();
 	}
 	
+	private static void printLiterals(Function func, Set<String> foundLiterals)
+	{
+		Set<BasicBlock> explored = new HashSet<> ();
+		Queue<BasicBlock> frontier = new LinkedList<> ();
+		frontier.add(func.startingBlock);
+		while (!frontier.isEmpty())
+		{
+			BasicBlock block = frontier.remove();
+			if (explored.contains(block))
+				continue;
+			explored.add(block);
+			for (Instruction inst : block.instructions)
+			{
+				for (String part : inst.line.split(" "))
+					if (part.charAt(0) == '"' && !foundLiterals.contains(part))
+					{
+						foundLiterals.add(part);
+						throw new UnsupportedOperationException();
+					}
+			}
+		}
+	}
+	
+	private static Map<String, String> registerAssignment(Function func)
+	{
+		Map<String, Set<String>> conflicts = new HashMap<> ();
+		
+		Set<BasicBlock> explored = new HashSet<> ();
+		Queue<BasicBlock> frontier = new LinkedList<> ();
+		frontier.add(func.startingBlock);
+		while (!frontier.isEmpty())
+		{
+			BasicBlock block = frontier.remove();
+			if (explored.contains(block))
+				continue;
+			explored.add(block);
+			for (Instruction inst : block.instructions)
+			{
+				for (String var1 : inst.postLiveVariables)
+				{
+					if (!conflicts.containsKey(var1))
+						conflicts.put(var1, new HashSet<String> ());
+					for (String var2 : inst.postLiveVariables)
+					{
+						if (var1 == var2)
+							continue;
+						if (!conflicts.containsKey(var2))
+							conflicts.put(var2, new HashSet<String> ());
+						conflicts.get(var1).add(var2);
+						conflicts.get(var2).add(var1);
+					}
+				}
+			}
+			if (block.nextBlock != null)
+				frontier.add(block.nextBlock);
+			if (block.jumpBlock != null)
+				frontier.add(block.jumpBlock);
+		}
+		System.out.println(conflicts);
+		
+		Map<String, Integer> colorings = new HashMap<String, Integer> ();
+		for (String variable : conflicts.keySet()) // should iterate more cleverly
+		{
+			Set<Integer> invalid = new HashSet<> ();
+			for (String adj : conflicts.get(variable))
+				if (colorings.containsKey(adj))
+					invalid.add(colorings.get(adj));
+			for (int poss = 8; ; poss++)
+			{
+				if (poss == 26)
+					throw new UnsupportedOperationException("too many variables - can't support yet");
+				if (invalid.contains(poss))
+					continue;
+				colorings.put(variable, poss);
+				break;
+			}
+		}
+		System.out.println(colorings);
+		
+		Map<String, String> registersMap = new HashMap<String, String> ();
+		for (String str : colorings.keySet())
+			registersMap.put(str, colorings.get(str) + "");
+		
+		return registersMap;
+	}
+	
 	private static void compile(Function func, boolean mainFunction)
 	{
-		Set<String> registersUsed = new HashSet<> ();
-		Map<String, String> registersMap = new HashMap<> ();
+		Map<String, String> registersMap = registerAssignment(func);
 		
 		Set<BasicBlock> compiled = new HashSet<> ();
 		Queue<BasicBlock> toExplore = new LinkedList<> ();
@@ -47,8 +134,16 @@ public class MIPSCompiler
 					break;
 				compiled.add(block);
 				out.println("_b" + block.id + ":");
+				
+				List<String> freeRegisters = new LinkedList<String> ();
+				for (int i = 8; i < 26; i++)
+					freeRegisters.add("" + i);
+				if (block.instructions.size() > 0)
+					for (String initiallyAlive : block.instructions.get(0).preLiveVariables)
+						freeRegisters.remove(registersMap.get(initiallyAlive));
+				
 				for (Instruction line : block.instructions)
-					compile(line, registersUsed, registersMap);
+					compile(line, registersMap, freeRegisters);
 				if (block == func.endingBlock)
 				{
 					if (mainFunction)
@@ -67,7 +162,7 @@ public class MIPSCompiler
 		}
 	}
 	
-	private static void compile(Instruction inst, Set<String> registersUsed, Map<String, String> registersMap)
+	private static void compile(Instruction inst, Map<String, String> registersMap, List<String> freeRegisters)
 	{
 //		out.println(inst.line);
 		out.flush();
@@ -75,108 +170,119 @@ public class MIPSCompiler
 		{
 			case CALCULATION:
 			{
-				String assignTarget = getEmptyRegister(registersUsed);
-				registersUsed.add(assignTarget);
-				registersMap.put(inst.line.substring(0, inst.line.indexOf(" = ")), assignTarget);
 				String[] parts = inst.line.split(" ");
+				String assignTarget = registersMap.get(parts[0]);
 				String leftReg = registersMap.get(parts[2]);
 				if (leftReg == null)
 				{
-					leftReg = getEmptyRegister(registersUsed);
-					registersUsed.add(leftReg);
-					setPrimitiveValue(parts[2], "$" + leftReg);
+					leftReg = freeRegisters.remove(0);
+					setPrimitiveValue(parts[2], "$" + leftReg, false);
 				}
 				String rightReg = registersMap.get(parts[4]);
 				if (rightReg == null)
 				{
-					rightReg = getEmptyRegister(registersUsed);
-					registersUsed.add(rightReg);
-					setPrimitiveValue(parts[4], "$" + rightReg);
+					rightReg = freeRegisters.remove(0);
+					setPrimitiveValue(parts[4], "$" + rightReg, false);
 				}
 				switch (parts[3])
 				{
 					case "+":
 						out.println("  add $" + assignTarget + ", $" + leftReg + ", $" + rightReg);
 						break;
+					case "-":
+						out.println("  sub $" + assignTarget + ", $" + leftReg + ", $" + rightReg);
+						break;
+					case "*":
+						out.println("  mult $" + leftReg + ", $" + rightReg);
+						out.println("  mflo $" + assignTarget);
+						break;
 					case "<":
 						out.println("  slt $" + assignTarget + ", $" + leftReg + ", $" + rightReg);
 						break;
 					case ">":
-						out.println("  slt $" + assignTarget + ", $" + leftReg + ", $" + rightReg);
+						//// this is wrong, but don't currently have a better solution
+						out.println("  slt $" + assignTarget + ", $" + rightReg + ", $" + leftReg);
+						break;
+					case ">=":
+						out.println("  slt $" + assignTarget + ", $" + rightReg + ", $" + leftReg);
+						break;
+					case "=": // complicated thing based on checking if (a & b = a) & (a & b = b) and using that (a & b > a) never
+							  // all to avoid jumps - is this actually better?
+						String temp0 = freeRegisters.remove(0);
+						String temp1 = freeRegisters.remove(0);
+						out.println("  and $" + temp0 + ", $" + leftReg + ", $" + rightReg);
+						out.println("  sub $" + temp1 + ", $" + temp0 + ", $" + leftReg);
+						out.println("  slti $" + temp1 + ", $" + temp1 + ", 0");
+						out.println("  sub $" + temp0 + ", $" + temp0 + ", $" + rightReg);
+						out.println("  slti $" + temp0 + ", $" + temp0 + ", 0");
+						out.println("  and $" + assignTarget + ", $" + temp0 + ", $" + temp1);
+						freeRegisters.add(temp0);
+						freeRegisters.add(temp1);
 						break;
 					default:
-						throw new UnsupportedOperationException();
+						throw new UnsupportedOperationException("Unsupported op: " + parts[3]);
 				}
-				if (registersMap.get(parts[2]) == null)
-					registersUsed.remove(leftReg);
-				else if (!inst.postLiveVariables.contains(parts[2]))
-				{
-					registersUsed.remove(registersMap.get(parts[2]));
-					registersMap.remove(parts[2]);
-				}
-				if (registersMap.get(parts[4]) == null)
-					registersUsed.remove(rightReg);
-				else if (!inst.postLiveVariables.contains(parts[4]))
-				{
-					registersUsed.remove(registersMap.get(parts[4]));
-					registersMap.remove(parts[4]);
-				}
+				// If it was a temp use or if it was a real variable but dead after this line
+				if (registersMap.get(parts[2]) == null || !inst.postLiveVariables.contains(parts[2]))
+					freeRegisters.add(leftReg); // free up the space
+				if (registersMap.get(parts[4]) == null || !inst.postLiveVariables.contains(parts[4]))
+					freeRegisters.add(rightReg);
+				freeRegisters.remove(assignTarget);
 				break;
 			}
 			case ASSIGNMENT:
-				String assignTarget = getEmptyRegister(registersUsed);
-				registersUsed.add(assignTarget);
-				String assignValue = inst.line.substring(inst.line.indexOf(" = ") + 3);
-				if (assignValue.equals("true"))
-					assignValue = "1";
-				if (assignValue.equals("false"))
-					assignValue = "0";
-				if (Instruction.identifier(assignValue))
+				String[] parts = inst.line.split(" = ");
+				String assignTarget = registersMap.get(parts[0]);
+				if (Instruction.identifier(parts[1]))
 				{
-					String register = registersMap.get(assignValue);
-					out.println("  move $" + assignTarget + ", $" + register);
-					if (!inst.postLiveVariables.contains(assignValue))
-					{
-						registersMap.remove(assignValue);
-						registersUsed.remove(register);
-					}
+					String source = registersMap.get(parts[1]);
+					out.println("  move $" + assignTarget + ", $" + source);
+					if (!inst.postLiveVariables.contains(parts[1]))
+						freeRegisters.add(source);
 				}
 				else
-					out.println("  addi $" + assignTarget + ", $0, " + assignValue);
-				registersMap.put(inst.line.substring(0, inst.line.indexOf(" = ")), assignTarget);
-				registersUsed.add(assignTarget);
+					setPrimitiveValue(parts[1], "$" + assignTarget, false);
+				freeRegisters.remove(assignTarget);
 				break;
 			case FUNCTIONCALL:
 				String funcName = inst.variablesUsed.get(0);
 				if (funcName.equals("print"))
-				{
-					out.println("  li $v0 4");
 					out.println("  syscall");
-				}
 				else
 					throw new UnsupportedOperationException();
-				for (int i = 0; i < 4; i++)
-					if (!registersUsed.contains("a" + i))
-						break;
-					else
-						registersUsed.remove("a" + i);
+//				for (int i = 0; i < 4; i++)
+//					if (!registersUsed.contains("a" + i))
+//						break;
+//					else
+//						registersUsed.remove("a" + i);
 				break;
 			case FUNCTIONPARAM:
-				for (int i = 0; i < 4; i++)
-					if (!registersUsed.contains("a" + i))
-					{
-						String register = "$a" + i;
-						if (inst.variablesUsed.size() > 0)
-							out.println("  move " + register + ", $" + registersMap.get(inst.variablesUsed.get(0)));
-						else
-							setPrimitiveValue(inst.line.substring(6), register);
-						registersUsed.add(register);
-						break outer;
-					}
-				throw new UnsupportedOperationException();
-			case FUNCTIONRETURN:
-				out.println("  move $v0, " + registersMap.get(inst.variablesUsed.get(0)));
+				if (inst.variablesUsed.size() > 0)
+				{
+					//// what if it isn't $a0? and what if we're not printing right now?
+					out.println("  li $v0 1");
+					out.println("  move $a0, $" + registersMap.get(inst.variablesUsed.get(0)));
+				}
+				else
+					setPrimitiveValue(inst.line.substring(6), "$a0", true);
 				break;
+//				for (int i = 0; i < 4; i++)
+//					if (!registersUsed.contains("a" + i))
+//					{
+//						String register = "$a" + i;
+//						if (inst.variablesUsed.size() > 0)
+//						{
+//							out.println("  li $v0 1");
+//							out.println("  move " + register + ", $" + registersMap.get(inst.variablesUsed.get(0)));
+//						}
+//						else
+//							setPrimitiveValue(inst.line.substring(6), register, true);
+//						registersUsed.add(register);
+//						break outer;
+//					}
+			case FUNCTIONRETURN:
+				throw new UnsupportedOperationException();
+//				out.println("  move $v0, " + registersMap.get(inst.variablesUsed.get(0)));
 			case SPECIALASSIGNMENT:
 				throw new UnsupportedOperationException();
 			case JUMP:
@@ -184,12 +290,9 @@ public class MIPSCompiler
 				if (inst.line.startsWith("jumpunless"))
 				{
 					String jumpCond = inst.line.substring(11, inst.line.lastIndexOf(" "));
-					out.println("  bne $0, $" + registersMap.get(jumpCond) + ", " + jumpTarget);
+					out.println("  beq $0, $" + registersMap.get(jumpCond) + ", " + jumpTarget);
 					if (!inst.postLiveVariables.contains(jumpCond))
-					{
-						registersUsed.remove(registersMap.get(jumpCond));
-						registersMap.remove(jumpCond);
-					}
+						freeRegisters.add(jumpCond);
 				}
 				else
 					out.println("  j " + jumpTarget);
@@ -200,48 +303,38 @@ public class MIPSCompiler
 		out.flush();
 	}
 	
-	private static String getEmptyRegister(Set<String> registersUsed)
+	private static void setPrimitiveValue(String str, String register, boolean printing)
 	{
-		String assignTarget = null;
-		for (int i = 0; i < 8; i++)
-			if (!registersUsed.contains("s" + i))
-			{
-				assignTarget = "s" + i;
-				break;
-			}
-		for (int i = 0; assignTarget == null && i < 10; i++)
-			if (!registersUsed.contains("t" + i))
-			{
-				assignTarget = "t" + i;
-				break;
-			}
-		if (assignTarget == null)
-			throw new UnsupportedOperationException();
-		return assignTarget;
-	}
-	
-	private static void setPrimitiveValue(String str, String register)
-	{
-		if (str.equals("true"))
-			out.println("  la " + register + ", stringTrue");
-		else if (str.equals("false"))
-			out.println("  la " + register + ", stringFalse");
-		else if (str.equals("\" \""))
-			out.println("  la " + register + ", stringSpace");
-		else if (str.equals("\"\\\\n\""))
-			out.println("  la " + register + ", stringNewline");
-		else if (str.charAt(0) == '\"') // idk what to do if string
-			throw new UnsupportedOperationException(str);
-		else // if not boolean or string, probably an int (until we add support for other stuff)
+		if (str.charAt(0) == '\"')
 		{
-			try
+			if (printing)
+				out.println("  li $v0 4");
+			if (str.equals("\" \""))
+				out.println("  la " + register + ", stringSpace");
+			else if (str.equals("\"\\\\n\""))
+				out.println("  la " + register + ", stringNewline");
+			else // idk what to do if actual string
+				throw new UnsupportedOperationException(str);
+		}
+		else
+		{
+			if (printing)
+				out.println("  li $v0 1");
+			if (str.equals("true"))
+				out.println("  li " + register + ", 1");
+			else if (str.equals("false"))
+				out.println("  li " + register + ", 0");
+			else // if not boolean or string, probably an int (until we add support for other stuff)
 			{
-				int value = Integer.parseInt(str);
-				out.println("  addi " + register + ", $0, " + value);
-			}
-			catch (NumberFormatException ex)
-			{
-				throw new AssertionError("printing something weird: " + str);
+				try
+				{
+					int value = Integer.parseInt(str);
+					out.println("  li " + register + ", " + value);
+				}
+				catch (NumberFormatException ex)
+				{
+					throw new AssertionError("printing something weird: " + str);
+				}
 			}
 		}
 	}

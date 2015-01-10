@@ -143,7 +143,7 @@ public class ILCompiler
 						instructions.add("param \" \"");
 						instructions.add("call print 1");
 					}
-					firstPrint = true;
+					firstPrint = false;
 					instructions.add("param " + compile(expr));
 					instructions.add("call print 1");
 				}
