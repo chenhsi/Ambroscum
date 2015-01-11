@@ -10,6 +10,7 @@ import ambroscum.values.*;
 public class MIPSCompiler
 {
 	private static PrintWriter out;
+	private static Map<String, Integer> stringLiterals;
 	
 	public static void compile(File input, PrintWriter out) throws IOException
 	{
@@ -19,10 +20,10 @@ public class MIPSCompiler
 		out.println(".data");
 		out.println("  stringTrue: .asciiz \"true\"");
 		out.println("  stringFalse: .asciiz \"false\"");
-		out.println("  stringSpace: .asciiz \" \"");
+//		out.println("  stringSpace: .asciiz \" \"");
 		out.println("  stringNewline: .asciiz \"\\n\"");
-		Set<String> foundLiterals = new HashSet<> ();
-		printLiterals(graph.getMain(), foundLiterals);
+		stringLiterals = new HashMap<> ();
+		printLiterals(graph.getMain());
 		out.println();
 		out.println(".text");
 		
@@ -32,7 +33,7 @@ public class MIPSCompiler
 		out.close();
 	}
 	
-	private static void printLiterals(Function func, Set<String> foundLiterals)
+	private static void printLiterals(Function func)
 	{
 		Set<BasicBlock> explored = new HashSet<> ();
 		Queue<BasicBlock> frontier = new LinkedList<> ();
@@ -46,12 +47,16 @@ public class MIPSCompiler
 			for (Instruction inst : block.instructions)
 			{
 				for (String part : inst.line.split(" "))
-					if (part.charAt(0) == '"' && !foundLiterals.contains(part))
+					if (part.charAt(0) == '"' && !stringLiterals.containsKey(part) && !part.equals("\"\\n\""))
 					{
-						foundLiterals.add(part);
-						throw new UnsupportedOperationException();
+						out.println("  string" + stringLiterals.size() + ": .asciiz " + part);
+						stringLiterals.put(part, stringLiterals.size());
 					}
 			}
+			if (block.nextBlock != null)
+				frontier.add(block.nextBlock);
+			if (block.jumpBlock != null)
+				frontier.add(block.jumpBlock);
 		}
 	}
 	
@@ -143,7 +148,7 @@ public class MIPSCompiler
 						freeRegisters.remove(registersMap.get(initiallyAlive));
 				
 				for (Instruction line : block.instructions)
-					compile(line, registersMap, freeRegisters);
+					compile(line, registersMap, freeRegisters, stringLiterals);
 				if (block == func.endingBlock)
 				{
 					if (mainFunction)
@@ -162,7 +167,7 @@ public class MIPSCompiler
 		}
 	}
 	
-	private static void compile(Instruction inst, Map<String, String> registersMap, List<String> freeRegisters)
+	private static void compile(Instruction inst, Map<String, String> registersMap, List<String> freeRegisters, Map<String, Integer> stringLiterals)
 	{
 //		out.println(inst.line);
 		out.flush();
@@ -309,12 +314,12 @@ public class MIPSCompiler
 		{
 			if (printing)
 				out.println("  li $v0 4");
-			if (str.equals("\" \""))
-				out.println("  la " + register + ", stringSpace");
-			else if (str.equals("\"\\\\n\""))
+//			if (str.equals("\" \""))
+//				out.println("  la " + register + ", stringSpace");
+			if (str.equals("\"\\\\n\""))
 				out.println("  la " + register + ", stringNewline");
-			else // idk what to do if actual string
-				throw new UnsupportedOperationException(str);
+			else
+				out.println("  la " + register + ", string" + stringLiterals.get(str));
 		}
 		else
 		{
