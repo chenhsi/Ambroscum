@@ -46,12 +46,18 @@ public class MIPSCompiler
 			explored.add(block);
 			for (Instruction inst : block.instructions)
 			{
-				for (String part : inst.line.split(" "))
-					if (part.charAt(0) == '"' && !stringLiterals.containsKey(part) && !part.equals("\"\\n\""))
+				int index = inst.line.indexOf("\"");
+				while (index != -1)
+				{
+					int index2 = inst.line.indexOf("\"", index + 1);
+					String str = inst.line.substring(index, index2 + 1);
+					if (!stringLiterals.containsKey(str) && !str.equals("\"\\n\""))
 					{
-						out.println("  string" + stringLiterals.size() + ": .asciiz " + part);
-						stringLiterals.put(part, stringLiterals.size());
+						out.println("  string" + stringLiterals.size() + ": .asciiz " + str);
+						stringLiterals.put(str, stringLiterals.size());
 					}
+					index = inst.line.indexOf("\"", index2 + 1);
+				}
 			}
 			if (block.nextBlock != null)
 				frontier.add(block.nextBlock);
@@ -211,18 +217,13 @@ public class MIPSCompiler
 					case ">=":
 						out.println("  slt $" + assignTarget + ", $" + rightReg + ", $" + leftReg);
 						break;
-					case "=": // complicated thing based on checking if (a & b = a) & (a & b = b) and using that (a & b > a) never
-							  // all to avoid jumps - is this actually better?
+					case "=":
 						String temp0 = freeRegisters.remove(0);
-						String temp1 = freeRegisters.remove(0);
-						out.println("  and $" + temp0 + ", $" + leftReg + ", $" + rightReg);
-						out.println("  sub $" + temp1 + ", $" + temp0 + ", $" + leftReg);
-						out.println("  slti $" + temp1 + ", $" + temp1 + ", 0");
-						out.println("  sub $" + temp0 + ", $" + temp0 + ", $" + rightReg);
-						out.println("  slti $" + temp0 + ", $" + temp0 + ", 0");
-						out.println("  and $" + assignTarget + ", $" + temp0 + ", $" + temp1);
+						out.println("  xor  $" + temp0 + ", $" + leftReg + ", $" + rightReg); // temp0 = 0 iff left = right, else positive
+						out.println("  slt $" + temp0 + ", $0, $" + temp0); // temp0 = 0 iff left = right, else 1
+						out.println("  addi $" + temp0 + ", $" + temp0 + ", -1"); // temp0 = -1 if left = right, else 0
+						out.println("  sub $" + assignTarget + ", $0, $" + temp0); // target = 1 if left == right, else 0
 						freeRegisters.add(temp0);
-						freeRegisters.add(temp1);
 						break;
 					default:
 						throw new UnsupportedOperationException("Unsupported op: " + parts[3]);
