@@ -91,6 +91,7 @@ public class ILCompiler
 		String str;
 		if (line == null)
 			return;
+		int id = line.getID();
 		switch (line.getClass().getSimpleName())
 		{
 			case "Block":
@@ -104,11 +105,11 @@ public class ILCompiler
 				{
 					ExpressionOperator op = ((AssignmentLine) line).getAssignType();
 					if (op == null)
-						instructions.add("_" + i + "tl" + line.getID() + " = " + compile(assignValues.get(i)));
+						instructions.add("_" + i + "tl" + id + " = " + compile(assignValues.get(i)));
 					else
 					{
 						String rightHalf = compile(assignTargets.get(i)) + " " + compile(op) + " " + compile(assignValues.get(i));
-						instructions.add("_" + i + "tl" + line.getID() + " = " + rightHalf);
+						instructions.add("_" + i + "tl" + id + " = " + rightHalf);
 					}
 				}
 				for (int i = 0; i < assignValues.size(); i++)
@@ -119,15 +120,15 @@ public class ILCompiler
 						if (((ExpressionIdentifier) target).getParent() != null)
 							throw new UnsupportedOperationException();
 						else
-							instructions.add(((ExpressionIdentifier) target).getReference() + " = _" + i + "tl" + line.getID());
+							instructions.add(((ExpressionIdentifier) target).getReference() + " = _" + i + "tl" + id);
 					}
 					else if (target instanceof ExpressionReference)
 					{
 						if (((ExpressionReference) target).getSecondaryRight() != null)
 							throw new UnsupportedOperationException();
-						instructions.add("_" + i + "tl2" + line.getID() + " = _" + i + "tl2" + line.getID() + " + " + i * 4);
-						instructions.add("*_" + i + "te" + line.getID() + " = _" + i + "tl2" + line.getID());
-						instructions.add(compile(target) + " = _" + i + "tl" + line.getID());
+						instructions.add("_" + i + "tl2" + id + " = _" + i + "tl2" + id + " + " + i * 4);
+						instructions.add("*_" + i + "te" + id + " = _" + i + "tl2" + id);
+						instructions.add(compile(target) + " = _" + i + "tl" + id);
 					}
 					else
 						throw new UnsupportedOperationException();
@@ -177,52 +178,52 @@ public class ILCompiler
 				for (int i = 0; i < conditions.size(); i++)
 				{
 					str = compile(conditions.get(i));
-					instructions.add("jumpunless " + str + " _" + i + "tl" + line.getID());
+					instructions.add("jumpunless " + str + " _" + i + "tl" + id);
 					compile(blocks.get(i), breakTarget, continueTarget);
-					instructions.add("jump _tl" + line.getID());
-					instructions.add("label _" + i + "tl" + line.getID());
+					instructions.add("jump _tl" + id);
+					instructions.add("label _" + i + "tl" + id);
 				}
 				if (blocks.size() > conditions.size())
 					compile(blocks.get(blocks.size() - 1), breakTarget, continueTarget);
-				instructions.add("label _tl" + line.getID());
+				instructions.add("label _tl" + id);
 				break;
 			case "WhileLine":
 				WhileLine whileLine = (WhileLine) line;
 				Expression condition = whileLine.getCondition();
 				Block mainBlock = whileLine.getBlock();
 				Block thenBlock = whileLine.getThenBlock();
-				instructions.add("label _1tl" + line.getID());
+				instructions.add("label _1tl" + id);
 				str = compile(condition);
-				instructions.add("jumpunless " + str + " _2tl" + line.getID());
-				compile(mainBlock, "_3tl" + line.getID(), "_1tl" + line.getID());
-				instructions.add("jump _1tl" + line.getID());
-				instructions.add("label _2tl" + line.getID());
+				instructions.add("jumpunless " + str + " _2tl" + id);
+				compile(mainBlock, "_3tl" + id, "_1tl" + id);
+				instructions.add("jump _1tl" + id);
+				instructions.add("label _2tl" + id);
 				compile(thenBlock, breakTarget, continueTarget);
-				instructions.add("label _3tl" + line.getID());
+				instructions.add("label _3tl" + id);
 				break;
 			case "ForLine":
 				ForLine forLine = (ForLine) line;
-				instructions.add("_1tl" + line.getID() + " = -4");
-				instructions.add("_2tl" + line.getID() + " = " + compile(forLine.getIterable()));
-				instructions.add("label _3tl" + line.getID());
-				instructions.add("jumpunless ?? _4tl" + line.getID());	// still needs to be fixed
-				instructions.add("_1tl" + line.getID() + " = 4 + _1tl" + line.getID());
-				instructions.add("_5tl" + line.getID() + " = _1tl" + line.getID() + " _2tl" + line.getID());
-				instructions.add(compile(forLine.getIterVariable()) + " = *_5tl" + line.getID());
-				compile(forLine.getLoopBlock(), "_6tl" + line.getID(), "_3tl" + line.getID());
-				instructions.add("jump _3tl" + line.getID());
-				instructions.add("label _4tl" + line.getID());
+				instructions.add("_1tl" + id + " = " + compile(forLine.getIterable())); // pointer to array
+				instructions.add("_2tl" + id + " = *_1tl" + id); // has the length of the array
+				instructions.add("_3tl" + id + " = 4 * _2tl" + id);
+				instructions.add("_4tl" + id + " = _1tl" + id + " + _3tl" + id); // pointer to last array element
+				instructions.add("label _5tl" + id); // start of loop
+				instructions.add("_6tl" + id + " = _1tl" + id + " < _4tl" + id); // condition for if loop should end
+				instructions.add("jumpunless _6tl" + id + ", _7tl" + id); // jump if loop has ended
+				instructions.add("_1tl" + id + " = 4 + _1tl" + id); // move pointer in array
+				instructions.add(compile(forLine.getIterVariable()) + " = *_1tl" + id); // get the actual value
+				compile(forLine.getLoopBlock(), "_7tl" + id, "_5tl" + id);
+				instructions.add("jump _5tl" + id);
+				instructions.add("label _7tl" + id);
 				compile(forLine.getThenBlock(), breakTarget, continueTarget);
-				instructions.add("label _6tl" + line.getID());
-				throw new UnsupportedOperationException();
-			case "DefLine":
-				instructions.add(((DefLine) line).getName() + " = *_tl" + line.getID());
+				instructions.add("label _8tl" + id);
 				break;
+			case "DefLine":
+				throw new UnsupportedOperationException();
 			case "ClassLine":
 				throw new UnsupportedOperationException();
 			case "CallLine":
-				compile(((CallLine) line).getCall());
-				break;
+				throw new UnsupportedOperationException();
 		}
 	}
 	
@@ -261,17 +262,19 @@ public class ILCompiler
 			case "ExpressionReference":
 				// assuming lists and not dicts
 				ExpressionReference ref = (ExpressionReference) expr;
-				instructions.add("_1te" + expr.getID() + " = " + compile(ref.getSecondary()) + " * 4");
-				instructions.add("_2te" + expr.getID() + " = " + compile(ref.getPrimary()) + " + _1te" + expr.getID());
-				instructions.add("_te" + expr.getID() + " = *_2te" + expr.getID());
+				instructions.add("_1te" + expr.getID() + " = " + compile(ref.getSecondary()) + " + 1");
+				instructions.add("_2te" + expr.getID() + " = _1te" + expr.getID() + " * 4");
+				instructions.add("_3te" + expr.getID() + " = " + compile(ref.getPrimary()) + " + _2te" + expr.getID());
+				instructions.add("_te" + expr.getID() + " = *_3te" + expr.getID());
 				return "_te" + expr.getID();
 			case "ExpressionList":
 				Expression[] array = ((ExpressionList) expr).getExpressions();
-				instructions.add("_te" + expr.getID() + " = malloc " + array.length * 4);
+				instructions.add("_te" + expr.getID() + " = malloc " + (array.length + 1) * 4);
+				instructions.add("*_te" + expr.getID() + " = " + array.length);
 				for (int i = 0; i < array.length; i++)
 				{
 					str = compile(array[i]);
-					instructions.add("_" + i + "te" + expr.getID() + " = _te" + expr.getID() + " + " + i * 4);
+					instructions.add("_" + i + "te" + expr.getID() + " = _te" + expr.getID() + " + " + (i + 1) * 4);
 					instructions.add("*_" + i + "te" + expr.getID() + " = " + str);
 				}
 				return "_te" + expr.getID();

@@ -70,10 +70,14 @@ public class Instruction
 		boolean optimized = false;
 		for (String str : variablesUsed)
 		{
+			if (str.charAt(0) == '*')
+				continue;
 			Instruction decl = preDeclarations.get(str);
 			if (decl == null || decl.block != this.block || decl.type != InstructionType.ASSIGNMENT)
 				continue;
 			String rest = decl.line.substring(decl.line.indexOf(" = ") + 3);
+			if (rest.charAt(0) == '*')
+				continue;
 			line = line.replaceAll(str, rest);
 			variablesUsed.remove(str);
 			if (identifier(rest))

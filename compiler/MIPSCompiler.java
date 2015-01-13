@@ -210,20 +210,28 @@ public class MIPSCompiler
 					case "<":
 						out.println("  slt $" + assignTarget + ", $" + leftReg + ", $" + rightReg);
 						break;
+					case "<=":
+						out.println("  sle $" + assignTarget + ", $" + leftReg + ", $" + rightReg);
+						break;
 					case ">":
-						//// this is wrong, but don't currently have a better solution
 						out.println("  slt $" + assignTarget + ", $" + rightReg + ", $" + leftReg);
 						break;
 					case ">=":
-						out.println("  slt $" + assignTarget + ", $" + rightReg + ", $" + leftReg);
+						out.println("  sle $" + assignTarget + ", $" + rightReg + ", $" + leftReg);
 						break;
 					case "=":
-						String temp0 = freeRegisters.remove(0);
-						out.println("  xor  $" + temp0 + ", $" + leftReg + ", $" + rightReg); // temp0 = 0 iff left = right, else positive
-						out.println("  slt $" + temp0 + ", $0, $" + temp0); // temp0 = 0 iff left = right, else 1
-						out.println("  addi $" + temp0 + ", $" + temp0 + ", -1"); // temp0 = -1 if left = right, else 0
-						out.println("  sub $" + assignTarget + ", $0, $" + temp0); // target = 1 if left == right, else 0
-						freeRegisters.add(temp0);
+						out.println("  seq $" + assignTarget + ", $" + leftReg + ", $" + rightReg);
+//																		  // assignTarget if left = right | left != right
+//						out.println("  xor $" + assignTarget + ", $" + leftReg + ", $" + rightReg); // 0 | positive
+//						out.println("  slt $" + assignTarget + ", $0, $" + assignTarget); 			 // 0 | 1
+//						out.println("  addi $" + assignTarget + ", $" + assignTarget + ", -1"); 	// -1 | 0
+//						out.println("  sub $" + assignTarget + ", $0, $" + assignTarget); 			 // 1 | 0
+						break;
+					case "!=":
+						out.println("  sne $" + assignTarget + ", $" + leftReg + ", $" + rightReg);
+//																		  // assignTarget if left = right | left != right
+//						out.println("  xor $" + assignTarget + ", $" + leftReg + ", $" + rightReg); // 0 | positive
+//						out.println("  slt $" + assignTarget + ", $0, $" + assignTarget); 			 // 0 | 1
 						break;
 					default:
 						throw new UnsupportedOperationException("Unsupported op: " + parts[3]);
@@ -238,22 +246,57 @@ public class MIPSCompiler
 			}
 			case ASSIGNMENT:
 				String[] parts = inst.line.split(" = ");
-				String assignTarget = registersMap.get(parts[0]);
-				if (Instruction.identifier(parts[1]))
+				if (parts[0].charAt(0) == '*') // Assigning to memory
 				{
-					String source = registersMap.get(parts[1]);
-					out.println("  move $" + assignTarget + ", $" + source);
-					if (!inst.postLiveVariables.contains(parts[1]))
-						freeRegisters.add(source);
+					String assignTarget = registersMap.get(parts[0].substring(1));
+					if (Instruction.identifier(parts[1]))
+					{
+						String source = registersMap.get(parts[1]);
+						out.println("  sw $" + source + ", 4($" + assignTarget + ")");
+					}
+					else // Store the literal in a temporary variable first
+					{
+						String temp = freeRegisters.remove(0);
+						setPrimitiveValue(parts[1], "$" + temp, false);
+						out.println("  sw $" + temp + ", 4($" + assignTarget + ")");
+						freeRegisters.add(temp);
+					}
+					freeRegisters.remove(assignTarget);
 				}
-				else
-					setPrimitiveValue(parts[1], "$" + assignTarget, false);
-				freeRegisters.remove(assignTarget);
+				else // Assigning to a regular variable
+				{
+					String assignTarget = registersMap.get(parts[0]);
+					if (Instruction.identifier(parts[1]))
+					{
+						// Loading from memory
+						if (parts[1].charAt(0) == '*')
+						{
+							String source = registersMap.get(parts[1]);
+							out.println("  lw $" + assignTarget + ", 4($" + source + ")");
+						}
+						else // Regular assignment of one variable to another - this should be optimized away
+						{
+							String source = registersMap.get(parts[1]);
+							out.println("  move $" + assignTarget + ", $" + source);
+							if (!inst.postLiveVariables.contains(parts[1]))
+								freeRegisters.add(source);
+						}
+					}
+					else // Assigning a literal to a regular variable
+						setPrimitiveValue(parts[1], "$" + assignTarget, false);
+					freeRegisters.remove(assignTarget);
+				}
 				break;
 			case FUNCTIONCALL:
 				String funcName = inst.variablesUsed.get(0);
 				if (funcName.equals("print"))
 					out.println("  syscall");
+				else if (funcName.equals("malloc"))
+				{
+					out.println("  li $v0, 9");
+					out.println("  li $a0, " + inst.variablesUsed.get(1));
+					out.println("  syscall");
+				}
 				else
 					throw new UnsupportedOperationException();
 //				for (int i = 0; i < 4; i++)
@@ -266,7 +309,7 @@ public class MIPSCompiler
 				if (inst.variablesUsed.size() > 0)
 				{
 					//// what if it isn't $a0? and what if we're not printing right now?
-					out.println("  li $v0 1");
+					out.println("  li $v0, 1");
 					out.println("  move $a0, $" + registersMap.get(inst.variablesUsed.get(0)));
 				}
 				else
@@ -314,7 +357,7 @@ public class MIPSCompiler
 		if (str.charAt(0) == '\"')
 		{
 			if (printing)
-				out.println("  li $v0 4");
+				out.println("  li $v0, 4");
 //			if (str.equals("\" \""))
 //				out.println("  la " + register + ", stringSpace");
 			if (str.equals("\"\\\\n\""))
@@ -325,7 +368,7 @@ public class MIPSCompiler
 		else
 		{
 			if (printing)
-				out.println("  li $v0 1");
+				out.println("  li $v0, 1");
 			if (str.equals("true"))
 				out.println("  li " + register + ", 1");
 			else if (str.equals("false"))
