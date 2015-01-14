@@ -294,7 +294,7 @@ public class MIPSCompiler
 				else if (funcName.equals("malloc"))
 				{
 					out.println("  li $v0, 9");
-					out.println("  li $a0, " + inst.variablesUsed.get(1));
+					out.println("  li $a0, " + inst.line.substring(inst.line.indexOf("malloc") + 7));
 					out.println("  syscall");
 				}
 				else

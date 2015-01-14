@@ -221,6 +221,7 @@ public class Instruction
 		identifiers.add("true"); identifiers.add("false");
 		identifiers.add("paramvalue"); identifiers.add("returnvalue");
 		identifiers.add("and"); identifiers.add("or"); identifiers.add("not");
+		identifiers.add("print"); identifiers.add("malloc");
 	}
 	
 	public static boolean identifier(String str)

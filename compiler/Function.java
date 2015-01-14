@@ -374,7 +374,7 @@ public class Function
 				else if (inst.type == InstructionType.FUNCTIONCALL) //// haven't debugged yet
 				{
 					String funcName = inst.variablesUsed.get(0);
-					if (!funcName.equals("print")) // or any other built-in function
+					if (!builtinFunctions.contains(funcName))
 					{
 						Instruction funcDecl = inst.preDeclarations.get(funcName);
 						while (funcDecl != null && !funcDecl.line.contains("*")) // temp fix, should be changed
@@ -501,11 +501,14 @@ public class Function
 				Instruction inst = iter.previous();
 				inst.postLiveVariables.addAll(currSet);
 				if (inst.type.isAssignment()) // assigned variable not alive immediately before it
-					currSet.remove(inst.line.substring(0, inst.line.indexOf(" = ")));
+				{
+					if (inst.line.charAt(0) != '*')
+						currSet.remove(inst.line.substring(0, inst.line.indexOf(" = ")));
+				}
 				else if (inst.type == InstructionType.FUNCTIONCALL) //// not debugging right now
 				{
 					String funcName = inst.variablesUsed.get(0);
-					if (!funcName.equals("print")) // or any other built-in function
+					if (!builtinFunctions.contains(funcName))
 					{
 						Instruction funcDecl = inst.preDeclarations.get(funcName);
 						while (funcDecl != null && !funcDecl.line.contains("*")) // temp fix, should be changed
@@ -535,9 +538,15 @@ public class Function
 					}
 				}
 				for (String str : inst.variablesUsed)
-					if (!str.equals("print")) //// don't want to deal with memory accesses right now
-//					if (str.charAt(0) != '*' && !str.equals("print")) // or any other built-in function
-						currSet.add(str);
+					if (!builtinFunctions.contains(str))
+					{
+						if (str.charAt(0) == '*')
+							currSet.add(str.substring(1));
+						else
+							currSet.add(str);
+					}
+				if (inst.line.charAt(0) == '*')
+					currSet.add(inst.line.substring(1, inst.line.indexOf(" = ")));
 				inst.preLiveVariables.addAll(currSet);
 			}
 			for (BasicBlock parent : curr.parents)
@@ -569,6 +578,8 @@ public class Function
 				if (inst.type.isAssignment())
 				{
 					String assigned = inst.line.substring(0, inst.line.indexOf(" = "));
+					if (assigned.charAt(0) == '*')
+						continue; // can't (currently) optimize away memory storage, since might be accessed under different name
 					if (!inst.postLiveVariables.contains(assigned))
 						iter.remove();
 				}
@@ -736,5 +747,12 @@ public class Function
 	public Set<String> variablesModified()
 	{
 		return variablesModified;
+	}
+	
+	private static final Set<String> builtinFunctions = new HashSet<> ();
+	static
+	{
+		builtinFunctions.add("print");
+		builtinFunctions.add("malloc");
 	}
 }

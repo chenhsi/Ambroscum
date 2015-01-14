@@ -269,7 +269,8 @@ public class ILCompiler
 				return "_te" + expr.getID();
 			case "ExpressionList":
 				Expression[] array = ((ExpressionList) expr).getExpressions();
-				instructions.add("_te" + expr.getID() + " = malloc " + (array.length + 1) * 4);
+				instructions.add("call malloc " + (array.length + 1) * 4);
+				instructions.add("_te" + expr.getID() + " = returnvalue");
 				instructions.add("*_te" + expr.getID() + " = " + array.length);
 				for (int i = 0; i < array.length; i++)
 				{
