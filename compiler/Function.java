@@ -49,7 +49,6 @@ public class Function
 			else if (str.startsWith("call "))
 			{
 				curr.add(str);
-				// not actually supported
 			}
 			else if (str.startsWith("return "))
 			{
@@ -377,21 +376,14 @@ public class Function
 					if (!builtinFunctions.contains(funcName))
 					{
 						Instruction funcDecl = inst.preDeclarations.get(funcName);
-						while (funcDecl != null && !funcDecl.line.contains("*")) // temp fix, should be changed
-							if (funcDecl.type == InstructionType.ASSIGNMENT)
-								funcDecl = funcDecl.preDeclarations.get(funcDecl.variablesUsed.get(0));
-							else
-								break;
 						boolean noInfo = (funcDecl == null);
-						if (!noInfo && funcDecl.line.contains("*"))
+						if (!noInfo && funcDecl.line.contains(" = *_func")) // found the actual declaration line
 						{
-							funcName = funcDecl.variablesUsed.get(0);
+							funcName = funcDecl.line.substring(funcDecl.line.indexOf("*_func"));
 							Function calledFunction = graph.getFunction(funcName.substring(1));
 							if (calledFunction.variablesModified != null)
-							{
 								for (String str : calledFunction.variablesModified)
 									currMap.put(str, null);
-							}
 							else
 								noInfo = true;
 						}

@@ -79,7 +79,7 @@ public class ILCompiler
 				for (Line subline : block.getLines())
 					compile(subline, null, null);
 				instructions.add("return null");
-				functions.put("_tl" + line.getID(), instructions);
+				functions.put("_func" + line.getID(), instructions);
 				break;
 			case "ClassLine":
 				throw new UnsupportedOperationException();
@@ -222,11 +222,13 @@ public class ILCompiler
 				instructions.add("label _8tl" + id);
 				break;
 			case "DefLine":
-				throw new UnsupportedOperationException();
+				instructions.add(((DefLine) line).getName() + " = *_func" + id);
+				break;
 			case "ClassLine":
 				throw new UnsupportedOperationException();
 			case "CallLine":
-				throw new UnsupportedOperationException();
+				compile(((CallLine) line).getCall());
+				break;
 		}
 	}
 	

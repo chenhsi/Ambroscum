@@ -58,7 +58,6 @@ public class Instruction
 			if (!returnValue.equals("null"))
 				variablesUsed.add(returnValue);
 			type = InstructionType.FUNCTIONRETURN;
-			throw new UnsupportedOperationException(line + " not recognized");
 		}
 		else
 			throw new UnsupportedOperationException(line + " not recognized");
@@ -208,7 +207,7 @@ public class Instruction
 //		System.out.println("\t\tReferenced Variables: " + variablesUsed);
 		System.out.println("\t" + line);
 //		System.out.println("\t\tPost-Live Variables: " + postLiveVariables);
-//		System.out.println("\t\tPost-Declarations: " + postDeclarations);
+		System.out.println("\t\tPost-Declarations: " + postDeclarations);
 	}
 	
 	public String toString()

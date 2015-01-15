@@ -29,6 +29,12 @@ public class MIPSCompiler
 		
 		compile(graph.getMain(), true);
 		
+		for (String funcName : graph.getFunctions().keySet())
+		{
+			out.println(funcName + ":");
+			compile(graph.getFunctions().get(funcName), false);
+		}
+		
 		out.flush();
 		out.close();
 	}
@@ -163,7 +169,7 @@ public class MIPSCompiler
 						out.println("  syscall");
 					}
 					else
-						throw new UnsupportedOperationException();
+						out.println("  jr $ra");
 					break;
 				}
 				if (block.jumpBlock != null)
@@ -268,8 +274,12 @@ public class MIPSCompiler
 					String assignTarget = registersMap.get(parts[0]);
 					if (Instruction.identifier(parts[1]))
 					{
-						// Loading from memory
-						if (parts[1].charAt(0) == '*')
+						if (parts[1].startsWith("*_func")) // function declaration
+						{
+							String source = registersMap.get(parts[1].substring(1));
+							out.println("  li $" + assignTarget + ", " + source);
+						}
+						else if (parts[1].charAt(0) == '*') // Loading value from memory
 						{
 							String source = registersMap.get(parts[1].substring(1));
 							out.println("  lw $" + assignTarget + ", 4($" + source + ")");
@@ -288,7 +298,7 @@ public class MIPSCompiler
 				}
 				break;
 			case FUNCTIONCALL:
-				String funcName = inst.variablesUsed.get(0);
+				String funcName = inst.line.substring(5, inst.line.lastIndexOf(" "));
 				if (funcName.equals("print"))
 					out.println("  syscall");
 				else if (funcName.equals("malloc"))
@@ -298,12 +308,14 @@ public class MIPSCompiler
 					out.println("  syscall");
 				}
 				else
-					throw new UnsupportedOperationException();
-//				for (int i = 0; i < 4; i++)
-//					if (!registersUsed.contains("a" + i))
-//						break;
-//					else
-//						registersUsed.remove("a" + i);
+				{
+					out.println("  jal " + funcName);
+					for (int i = 0; i < 4; i++)
+						if (freeRegisters.contains("a" + i))
+							break;
+						else
+							freeRegisters.add("a" + i);
+				}
 				break;
 			case FUNCTIONPARAM:
 				if (inst.variablesUsed.size() > 0)
@@ -330,8 +342,14 @@ public class MIPSCompiler
 //						break outer;
 //					}
 			case FUNCTIONRETURN:
-				throw new UnsupportedOperationException();
-//				out.println("  move $v0, " + registersMap.get(inst.variablesUsed.get(0)));
+				String returnValue = inst.line.substring(7);
+				if (returnValue.equals("null"))
+					break;
+				else if (Instruction.identifier(returnValue))
+					out.println("  move $v0, " + registersMap.get(returnValue));
+				else
+					setPrimitiveValue(returnValue, "$v0", false);
+				break;
 			case SPECIALASSIGNMENT:
 				if (inst.line.endsWith("paramvalue"))
 					throw new UnsupportedOperationException();
@@ -342,7 +360,8 @@ public class MIPSCompiler
 					freeRegisters.remove(register);
 					break;
 				}
-				throw new AssertionError();
+				else
+					throw new AssertionError();
 			case JUMP:
 				String jumpTarget = "_b" + inst.block.jumpBlock.id;
 				if (inst.line.startsWith("jumpunless"))
