@@ -105,11 +105,11 @@ public class ILCompiler
 				{
 					ExpressionOperator op = ((AssignmentLine) line).getAssignType();
 					if (op == null)
-						instructions.add("_" + i + "tl" + id + " = " + compile(assignValues.get(i)));
+						instructions.add("_" + i + "_1tl" + id + " = " + compile(assignValues.get(i)));
 					else
 					{
 						String rightHalf = compile(assignTargets.get(i)) + " " + compile(op) + " " + compile(assignValues.get(i));
-						instructions.add("_" + i + "tl" + id + " = " + rightHalf);
+						instructions.add("_" + i + "_1tl" + id + " = " + rightHalf);
 					}
 				}
 				for (int i = 0; i < assignValues.size(); i++)
@@ -120,15 +120,18 @@ public class ILCompiler
 						if (((ExpressionIdentifier) target).getParent() != null)
 							throw new UnsupportedOperationException();
 						else
-							instructions.add(((ExpressionIdentifier) target).getReference() + " = _" + i + "tl" + id);
+							instructions.add(((ExpressionIdentifier) target).getReference() + " = _" + i + "_1tl" + id);
 					}
 					else if (target instanceof ExpressionReference)
 					{
-						if (((ExpressionReference) target).getSecondaryRight() != null)
+						ExpressionReference ref = (ExpressionReference) target;
+						if (ref.getSecondaryRight() != null)
 							throw new UnsupportedOperationException();
-						instructions.add("_" + i + "tl2" + id + " = _" + i + "tl2" + id + " + " + i * 4);
-						instructions.add("*_" + i + "te" + id + " = _" + i + "tl2" + id);
-						instructions.add(compile(target) + " = _" + i + "tl" + id);
+						// assumes list
+						instructions.add("_" + i + "_2tl" + id + " = 1 + " + compile(ref.getSecondary()));
+						instructions.add("_" + i + "_3tl" + id + " = 4 * _" + i + "_2tl" + id);
+						instructions.add("_" + i + "_4tl" + id + " = _" + i + "_3tl" + id + " + " + compile(ref.getPrimary()));
+						instructions.add("*_" + i + "_4tl" + id + " = _" + i + "_1tl" + id);
 					}
 					else
 						throw new UnsupportedOperationException();
@@ -209,10 +212,10 @@ public class ILCompiler
 				instructions.add("_4tl" + id + " = _1tl" + id + " + _3tl" + id); // pointer to last array element
 				instructions.add("label _5tl" + id); // start of loop
 				instructions.add("_6tl" + id + " = _1tl" + id + " < _4tl" + id); // condition for if loop should end
-				instructions.add("jumpunless _6tl" + id + ", _7tl" + id); // jump if loop has ended
+				instructions.add("jumpunless _6tl" + id + " _7tl" + id); // jump if loop has ended
 				instructions.add("_1tl" + id + " = 4 + _1tl" + id); // move pointer in array
-				instructions.add(compile(forLine.getIterVariable()) + " = *_1tl" + id); // get the actual value
-				compile(forLine.getLoopBlock(), "_7tl" + id, "_5tl" + id);
+				instructions.add(forLine.getIterVariable() + " = *_1tl" + id); // get the actual value
+				compile(forLine.getLoopBlock(), "_8tl" + id, "_5tl" + id);
 				instructions.add("jump _5tl" + id);
 				instructions.add("label _7tl" + id);
 				compile(forLine.getThenBlock(), breakTarget, continueTarget);

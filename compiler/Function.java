@@ -581,7 +581,9 @@ public class Function
 					if (assigned.charAt(0) == '*')
 						continue; // can't (currently) optimize away memory storage, since might be accessed under different name
 					if (!inst.postLiveVariables.contains(assigned))
+					{
 						iter.remove();
+					}
 				}
 			}
 	}

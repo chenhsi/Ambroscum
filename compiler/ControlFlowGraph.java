@@ -17,7 +17,7 @@ public class ControlFlowGraph
 	
 	public void optimize()
 	{
-//		mainFunction.printAll();
+		mainFunction.printAll();
 		for (int i = 0; i < 10; i++) // should be smarter about this
 		{
 //			System.out.println("Optimization iteration " + i);
@@ -26,7 +26,7 @@ public class ControlFlowGraph
 //		for (Function f : otherFunctions.values())
 //			f.optimize();
 //		mainFunction.optimize();
-		mainFunction.printAll();
+//		mainFunction.printAll();
 		for (Function f : otherFunctions.values())
 			f.printAll();
 	}

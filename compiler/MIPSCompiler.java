@@ -271,7 +271,7 @@ public class MIPSCompiler
 						// Loading from memory
 						if (parts[1].charAt(0) == '*')
 						{
-							String source = registersMap.get(parts[1]);
+							String source = registersMap.get(parts[1].substring(1));
 							out.println("  lw $" + assignTarget + ", 4($" + source + ")");
 						}
 						else // Regular assignment of one variable to another - this should be optimized away
@@ -333,7 +333,16 @@ public class MIPSCompiler
 				throw new UnsupportedOperationException();
 //				out.println("  move $v0, " + registersMap.get(inst.variablesUsed.get(0)));
 			case SPECIALASSIGNMENT:
-				throw new UnsupportedOperationException();
+				if (inst.line.endsWith("paramvalue"))
+					throw new UnsupportedOperationException();
+				else if (inst.line.endsWith("returnvalue"))
+				{
+					String register = registersMap.get(inst.line.substring(0, inst.line.indexOf(" = ")));
+					out.println("  move $" + register + ", $v0");
+					freeRegisters.remove(register);
+					break;
+				}
+				throw new AssertionError();
 			case JUMP:
 				String jumpTarget = "_b" + inst.block.jumpBlock.id;
 				if (inst.line.startsWith("jumpunless"))

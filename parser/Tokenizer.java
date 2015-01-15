@@ -17,7 +17,7 @@ public class Tokenizer
 		{
 			switch (str.charAt(i))
 			{
-				case ')': case ']': case '}': case ' ': case '.': case ',':
+				case ')': case ']': case '}': case ' ':
 					throw new SyntaxError("Unexpected character: " + str.charAt(i));
 				
 				case ';':
