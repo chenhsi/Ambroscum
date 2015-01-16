@@ -23,15 +23,24 @@ public class Instruction
 		if (index != -1)
 		{
 			String[] substrs = line.substring(index + 3).split(" ");
-			if (substrs.length > 1)
-				type = InstructionType.CALCULATION;
-			else if (substrs[0].equals("paramvalue") || substrs[0].equals("returnvalue"))
+			if (substrs[0].equals("paramvalue") || substrs[0].equals("returnvalue"))
 				type = InstructionType.SPECIALASSIGNMENT;
+			else if (substrs.length > 1)
+				type = InstructionType.CALCULATION;
 			else
+			{
 				type = InstructionType.ASSIGNMENT;
+				if (line.charAt(0) == '*')
+					variablesUsed.add(line.substring(1, index));
+			}
 			for (String substr : substrs)
 				if (identifier(substr))
-					variablesUsed.add(substr);
+				{
+					if (substr.charAt(0) == '*')
+						variablesUsed.add(substr.substring(1));
+					else
+						variablesUsed.add(substr);
+				}
 		}
 		else if (line.startsWith("jumpunless"))
 		{
@@ -42,13 +51,14 @@ public class Instruction
 			type = InstructionType.JUMP;
 		else if (line.startsWith("param"))
 		{
-			if (identifier(line.substring(6)))
-				variablesUsed.add(line.substring(6));
+			String paramValue = line.substring(line.lastIndexOf(" ") + 1);
+			if (identifier(paramValue))
+				variablesUsed.add(paramValue);
 			type = InstructionType.FUNCTIONPARAM;
 		}
 		else if (line.startsWith("call"))
 		{
-			String func = line.substring(5, line.lastIndexOf(" "));
+			String func = line.substring(5);
 			variablesUsed.add(func);
 			type = InstructionType.FUNCTIONCALL;
 		}
@@ -67,21 +77,57 @@ public class Instruction
 	{
 //		System.out.println("Optimizing self: " + this);
 		boolean optimized = false;
-		for (String str : variablesUsed)
+		
+		while (type == InstructionType.ASSIGNMENT)
 		{
-			if (str.charAt(0) == '*')
-				continue;
-			Instruction decl = preDeclarations.get(str);
-			if (decl == null || decl.block != this.block || decl.type != InstructionType.ASSIGNMENT)
-				continue;
-			String rest = decl.line.substring(decl.line.indexOf(" = ") + 3);
+			String[] parts = line.split(" = ");
+			parts[0] += " = ";
+			String rest = null;
+			Instruction decl = preDeclarations.get(parts[1]);
+			// Found the exact value
+			if (decl != null && decl.block == this.block && decl.type == InstructionType.ASSIGNMENT)
+				rest = decl.line.substring(decl.line.indexOf(" = ") + 3);
+			// Otherwise, if this is a memory access, see if we can at least get info on the memory location
+			else if (parts[1].charAt(0) == '*')
+			{
+				decl = preDeclarations.get(parts[1].substring(1));
+				if (decl != null && decl.block == this.block && decl.type == InstructionType.ASSIGNMENT)
+				{
+					rest = decl.line.substring(decl.line.indexOf(" = ") + 3);
+					if (rest.charAt(0) == '*') // can't do a double pointer in a single line
+						break;
+					parts[0] += '*';
+				}
+			}
+			if (rest == null)
+				break;
+			line = parts[0] + rest;
+			variablesUsed.remove(parts[1]);
 			if (rest.charAt(0) == '*')
-				continue;
-			line = line.replaceAll(str, rest);
-			variablesUsed.remove(str);
-			if (identifier(rest))
+				variablesUsed.add(rest.substring(1));
+			else if (identifier(rest))
 				variablesUsed.add(rest);
 			optimized = true;
+			break;
+		}
+		
+		while (type != InstructionType.ASSIGNMENT)
+		{
+			for (String str : variablesUsed)
+			{
+				Instruction decl = preDeclarations.get(str);
+				if (decl == null || decl.block != this.block || decl.type != InstructionType.ASSIGNMENT)
+					continue;
+				String rest = decl.line.substring(decl.line.indexOf(" = ") + 3);
+				if (rest.charAt(0) == '*')
+					continue;
+				line = line.replaceAll(str, rest);
+				variablesUsed.remove(str);
+				if (identifier(rest))
+					variablesUsed.add(rest);
+				optimized = true;
+				break;
+			}
 			break;
 		}
 

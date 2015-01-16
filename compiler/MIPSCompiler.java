@@ -183,11 +183,11 @@ public class MIPSCompiler
 	{
 //		out.println(inst.line);
 		out.flush();
+		String[] parts = inst.line.split(" ");
 		outer: switch (inst.type)
 		{
 			case CALCULATION:
 			{
-				String[] parts = inst.line.split(" ");
 				String assignTarget = registersMap.get(parts[0]);
 				String leftReg = registersMap.get(parts[2]);
 				if (leftReg == null)
@@ -251,11 +251,10 @@ public class MIPSCompiler
 				break;
 			}
 			case ASSIGNMENT:
-				String[] parts = inst.line.split(" = ");
 				if (parts[0].charAt(0) == '*') // Assigning to memory
 				{
 					String assignTarget = registersMap.get(parts[0].substring(1));
-					if (Instruction.identifier(parts[1]))
+					if (Instruction.identifier(parts[2]))
 					{
 						String source = registersMap.get(parts[1]);
 						out.println("  sw $" + source + ", 4($" + assignTarget + ")");
@@ -263,7 +262,7 @@ public class MIPSCompiler
 					else // Store the literal in a temporary variable first
 					{
 						String temp = freeRegisters.remove(0);
-						setPrimitiveValue(parts[1], "$" + temp, false);
+						setPrimitiveValue(parts[2], "$" + temp, false);
 						out.println("  sw $" + temp + ", 4($" + assignTarget + ")");
 						freeRegisters.add(temp);
 					}
@@ -272,75 +271,62 @@ public class MIPSCompiler
 				else // Assigning to a regular variable
 				{
 					String assignTarget = registersMap.get(parts[0]);
-					if (Instruction.identifier(parts[1]))
+					if (Instruction.identifier(parts[2]))
 					{
 						if (parts[1].startsWith("*_func")) // function declaration
 						{
 							String source = registersMap.get(parts[1].substring(1));
 							out.println("  li $" + assignTarget + ", " + source);
 						}
-						else if (parts[1].charAt(0) == '*') // Loading value from memory
+						else if (parts[2].charAt(0) == '*') // Loading value from memory
 						{
-							String source = registersMap.get(parts[1].substring(1));
+							String source = registersMap.get(parts[2].substring(1));
 							out.println("  lw $" + assignTarget + ", 4($" + source + ")");
 						}
 						else // Regular assignment of one variable to another - this should be optimized away
 						{
-							String source = registersMap.get(parts[1]);
+							String source = registersMap.get(parts[2]);
 							out.println("  move $" + assignTarget + ", $" + source);
-							if (!inst.postLiveVariables.contains(parts[1]))
+							if (!inst.postLiveVariables.contains(parts[2]))
 								freeRegisters.add(source);
 						}
 					}
 					else // Assigning a literal to a regular variable
-						setPrimitiveValue(parts[1], "$" + assignTarget, false);
+						setPrimitiveValue(parts[2], "$" + assignTarget, false);
 					freeRegisters.remove(assignTarget);
 				}
 				break;
 			case FUNCTIONCALL:
-				String funcName = inst.line.substring(5, inst.line.lastIndexOf(" "));
-				if (funcName.equals("print"))
+				if (parts[1].equals("print"))
 					out.println("  syscall");
-				else if (funcName.equals("malloc"))
+				else if (parts[1].equals("malloc"))
 				{
 					out.println("  li $v0, 9");
-					out.println("  li $a0, " + inst.line.substring(inst.line.indexOf("malloc") + 7));
 					out.println("  syscall");
 				}
 				else
-				{
-					out.println("  jal " + funcName);
-					for (int i = 0; i < 4; i++)
-						if (freeRegisters.contains("a" + i))
-							break;
-						else
-							freeRegisters.add("a" + i);
-				}
+					out.println("  jal " + parts[1]);
 				break;
 			case FUNCTIONPARAM:
+			{
+				int paramNum = Integer.parseInt(parts[1]);
+				if (paramNum > 4)
+					throw new UnsupportedOperationException();
+				String paramRegister = "$a" + (paramNum - 1);
 				if (inst.variablesUsed.size() > 0)
 				{
-					//// what if it isn't $a0? and what if we're not printing right now?
+					//// what if we're not printing right now?
 					out.println("  li $v0, 1");
-					out.println("  move $a0, $" + registersMap.get(inst.variablesUsed.get(0)));
+					out.println("  move " + paramRegister + ", $" + registersMap.get(inst.variablesUsed.get(0)));
 				}
 				else
-					setPrimitiveValue(inst.line.substring(6), "$a0", true);
+				{
+					String linePart = inst.line.substring(6);
+					linePart = linePart.substring(linePart.indexOf(" ") + 1);
+					setPrimitiveValue(linePart, paramRegister, true);
+				}
 				break;
-//				for (int i = 0; i < 4; i++)
-//					if (!registersUsed.contains("a" + i))
-//					{
-//						String register = "$a" + i;
-//						if (inst.variablesUsed.size() > 0)
-//						{
-//							out.println("  li $v0 1");
-//							out.println("  move " + register + ", $" + registersMap.get(inst.variablesUsed.get(0)));
-//						}
-//						else
-//							setPrimitiveValue(inst.line.substring(6), register, true);
-//						registersUsed.add(register);
-//						break outer;
-//					}
+			}
 			case FUNCTIONRETURN:
 				String returnValue = inst.line.substring(7);
 				if (returnValue.equals("null"))
@@ -351,9 +337,17 @@ public class MIPSCompiler
 					setPrimitiveValue(returnValue, "$v0", false);
 				break;
 			case SPECIALASSIGNMENT:
-				if (inst.line.endsWith("paramvalue"))
-					throw new UnsupportedOperationException();
-				else if (inst.line.endsWith("returnvalue"))
+				if (inst.line.contains("paramvalue"))
+				{
+					int paramNum = Integer.parseInt(inst.line.substring(inst.line.lastIndexOf(" ") + 1));
+					if (paramNum > 4)
+						throw new UnsupportedOperationException();
+					String paramRegister = "$a" + (paramNum - 1);
+					String targetRegister = registersMap.get(inst.line.substring(0, inst.line.indexOf(" ")));
+					out.println("  move $" + targetRegister + ", " + paramRegister);
+					freeRegisters.remove(targetRegister);
+				}
+				else if (inst.line.contains("returnvalue"))
 				{
 					String register = registersMap.get(inst.line.substring(0, inst.line.indexOf(" = ")));
 					out.println("  move $" + register + ", $v0");

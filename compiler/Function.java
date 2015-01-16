@@ -492,11 +492,9 @@ public class Function
 			{
 				Instruction inst = iter.previous();
 				inst.postLiveVariables.addAll(currSet);
-				if (inst.type.isAssignment()) // assigned variable not alive immediately before it
-				{
-					if (inst.line.charAt(0) != '*')
-						currSet.remove(inst.line.substring(0, inst.line.indexOf(" = ")));
-				}
+				// an assigned variable is not alive immediately before it
+				if (inst.type.isAssignment() && inst.line.charAt(0) != '*')
+					currSet.remove(inst.line.substring(0, inst.line.indexOf(" = ")));
 				else if (inst.type == InstructionType.FUNCTIONCALL) //// not debugging right now
 				{
 					String funcName = inst.variablesUsed.get(0);
@@ -531,14 +529,7 @@ public class Function
 				}
 				for (String str : inst.variablesUsed)
 					if (!builtinFunctions.contains(str))
-					{
-						if (str.charAt(0) == '*')
-							currSet.add(str.substring(1));
-						else
-							currSet.add(str);
-					}
-				if (inst.line.charAt(0) == '*')
-					currSet.add(inst.line.substring(1, inst.line.indexOf(" = ")));
+						currSet.add(str);
 				inst.preLiveVariables.addAll(currSet);
 			}
 			for (BasicBlock parent : curr.parents)
@@ -573,9 +564,7 @@ public class Function
 					if (assigned.charAt(0) == '*')
 						continue; // can't (currently) optimize away memory storage, since might be accessed under different name
 					if (!inst.postLiveVariables.contains(assigned))
-					{
 						iter.remove();
-					}
 				}
 			}
 	}

@@ -75,7 +75,7 @@ public class ILCompiler
 				functionDeclarations(block);
 				List<String> params = ((DefLine) line).getParams();
 				for (int i = params.size() - 1; i >= 0; i--)
-					instructions.add(params.get(i) + " = paramvalue");
+					instructions.add(params.get(i) + " = paramvalue " + (i + 1));
 				for (Line subline : block.getLines())
 					compile(subline, null, null);
 				instructions.add("return null");
@@ -144,16 +144,16 @@ public class ILCompiler
 				{
 					if (!firstPrint)
 					{
-						instructions.add("param \" \"");
+						instructions.add("param 1 \" \"");
 						instructions.add("call print 1");
 					}
 					firstPrint = false;
-					instructions.add("param " + compile(expr));
+					instructions.add("param 1 " + compile(expr));
 					instructions.add("call print 1");
 				}
 				if (printLine.isPrintNewline())
 				{
-					instructions.add("param \"\\\\n\"");
+					instructions.add("param 1 \"\\\\n\"");
 					instructions.add("call print 1");
 				}
 				break;
@@ -274,7 +274,8 @@ public class ILCompiler
 				return "_te" + expr.getID();
 			case "ExpressionList":
 				Expression[] array = ((ExpressionList) expr).getExpressions();
-				instructions.add("call malloc " + (array.length + 1) * 4);
+				instructions.add("param 1 " + (array.length + 1) * 4);
+				instructions.add("call malloc");
 				instructions.add("_te" + expr.getID() + " = returnvalue");
 				instructions.add("*_te" + expr.getID() + " = " + array.length);
 				for (int i = 0; i < array.length; i++)
@@ -308,10 +309,11 @@ public class ILCompiler
 				}
 				else
 				{
+					int counter = 1;
 					for (Expression subexpr : call.getOperands())
 					{
 						str = compile(subexpr);
-						instructions.add("param " + str);
+						instructions.add("param " + counter++ + " " + str);
 					}
 					str = compile(call.getFunction());
 					instructions.add("call " + str + " " + call.getOperands().size());
