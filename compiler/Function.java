@@ -372,7 +372,7 @@ public class Function
 					currMap.put(inst.line.substring(0, inst.line.indexOf(" = ")), inst);
 				else if (inst.type == InstructionType.FUNCTIONCALL) //// haven't debugged yet
 				{
-					String funcName = inst.variablesUsed.get(0);
+					String funcName = inst.line.substring(5);
 					if (!builtinFunctions.contains(funcName))
 					{
 						Instruction funcDecl = inst.preDeclarations.get(funcName);
@@ -497,7 +497,7 @@ public class Function
 					currSet.remove(inst.line.substring(0, inst.line.indexOf(" = ")));
 				else if (inst.type == InstructionType.FUNCTIONCALL) //// not debugging right now
 				{
-					String funcName = inst.variablesUsed.get(0);
+					String funcName = inst.line.substring(5);
 					if (!builtinFunctions.contains(funcName))
 					{
 						Instruction funcDecl = inst.preDeclarations.get(funcName);
@@ -505,10 +505,10 @@ public class Function
 							if (funcDecl.type == InstructionType.ASSIGNMENT)
 								funcDecl = funcDecl.preDeclarations.get(funcDecl.variablesUsed.get(0));
 						boolean noInfo = (funcDecl == null);
-						if (!noInfo && funcDecl.line.contains("*"))
+						if (!noInfo && funcDecl.line.contains("*") && funcDecl.variablesUsed != null)
 						{
 							funcName = funcDecl.variablesUsed.get(0);
-							Function calledFunction = graph.getFunction(funcName.substring(1));
+							Function calledFunction = graph.getFunction(funcName);
 							if (calledFunction.variablesModified != null)
 							{
 								for (String str : calledFunction.nonlocalVariablesUsed)

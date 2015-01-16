@@ -253,7 +253,7 @@ public class Instruction
 //		System.out.println("\t\tReferenced Variables: " + variablesUsed);
 		System.out.println("\t" + line);
 //		System.out.println("\t\tPost-Live Variables: " + postLiveVariables);
-		System.out.println("\t\tPost-Declarations: " + postDeclarations);
+//		System.out.println("\t\tPost-Declarations: " + postDeclarations);
 	}
 	
 	public String toString()

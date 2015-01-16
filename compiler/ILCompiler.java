@@ -145,16 +145,16 @@ public class ILCompiler
 					if (!firstPrint)
 					{
 						instructions.add("param 1 \" \"");
-						instructions.add("call print 1");
+						instructions.add("call print");
 					}
 					firstPrint = false;
 					instructions.add("param 1 " + compile(expr));
-					instructions.add("call print 1");
+					instructions.add("call print");
 				}
 				if (printLine.isPrintNewline())
 				{
 					instructions.add("param 1 \"\\\\n\"");
-					instructions.add("call print 1");
+					instructions.add("call print");
 				}
 				break;
 			case "BreakLine":
@@ -316,7 +316,7 @@ public class ILCompiler
 						instructions.add("param " + counter++ + " " + str);
 					}
 					str = compile(call.getFunction());
-					instructions.add("call " + str + " " + call.getOperands().size());
+					instructions.add("call " + str);
 					instructions.add("_te" + expr.getID() + " = returnvalue");
 					return "_te" + expr.getID();
 				}
