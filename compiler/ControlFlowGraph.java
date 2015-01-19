@@ -4,6 +4,7 @@ import java.util.*;
 
 public class ControlFlowGraph
 {
+	private static final boolean printAfter = true;
 	private Function mainFunction;
 	private Map<String, Function> otherFunctions;
 
@@ -17,18 +18,25 @@ public class ControlFlowGraph
 	
 	public void optimize()
 	{
-		mainFunction.printAll();
+		if (!printAfter)
+		{
+			mainFunction.printAll();
+			for (Function f : otherFunctions.values())
+				f.printAll();
+		}
 		for (int i = 0; i < 10; i++) // should be smarter about this
 		{
 //			System.out.println("Optimization iteration " + i);
 			mainFunction.optimize();
+			for (Function f : otherFunctions.values())
+				f.optimize();
 		}
-		for (Function f : otherFunctions.values())
-			f.optimize();
-		mainFunction.optimize();
-//		mainFunction.printAll();
-//		for (Function f : otherFunctions.values())
-//			f.printAll();
+		if (printAfter)
+		{
+			mainFunction.printAll();
+			for (Function f : otherFunctions.values())
+				f.printAll();
+		}
 	}
 	
 	public Function getFunction(String name)

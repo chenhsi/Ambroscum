@@ -53,6 +53,7 @@ public class Function
 			else if (str.startsWith("return "))
 			{
 				curr.add(str);
+				curr.add("jump endingblock");
 				connect(curr, endingBlock, false);
 				curr = new BasicBlock();
 			}
@@ -561,9 +562,10 @@ public class Function
 				if (inst.type.isAssignment())
 				{
 					String assigned = inst.line.substring(0, inst.line.indexOf(" = "));
+					// can't (currently) optimize away memory storage, since might be accessed under different name
 					if (assigned.charAt(0) == '*')
-						continue; // can't (currently) optimize away memory storage, since might be accessed under different name
-					if (!inst.postLiveVariables.contains(assigned))
+						continue;
+					if (!inst.postLiveVariables.contains(assigned) && !inst.postLiveVariables.contains("_all"))
 						iter.remove();
 				}
 			}

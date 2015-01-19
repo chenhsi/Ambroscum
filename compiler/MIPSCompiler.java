@@ -26,6 +26,7 @@ public class MIPSCompiler
 		printLiterals(graph.getMain());
 		out.println();
 		out.println(".text");
+		out.println();
 		
 		compile(graph.getMain(), true);
 		
@@ -34,6 +35,11 @@ public class MIPSCompiler
 			out.println(funcName + ":");
 			compile(graph.getFunctions().get(funcName), false);
 		}
+
+		out.println();
+		out.println("_getAddr:");
+		out.println("  addi $v0, $ra, 0");
+		out.println("  jr $ra");
 		
 		out.flush();
 		out.close();
@@ -72,7 +78,7 @@ public class MIPSCompiler
 		}
 	}
 	
-	private static Map<String, String> registerAssignment(Function func)
+	private static Map<String, String> registerAssignment(Function func, boolean mainFunction)
 	{
 		Map<String, Set<String>> conflicts = new HashMap<> ();
 		
@@ -116,9 +122,9 @@ public class MIPSCompiler
 			for (String adj : conflicts.get(variable))
 				if (colorings.containsKey(adj))
 					invalid.add(colorings.get(adj));
-			for (int poss = 8; ; poss++)
+			for (int poss = mainFunction ? 16 : 8; ; poss++)
 			{
-				if (poss == 26)
+				if (poss == (mainFunction ? 26 : 16))
 					throw new UnsupportedOperationException("too many variables - can't support yet");
 				if (invalid.contains(poss))
 					continue;
@@ -137,7 +143,7 @@ public class MIPSCompiler
 	
 	private static void compile(Function func, boolean mainFunction)
 	{
-		Map<String, String> registersMap = registerAssignment(func);
+		Map<String, String> registersMap = registerAssignment(func, mainFunction);
 		
 		Set<BasicBlock> compiled = new HashSet<> ();
 		Queue<BasicBlock> toExplore = new LinkedList<> ();
@@ -273,11 +279,8 @@ public class MIPSCompiler
 					String assignTarget = registersMap.get(parts[0]);
 					if (Instruction.identifier(parts[2]))
 					{
-						if (parts[1].startsWith("*_func")) // function declaration
-						{
-							String source = registersMap.get(parts[1].substring(1));
-							out.println("  li $" + assignTarget + ", " + source);
-						}
+						if (parts[2].startsWith("*_func")) // function declaration
+							out.println("  la $" + assignTarget + ", " + parts[2].substring(1));
 						else if (parts[2].charAt(0) == '*') // Loading value from memory
 						{
 							String source = registersMap.get(parts[2].substring(1));
@@ -305,26 +308,38 @@ public class MIPSCompiler
 					out.println("  syscall");
 				}
 				else
-					out.println("  jal " + parts[1]);
+				{
+					out.println("  jal _getAddr");
+					out.println("  addi $ra, $v0, 8");
+					out.println("  jr $" + registersMap.get(parts[1]));
+				}
 				break;
 			case FUNCTIONPARAM:
 			{
 				int paramNum = Integer.parseInt(parts[1]);
 				if (paramNum > 4)
-					throw new UnsupportedOperationException();
+				{
+					out.println("  addi $sp, $sp, -4");
+					if (inst.variablesUsed.size() > 0)
+						out.println("  sw $" + registersMap.get(parts[2]) + ", 0($sp)");
+					else
+					{
+						String tempReg = freeRegisters.remove(0);
+						setPrimitiveValue(parts[2], tempReg, true);
+						out.println("  sw $" + tempReg + ", 0($sp)");
+						freeRegisters.add(tempReg);
+					}
+					break;
+				}
 				String paramRegister = "$a" + (paramNum - 1);
 				if (inst.variablesUsed.size() > 0)
 				{
 					//// what if we're not printing right now?
 					out.println("  li $v0, 1");
-					out.println("  move " + paramRegister + ", $" + registersMap.get(inst.variablesUsed.get(0)));
+					out.println("  move " + paramRegister + ", $" + registersMap.get(parts[2]));
 				}
 				else
-				{
-					String linePart = inst.line.substring(6);
-					linePart = linePart.substring(linePart.indexOf(" ") + 1);
-					setPrimitiveValue(linePart, paramRegister, true);
-				}
+					setPrimitiveValue(parts[2], paramRegister, true);
 				break;
 			}
 			case FUNCTIONRETURN:
@@ -339,13 +354,17 @@ public class MIPSCompiler
 			case SPECIALASSIGNMENT:
 				if (inst.line.contains("paramvalue"))
 				{
+					String targetRegister = registersMap.get(inst.line.substring(0, inst.line.indexOf(" ")));
 					int paramNum = Integer.parseInt(inst.line.substring(inst.line.lastIndexOf(" ") + 1));
 					if (paramNum > 4)
-						throw new UnsupportedOperationException();
+					{
+						out.println("  lw $" + targetRegister + ", 0($sp)");
+						out.println("  addi $sp, $sp, 4");
+					}
 					String paramRegister = "$a" + (paramNum - 1);
-					String targetRegister = registersMap.get(inst.line.substring(0, inst.line.indexOf(" ")));
 					out.println("  move $" + targetRegister + ", " + paramRegister);
 					freeRegisters.remove(targetRegister);
+					break;
 				}
 				else if (inst.line.contains("returnvalue"))
 				{
@@ -389,14 +408,14 @@ public class MIPSCompiler
 		}
 		else
 		{
-			if (printing)
-				out.println("  li $v0, 1");
 			if (str.equals("true"))
-				out.println("  li " + register + ", 1");
+				out.println("  la " + register + ", stringTrue");
 			else if (str.equals("false"))
-				out.println("  li " + register + ", 0");
+				out.println("  la " + register + ", stringFalse");
 			else // if not boolean or string, probably an int (until we add support for other stuff)
 			{
+				if (printing)
+					out.println("  li $v0, 1");
 				try
 				{
 					int value = Integer.parseInt(str);
@@ -408,5 +427,16 @@ public class MIPSCompiler
 				}
 			}
 		}
+	}
+	
+	private static void storeOntoStack(String reg)
+	{
+		out.println("  addi $sp, $sp, -4");
+		out.println("  sw " + reg + ", 0($sp)");
+	}
+	private static void loadFromStack(String reg)
+	{
+		out.println("  lw " + reg + ", 0($sp)");
+		out.println("  addi $sp, $sp, 4");
 	}
 }

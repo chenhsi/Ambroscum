@@ -27,6 +27,8 @@ public class Instruction
 				type = InstructionType.SPECIALASSIGNMENT;
 			else if (substrs.length > 1)
 				type = InstructionType.CALCULATION;
+			else if (substrs[0].startsWith("*_func"))
+				type = InstructionType.ASSIGNMENT;
 			else
 			{
 				type = InstructionType.ASSIGNMENT;
