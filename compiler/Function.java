@@ -85,9 +85,10 @@ public class Function
 	
 	public void optimize()
 	{
-		// No particular sense to this ordering
-//		System.out.println("Optimizing part 1: ");
+		//// No particular sense to this ordering
+//		System.out.println("Optimizing part 0: ");
 		simplifyBlockStructure();
+//		System.out.println("Optimizing part 1: ");
 		complicateBlockStructure();
 //		System.out.println("Optimizing part 2: ");
 		propogateVariableDeclarations();
@@ -273,12 +274,13 @@ public class Function
 	private void complicateBlockStructure()
 	{
 		Set<BasicBlock> explored = new HashSet<> ();
+		Set<BasicBlock> newBlocks = new HashSet<> ();
 		Queue<BasicBlock> frontier = new LinkedList<> ();
 		frontier.add(startingBlock);
 		while (!frontier.isEmpty())
 		{
 			BasicBlock curr = frontier.remove();
-			if (explored.contains(curr))
+			if (explored.contains(curr) || newBlocks.contains(curr))
 				continue;
 			explored.add(curr);
 
@@ -332,6 +334,7 @@ public class Function
 				for (BasicBlock parent : toRemove)
 				{
 					BasicBlock newChild = new BasicBlock();
+					newBlocks.add(newChild);
 					newChild.instructions.add(new Instruction("jump " + "somewhereidk", newChild));
 					connect(parent, newChild, true);
 					connect(newChild, curr.nextBlock, false);

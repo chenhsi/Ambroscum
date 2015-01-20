@@ -213,6 +213,7 @@ public class Instruction
 			}
 			catch (NumberFormatException ex)
 			{
+				System.out.println(line);
 				boolean change = true;
 				if (parts[2].equals("not"))
 				{

@@ -8,6 +8,7 @@
   string3: .asciiz "]"
 
 .text
+
 _b1:
   li $v0, 1
   li $a0, 1
@@ -19,23 +20,23 @@ _b1:
   li $a0, 16
   li $v0, 9
   syscall
-  move $9, $v0
+  move $17, $v0
   li $8, 3
-  sw $8, 4($9)
-  li $10, 4
-  add $8, $9, $10
-  li $11, 1
-  sw $11, 4($8)
-  li $12, 8
-  add $8, $9, $12
-  li $13, 2
-  sw $13, 4($8)
-  li $14, 12
-  add $8, $9, $14
-  li $15, 3
-  sw $15, 4($8)
+  sw $8, 0($17)
+  li $9, 4
+  add $16, $17, $9
+  li $10, 1
+  sw $10, 0($16)
+  li $11, 8
+  add $16, $17, $11
+  li $12, 2
+  sw $12, 0($16)
+  li $13, 12
+  add $16, $17, $13
+  li $14, 3
+  sw $14, 0($16)
   li $v0, 1
-  move $a0, $9
+  move $a0, $17
   syscall
   li $v0, 4
   la $a0, stringNewline
@@ -44,11 +45,11 @@ _b1:
   li $a0, 4
   li $v0, 9
   syscall
-  move $8, $v0
-  li $16, 0
-  sw $16, 4($8)
+  move $16, $v0
+  li $15, 0
+  sw $15, 0($16)
   li $v0, 1
-  move $a0, $8
+  move $a0, $16
   syscall
   li $v0, 4
   la $a0, stringNewline
@@ -57,21 +58,21 @@ _b1:
   li $a0, 16
   li $v0, 9
   syscall
-  move $9, $v0
-  li $17, 3
-  sw $17, 4($9)
-  li $18, 4
-  add $8, $9, $18
-  li $19, 1
-  sw $19, 4($8)
-  li $20, 8
-  add $8, $9, $20
-  li $21, 2
-  sw $21, 4($8)
-  li $22, 12
-  add $8, $9, $22
-  li $23, 3
-  sw $23, 4($8)
+  move $17, $v0
+  li $18, 3
+  sw $18, 0($17)
+  li $19, 4
+  add $16, $17, $19
+  li $20, 1
+  sw $20, 0($16)
+  li $21, 8
+  add $16, $17, $21
+  li $22, 2
+  sw $22, 0($16)
+  li $23, 12
+  add $16, $17, $23
+  li $24, 3
+  sw $24, 0($16)
   li $v0, 1
   li $a0, 1
   syscall
@@ -114,20 +115,17 @@ _b1:
   li $v0, 4
   la $a0, stringNewline
   syscall
-  li $v0, 1
-  li $a0, 1
+  la $a0, stringTrue
   syscall
   li $v0, 4
   la $a0, stringNewline
   syscall
-  li $v0, 1
-  li $a0, 1
+  la $a0, stringTrue
   syscall
   li $v0, 4
   la $a0, stringNewline
   syscall
-  li $v0, 1
-  li $a0, 0
+  la $a0, stringFalse
   syscall
   li $v0, 4
   la $a0, stringNewline
