@@ -22,7 +22,15 @@ public class Instruction
 		int index = line.indexOf(" = ");
 		if (index != -1)
 		{
-			String[] substrs = line.substring(index + 3).split(" ");
+			String[] substrs;
+			if (line.contains("\""))
+			{
+				List<String> parts = new ArrayList<> ();
+				int curr = index + 3;
+				throw new UnsupportedOperationException();
+			}
+			else
+				substrs = line.substring(index + 3).split(" ");
 			if (substrs[0].equals("paramvalue") || substrs[0].equals("returnvalue"))
 				type = InstructionType.SPECIALASSIGNMENT;
 			else if (substrs.length > 1)
@@ -83,26 +91,25 @@ public class Instruction
 		while (type == InstructionType.ASSIGNMENT)
 		{
 			String[] parts = line.split(" = ");
+			// Right now, don't know how to optimize memory accesses
+			// (since the memory could have been changed by something in between)
+			if (parts[1].charAt(0) == '*')
+				break;
 			parts[0] += " = ";
 			String rest = null;
 			Instruction decl = preDeclarations.get(parts[1]);
+			
 			// Found the exact value
 			if (decl != null && decl.block == this.block && decl.type == InstructionType.ASSIGNMENT)
 				rest = decl.line.substring(decl.line.indexOf(" = ") + 3);
-			// Otherwise, if this is a memory access, see if we can at least get info on the memory location
-			else if (parts[1].charAt(0) == '*')
-			{
-				decl = preDeclarations.get(parts[1].substring(1));
-				if (decl != null && decl.block == this.block && decl.type == InstructionType.ASSIGNMENT)
-				{
-					rest = decl.line.substring(decl.line.indexOf(" = ") + 3);
-					if (rest.charAt(0) == '*') // can't do a double pointer in a single line
-						break;
-					parts[0] += '*';
-				}
-			}
-			if (rest == null)
+			else
 				break;
+			
+			// Memory accesses must be done at proper time, unless I can
+			// somehow guarantee that the memory doesn't get changed in-between
+			if (rest.charAt(0) == '*')
+				break;
+			
 			line = parts[0] + rest;
 			variablesUsed.remove(parts[1]);
 			if (rest.charAt(0) == '*')
@@ -121,7 +128,7 @@ public class Instruction
 				if (decl == null || decl.block != this.block || decl.type != InstructionType.ASSIGNMENT)
 					continue;
 				String rest = decl.line.substring(decl.line.indexOf(" = ") + 3);
-				if (rest.charAt(0) == '*')
+				if (rest.charAt(0) == '*' && !rest.startsWith("*_func"))
 					continue;
 				line = line.replaceAll(str, rest);
 				variablesUsed.remove(str);
@@ -161,66 +168,77 @@ public class Instruction
 		if (!optimized && type == InstructionType.CALCULATION && variablesUsed.size() == 0)
 		{
 			String[] parts = line.split(" ");
-			try
+			if (parts.length == 4)
 			{
-				int left = Integer.parseInt(parts[2]);
-				int right = Integer.parseInt(parts[4]);
-				boolean change = true;
-				switch (parts[3])
+				if (parts[2].equals("-"))
 				{
-					case "+":
-						line = parts[0] + " = " + (left + right);
-						break;
-					case "-":
-						line = parts[0] + " = " + (left - right);
-						break;
-					case "*":
-						line = parts[0] + " = " + (left * right);
-						break;
-					case "/":
-						line = parts[0] + " = " + (left / right);
-						break;
-					case "%":
-						line = parts[0] + " = " + (left % right);
-						break;
-					case ">":
-						line = parts[0] + " = " + (left > right);
-						break;
-					case "<":
-						line = parts[0] + " = " + (left < right);
-						break;
-					case ">=":
-						line = parts[0] + " = " + (left >= right);
-						break;
-					case "<=":
-						line = parts[0] + " = " + (left <= right);
-						break;
-					case "=":
-						line = parts[0] + " = " + (left == right);
-						break;
-					case "!=":
-						line = parts[0] + " = " + (left != right);
-						break;
-					default:
-						change = false;
-						break;
-				}
-				if (change)
-				{
+					if (!rawType(parts[3]).equals("int"))
+						throw new AssertionError();
+					line = parts[0] + " = " + -Integer.parseInt(parts[3]);
 					type = InstructionType.ASSIGNMENT;
 					optimized = true;
 				}
-			}
-			catch (NumberFormatException ex)
-			{
-				System.out.println(line);
-				boolean change = true;
-				if (parts[2].equals("not"))
+				else if (parts[2].equals("not"))
 				{
-					boolean unary = Boolean.parseBoolean(parts[3]);
-					line = parts[0] + " = " + !unary;
+					if (!rawType(parts[3]).equals("boolean"))
+						throw new AssertionError();
+					line = parts[0] + " = " + !Boolean.parseBoolean(parts[3]);
+					type = InstructionType.ASSIGNMENT;
+					optimized = true;
 				}
 				else
+					throw new UnsupportedOperationException();
+			}
+			else if (parts.length == 5)
+			{
+				String leftType = rawType(parts[2]);
+				String rightType = rawType(parts[4]);
+				if (leftType.equals("int") && rightType.equals("int"))
+				{
+					int left = Integer.parseInt(parts[2]);
+					int right = Integer.parseInt(parts[4]);
+					switch (parts[3])
+					{
+						case "+":
+							line = parts[0] + " = " + (left + right);
+							break;
+						case "-":
+							line = parts[0] + " = " + (left - right);
+							break;
+						case "*":
+							line = parts[0] + " = " + (left * right);
+							break;
+						case "/":
+							line = parts[0] + " = " + (left / right);
+							break;
+						case "%":
+							line = parts[0] + " = " + (left % right);
+							break;
+						case ">":
+							line = parts[0] + " = " + (left > right);
+							break;
+						case "<":
+							line = parts[0] + " = " + (left < right);
+							break;
+						case ">=":
+							line = parts[0] + " = " + (left >= right);
+							break;
+						case "<=":
+							line = parts[0] + " = " + (left <= right);
+							break;
+						case "=":
+							line = parts[0] + " = " + (left == right);
+							break;
+						case "!=":
+							line = parts[0] + " = " + (left != right);
+							break;
+						default:
+							throw new UnsupportedOperationException(line);
+					}
+					type = InstructionType.ASSIGNMENT;
+					optimized = true;
+				}
+				else if (leftType.equals("boolean") && rightType.equals("boolean"))
 				{
 					boolean left = Boolean.parseBoolean(parts[2]);
 					boolean right = Boolean.parseBoolean(parts[4]);
@@ -233,16 +251,29 @@ public class Instruction
 							line = parts[0] + " = " + (left || right);
 							break;
 						default:
-							change = false;
-							break;
+							throw new UnsupportedOperationException(line);
 					}
-				}
-				if (change)
-				{
 					type = InstructionType.ASSIGNMENT;
 					optimized = true;
 				}
+				else if (leftType.equals("string") || rightType.equals("string"))
+				{
+					switch (parts[3])
+					{
+						case "+":
+							line = parts[0] + " = " + (parts[2] + parts[4]);
+							break;
+						default:
+							throw new UnsupportedOperationException(line);
+					}
+					type = InstructionType.ASSIGNMENT;
+					optimized = true;
+				}
+				else
+					throw new UnsupportedOperationException(line);
 			}
+			else
+				throw new AssertionError("Operators must be either unary or binary: " + line);
 		}
 //		System.out.println("After self-optimizing: " + this);
 		if (optimized)
@@ -251,11 +282,11 @@ public class Instruction
 	
 	void print()
 	{
-//		System.out.println("\t\tPre-Declarations: " + preDeclarations);
+		System.out.println("\t\tPre-Declarations: " + preDeclarations);
 //		System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
 //		System.out.println("\t\tReferenced Variables: " + variablesUsed);
 		System.out.println("\t" + line);
-//		System.out.println("\t\tPost-Live Variables: " + postLiveVariables);
+		System.out.println("\t\tPost-Live Variables: " + postLiveVariables);
 //		System.out.println("\t\tPost-Declarations: " + postDeclarations);
 	}
 	
@@ -283,6 +314,21 @@ public class Instruction
 		if (identifiers.contains(str))
 			return false;
 		return true;
+	}
+	
+	private static String rawType(String value)
+	{
+		if (value.equals("true") || value.equals("false"))
+			return "boolean";
+		try
+		{
+			Integer.parseInt(value);
+			return "int";
+		}
+		catch (NumberFormatException ex)
+		{
+			return "string";
+		}
 	}
 }
 

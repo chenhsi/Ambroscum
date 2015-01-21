@@ -20,7 +20,7 @@ public class Ambroscum
 //		commandLineMain(args);
 //		commandLineMain(new String[] {"-c", "tests/03 if.ambr"});
 //		compileILTest(new File("tests/03 if.ambr"));
-		compileMIPSTest("04 sort", true);
+		compileMIPSTest("05 literals", false);
 	}
 	
 	/* Usage: ambroscum [-icRh] [file] [-a args]

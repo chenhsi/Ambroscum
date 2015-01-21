@@ -17,5 +17,5 @@ end
 i = [1, 6, 3, 5, 9, 7, 2, 8, 4]
 sort(i)
 for n in i:
-	print n
+	print n, " "
 end
