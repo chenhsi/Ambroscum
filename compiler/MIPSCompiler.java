@@ -123,7 +123,7 @@ public class MIPSCompiler
 				if (colorings.containsKey(adj))
 					invalid.add(colorings.get(adj));
 			int lastReg = mainFunction ? 15 : 23;
-			for (int poss = mainFunction ? 16 : 8; ; poss = (poss == 25 ? 8 : (poss + 1)))
+			for (int poss = mainFunction ? 16 : 8; ; poss = (poss == 23 ? 8 : (poss + 1)))
 			{
 				if (poss == lastReg)
 					throw new UnsupportedOperationException("too many variables - can't support yet");
@@ -134,7 +134,7 @@ public class MIPSCompiler
 				break;
 			}
 		}
-//		System.out.println(colorings);
+		System.out.println(colorings);
 		
 		Map<String, String> registersMap = new HashMap<String, String> ();
 		for (String str : colorings.keySet())
@@ -176,7 +176,7 @@ public class MIPSCompiler
 				out.println("_b" + block.id + ":");
 				
 				List<String> freeRegisters = new LinkedList<String> ();
-				for (int i = 8; i < 26; i++)
+				for (int i = 8; i < 24; i++)
 					freeRegisters.add("" + i);
 				if (block.instructions.size() > 0)
 					for (String initiallyAlive : block.instructions.get(0).preLiveVariables)
@@ -223,13 +223,13 @@ public class MIPSCompiler
 				String leftReg = registersMap.get(parts[2]);
 				if (leftReg == null)
 				{
-					leftReg = freeRegisters.remove(0);
+					leftReg = "t8";
 					setPrimitiveValue(parts[2], "$" + leftReg, false);
 				}
 				String rightReg = registersMap.get(parts[4]);
 				if (rightReg == null)
 				{
-					rightReg = freeRegisters.remove(0);
+					rightReg = "t9";
 					setPrimitiveValue(parts[4], "$" + rightReg, false);
 				}
 				switch (parts[3])
@@ -273,10 +273,9 @@ public class MIPSCompiler
 					default:
 						throw new UnsupportedOperationException("Unsupported op: " + parts[3]);
 				}
-				// If it was a temp use or if it was a real variable but dead after this line
-				if (registersMap.get(parts[2]) == null || !inst.postLiveVariables.contains(parts[2]))
-					freeRegisters.add(leftReg); // free up the space
-				if (registersMap.get(parts[4]) == null || !inst.postLiveVariables.contains(parts[4]))
+				if (!inst.postLiveVariables.contains(parts[2]))
+					freeRegisters.add(leftReg);
+				if (!inst.postLiveVariables.contains(parts[4]))
 					freeRegisters.add(rightReg);
 				freeRegisters.remove(assignTarget);
 				break;
@@ -288,10 +287,8 @@ public class MIPSCompiler
 					if (parts[2].charAt(0) == '*')
 					{
 						String source = registersMap.get(parts[2].substring(1));
-						String temp = freeRegisters.remove(0);
-						out.println("  lw $" + temp + ", 0($" + source + ")");
-						out.println("  sw $" + temp + ", 0($" + assignTarget + ")");
-						freeRegisters.add(temp);
+						out.println("  lw $t8, 0($" + source + ")");
+						out.println("  sw $t8, 0($" + assignTarget + ")");
 					}
 					else if (Instruction.identifier(parts[2]))
 					{
@@ -300,10 +297,8 @@ public class MIPSCompiler
 					}
 					else // Store the literal in a temporary variable first
 					{
-						String temp = freeRegisters.remove(0);
-						setPrimitiveValue(parts[2], "$" + temp, false);
-						out.println("  sw $" + temp + ", 0($" + assignTarget + ")");
-						freeRegisters.add(temp);
+						setPrimitiveValue(parts[2], "$t8", false);
+						out.println("  sw $t8, 0($" + assignTarget + ")");
 					}
 					freeRegisters.remove(assignTarget);
 				}
@@ -317,7 +312,7 @@ public class MIPSCompiler
 						else if (parts[2].charAt(0) == '*') // Loading value from memory
 						{
 							String source = registersMap.get(parts[2].substring(1));
-							out.println("  lw $" + assignTarget + ", 4($" + source + ")");
+							out.println("  lw $" + assignTarget + ", 0($" + source + ")");
 						}
 						else // Regular assignment of one variable to another - this should be optimized away
 						{
@@ -343,7 +338,7 @@ public class MIPSCompiler
 				else // user-defined function call
 				{
 					// Store any temporary registers that might be overwritten
-					for (int i = 8; i <= 26; i = (i == 15 ? 24 : (i + 1)))
+					for (int i = 8; i < 26; i = (i == 15 ? 24 : (i + 1)))
 					{
 						if (!freeRegisters.contains("" + i))
 						{
@@ -353,7 +348,7 @@ public class MIPSCompiler
 					}
 					out.println("  jalr $" + registersMap.get(parts[1]));
 					// Load the registers back
-					for (int i = 8; i <= 26; i = (i == 15 ? 24 : (i + 1)))
+					for (int i = 8; i < 26; i = (i == 15 ? 24 : (i + 1)))
 					{
 						if (!freeRegisters.contains("" + i))
 						{
@@ -374,10 +369,8 @@ public class MIPSCompiler
 						out.println("  sw $" + registersMap.get(parts[2]) + ", 0($sp)");
 					else
 					{
-						String tempReg = freeRegisters.remove(0);
-						setPrimitiveValue(assignValue, tempReg, true);
-						out.println("  sw $" + tempReg + ", 0($sp)");
-						freeRegisters.add(tempReg);
+						setPrimitiveValue(assignValue, "$t8", true);
+						out.println("  sw $t8, 0($sp)");
 					}
 					break;
 				}
@@ -477,16 +470,5 @@ public class MIPSCompiler
 				}
 			}
 		}
-	}
-	
-	private static void storeOntoStack(String reg)
-	{
-		out.println("  addi $sp, $sp, -4");
-		out.println("  sw " + reg + ", 0($sp)");
-	}
-	private static void loadFromStack(String reg)
-	{
-		out.println("  lw " + reg + ", 0($sp)");
-		out.println("  addi $sp, $sp, 4");
 	}
 }
