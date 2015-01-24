@@ -21,7 +21,7 @@ public class Function
 		Map<String, BasicBlock> labels = new HashMap<> ();
 		Set<BasicBlock> hasJump = new HashSet<> ();
 		startingBlock = new BasicBlock();
-		endingBlock = new BasicBlock(); // should include function cleanup maybe
+		endingBlock = new BasicBlock();
 		BasicBlock curr = startingBlock;
 		for (String str : code)
 		{
@@ -47,9 +47,7 @@ public class Function
 				continue;
 			}
 			else if (str.startsWith("call "))
-			{
 				curr.add(str);
-			}
 			else if (str.startsWith("return "))
 			{
 				curr.add(str);
@@ -103,8 +101,10 @@ public class Function
 //		System.out.println("Optimizing part 7: ");
 		variablePropogation();
 //		System.out.println("Optimizing part 8: ");
-		// Currently causes infinite loops, haven't figured out why
+		// Currently debugging
 //		loopAnalysis();
+//		System.out.println("Optimizing part 9: ");
+//		simplifyBlockStructure();
 //		System.out.println("Optimizing Done");
 	}
 	
@@ -595,28 +595,44 @@ public class Function
 	
 	private void loopAnalysis()
 	{
-		Set<BasicBlock> explored = new HashSet<> ();
-		
-		// First, calculate dominators
+		// Begin by calculating dominators
+		// First step is to get the list of all the blocks
 		Queue<BasicBlock> frontier = new LinkedList<> ();
+		Set<BasicBlock> allBlocks = new HashSet<> ();
 		frontier.add(startingBlock);
 		while (!frontier.isEmpty())
 		{
 			BasicBlock curr = frontier.remove();
-			if (!explored.contains(curr))
-				curr.dominators = new HashSet<BasicBlock> ();
-			explored.add(curr);
+			if (allBlocks.contains(curr))
+				continue;
+			allBlocks.add(curr);
+			if (curr.nextBlock != null)
+				frontier.add(curr.nextBlock);
+			if (curr.jumpBlock != null)
+				frontier.add(curr.jumpBlock);
+		}
+		
+		// Default assumptions for dominators
+		for (BasicBlock block : allBlocks)
+			block.dominators = allBlocks;
+		
+		// Now, continue to simplify parent assumptions
+		frontier = new LinkedList<> ();
+		frontier.add(startingBlock);
+		while (!frontier.isEmpty())
+		{
+			BasicBlock curr = frontier.remove();
 			Set<BasicBlock> temp = new HashSet<> ();
 			for (BasicBlock parent : curr.parents)
-				if (!explored.contains(parent)) // Haven't analyzed parent yet, skip for now
-					continue;
-				else if (temp.isEmpty()) // Special case to initialize temp
+				if (temp.isEmpty()) // Special case to initialize temp
+									// Never empty again, since startingBlock is always a dominator
 					temp.addAll(parent.dominators);
 				else // Usual case of finding intersection of parent.dominators
 					temp.retainAll(parent.dominators);
 			temp.add(curr);
 			if (!temp.equals(curr.dominators)) // If there are any changes
 			{
+				curr.dominators = temp;
 				if (curr.nextBlock != null)
 					frontier.add(curr.nextBlock);
 				if (curr.jumpBlock != null)
@@ -626,36 +642,34 @@ public class Function
 		
 		// Using dominators, determine all loops, as well as their header
 		Map<BasicBlock, Set<BasicBlock>> loops = new HashMap<> ();
-		for (BasicBlock block : explored)
+		for (BasicBlock block : allBlocks)
 		{
-			List<BasicBlock> children = new ArrayList<> (2);
-			if (block.nextBlock != null)
-				children.add(block.nextBlock);
-			if (block.jumpBlock != null)
-				children.add(block.jumpBlock);
-			
-			//// This is probably wrong
-			for (BasicBlock child : children)
-				if (block.dominators.contains(child) && block != child)
+			for (BasicBlock parent : block.parents)
+			{
+				if (!parent.dominators.contains(block))
+					continue;
+				// Found a back edge (from a node to a child that dominates it)
+				Set<BasicBlock> loopContents = new HashSet<> ();
+				Queue<BasicBlock> searchQueue = new LinkedList<> ();
+				searchQueue.add(parent);
+				// Find all the nodes between these two blocks
+				while (!searchQueue.isEmpty())
 				{
-					BasicBlock header = child;
-					Set<BasicBlock> loopActual = new HashSet<> ();
-					List<BasicBlock> loopPotential = new LinkedList<> ();
-					loopPotential.add(block);
-					while (!loopPotential.isEmpty())
-					{
-						BasicBlock curr = loopPotential.remove(0);
-						if (loopActual.contains(curr) || curr == header)
-							continue;
-						loopActual.add(curr);
-						for (BasicBlock currParent : curr.parents)
-							loopPotential.add(currParent);
-					}
-					if (loops.containsKey(header))
-						loops.get(header).addAll(loopActual);
-					else
-						loops.put(header, loopActual);
+					BasicBlock curr = searchQueue.remove();
+					if (loopContents.contains(curr) || curr == block)
+						continue;
+					loopContents.add(curr);
+					searchQueue.addAll(curr.parents);
 				}
+				loopContents.add(block);
+				// Merge any blocks that share the loop header
+				if (loops.containsKey(block))
+					loops.get(block).addAll(loopContents);
+				else
+					loops.put(block, loopContents);
+				System.out.println("Loop found: " + loops.get(block));
+				System.out.println("Determined header: " + block);
+			}
 		}
 		
 		// insert an empty block in front of each loop header
@@ -664,7 +678,8 @@ public class Function
 		{
 			BasicBlock insert = new BasicBlock();
 			for (BasicBlock loopParent : header.parents)
-				if (!loopParent.dominators.contains(header)) // If the parent is a dominator of the loop
+				// If the parent is outside of the loop
+				if (!loopParent.dominators.contains(header)) 
 				{
 					if (loopParent.nextBlock == header)
 						loopParent.nextBlock = insert;
@@ -676,7 +691,7 @@ public class Function
 			connect(insert, header, true);
 			loopPreHeaders.put(header, insert);
 		}
-		
+
 		// push all loop invariant calculations into the pre-headers
 		for (BasicBlock header : loops.keySet())
 		{
@@ -698,14 +713,16 @@ public class Function
 							continue outer;
 					}
 					
+					System.out.println("Candidate for pulling out: " + inst.line);
+					
 					// now, check to make sure this is safe to pull out
-					String target = inst.line.substring(inst.line.indexOf(" = "));
+					String target = inst.line.substring(0, inst.line.indexOf(" = "));
 					for (BasicBlock loopBlock2 : loops.get(header))
 					{
 						for (Instruction inst2 : loopBlock2.instructions)
 						{
 							// if there is another declaration
-							if (inst2.type.isAssignment() && inst2.line.substring(inst2.line.indexOf(" = ")).equals(target) && inst2 != inst)
+							if (inst2.type.isAssignment() && inst2.line.substring(0, inst2.line.indexOf(" = ")).equals(target) && inst2 != inst)
 								continue outer;
 							// if instruction is not guaranteed to reach all uses
 							if (inst2.variablesUsed.contains(target) && inst2.preDeclarations.get(target) != inst)
@@ -721,6 +738,7 @@ public class Function
 						}
 					}
 					// invariant and safe, so go ahead and pull out
+					System.out.println("Deleting: " + inst.line);
 					iter.remove();
 					preHeader.instructions.add(inst);
 					inst.block = preHeader;

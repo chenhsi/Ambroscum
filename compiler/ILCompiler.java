@@ -25,7 +25,6 @@ public class ILCompiler
 		instructions = new LinkedList<> ();
 		for (Line line : block.getLines())
 			compile(line, null, null);
-//		instructions.add("return null");
 
 		ControlFlowGraph graph = new ControlFlowGraph(instructions, functions);
 		graph.optimize();

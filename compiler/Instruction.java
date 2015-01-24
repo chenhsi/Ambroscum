@@ -23,13 +23,13 @@ public class Instruction
 		if (index != -1)
 		{
 			String[] substrs;
-			if (line.contains("\""))
-			{
-				List<String> parts = new ArrayList<> ();
-				int curr = index + 3;
-				throw new UnsupportedOperationException();
-			}
-			else
+//			if (line.contains("\""))
+//			{
+//				List<String> parts = new ArrayList<> ();
+//				int curr = index + 3;
+//				throw new UnsupportedOperationException();
+//			}
+//			else
 				substrs = line.substring(index + 3).split(" ");
 			if (substrs[0].equals("paramvalue") || substrs[0].equals("returnvalue"))
 				type = InstructionType.SPECIALASSIGNMENT;
@@ -282,11 +282,11 @@ public class Instruction
 	
 	void print()
 	{
-		System.out.println("\t\tPre-Declarations: " + preDeclarations);
+//		System.out.println("\t\tPre-Declarations: " + preDeclarations);
 //		System.out.println("\t\tPre-Live Variables: " + preLiveVariables);
 //		System.out.println("\t\tReferenced Variables: " + variablesUsed);
 		System.out.println("\t" + line);
-		System.out.println("\t\tPost-Live Variables: " + postLiveVariables);
+//		System.out.println("\t\tPost-Live Variables: " + postLiveVariables);
 //		System.out.println("\t\tPost-Declarations: " + postDeclarations);
 	}
 	
